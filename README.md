@@ -1,5 +1,16 @@
 # Resource-Constrained LLM Evaluation
 
+<p align="center">
+  <img height="20" src="https://img.shields.io/badge/python-3.10-blue" />
+  <img height="20" src="https://img.shields.io/badge/pytorch-2.3+-ee4c2c" />
+  <img height="20" src="https://img.shields.io/badge/cuda-12.1-76b900" />
+  <img height="20" src="https://img.shields.io/badge/transformers-4.51+-yellow" />
+  <img height="20" src="https://img.shields.io/badge/lm--eval-0.4.7+-purple" />
+  <img height="20" src="https://img.shields.io/badge/QLoRA-4bit-red" />
+  <img height="20" src="https://img.shields.io/badge/GPU-RTX3090%2024GB-0099ff" />
+  <img height="20" src="https://img.shields.io/badge/latex-paper-green" />
+</p>
+
 This repository is organized for a publishable paper on:
 
 `Evaluation and QLoRA-based Adaptation of Open LLMs up to 8B Parameters under Single-GPU Resource Constraints`
