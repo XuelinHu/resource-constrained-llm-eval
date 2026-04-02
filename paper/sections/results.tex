@@ -1,0 +1,33 @@
+\label{sec:results}
+
+This section is organized around three result groups: baseline task performance, deployment efficiency, and QLoRA adaptation outcomes. The current text is written as a near-submission template so that final numeric results can be inserted with minimal restructuring.
+
+\subsection{Baseline Benchmark Performance}
+
+Table~\ref{tab:main-results} reports the main benchmark results. A clear expectation is that performance should improve with model scale, but the increase is unlikely to be uniform across tasks. General knowledge and Chinese evaluation often improve steadily with size, while mathematical reasoning and code generation may show larger jumps only after the model reaches a certain parameter threshold. If the final results confirm this behavior, the analysis should emphasize that a single ``best'' model does not exist independently of task preference.
+
+\input{tables/main_results}
+
+When writing the final version, use this subsection to answer three questions directly. First, which model is the strongest all-round baseline? Second, which smaller models are competitive enough to remain attractive after efficiency is considered? Third, does the reasoning-oriented distilled model produce consistent gains or only narrow gains on reasoning-heavy tasks? If DeepSeek-R1-Distill-Qwen-7B outperforms similarly sized instruct models on GSM8K but not on MMLU or C-Eval, that asymmetry should be stated explicitly rather than averaged away.
+
+\subsection{Efficiency and Deployment Cost}
+
+Table~\ref{tab:efficiency-results} reports peak memory, latency, and throughput under the same prompt set and generation configuration. This table is essential because deployment decisions under a 24GB budget are constrained by more than accuracy alone. In the final manuscript, the narrative should identify models that dominate in practical terms, for example by offering near-7B quality at substantially lower memory cost or by maintaining acceptable quality while significantly improving response speed.
+
+\input{tables/efficiency_results}
+
+The final analysis in this subsection should avoid two common mistakes. The first is to interpret throughput without accounting for quality. A very fast but substantially weaker model may still be a poor deployment choice. The second is to interpret quality without accounting for latency. A reasoning-oriented model may deliver better mathematical performance but remain unattractive if the latency penalty is too high for interactive use. The paper should therefore report both absolute values and ratio-style interpretations, such as task score per gigabyte and score per unit latency.
+
+\subsection{QLoRA Adaptation Results}
+
+Table~\ref{tab:qlora-results} compares selected models before and after QLoRA-based domain adaptation. The main purpose is to determine whether lightweight adaptation changes the deployment recommendation under the same hardware limit. If a model that is only moderately strong in the baseline becomes highly competitive after QLoRA, that result is more practically important than a small improvement on the already strongest baseline.
+
+\input{tables/qlora_results}
+
+The final write-up should discuss three outcome patterns. First, whether QLoRA improves the domain benchmark substantially. Second, whether the adaptation preserves general benchmark behavior or introduces degradation. Third, whether the training cost is justified by the gain. Models with stable and efficient adaptation behavior should be highlighted because they are the most realistic candidates for repeated domain updates in applied settings.
+
+\subsection{Scaling and Tradeoff Analysis}
+
+Beyond the tables, the final manuscript should include at least two figures. The first figure should plot model size against a normalized aggregate benchmark score, making visible whether capability improves smoothly or in stages. The second figure should visualize the tradeoff between quality and latency, ideally with marker size or color encoding memory footprint. This can reveal whether certain models lie on the Pareto frontier while others are clearly dominated.
+
+If the final evidence shows that 4B-class models remain highly competitive after QLoRA, the paper should state that conclusion plainly. Such a finding would be especially important for practitioners because it suggests that careful adaptation can substitute for brute-force model scaling in many single-GPU deployment scenarios.

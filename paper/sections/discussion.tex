@@ -1,0 +1,17 @@
+\label{sec:discussion}
+
+The discussion should not restate the table values. Its function is to explain why certain models are more suitable than others under a strict 24GB limit and to clarify how the results should influence deployment choices.
+
+Important discussion points include:
+\begin{itemize}[leftmargin=1.5em]
+  \item Whether model scale improves all tasks uniformly or mainly benefits reasoning-heavy tasks.
+  \item Which models degrade most under aggressive low-bit settings.
+  \item Whether QLoRA gains are concentrated on the domain benchmark or transfer to broader tasks.
+  \item Whether reasoning-oriented distillation models provide enough additional quality to justify slower inference.
+\end{itemize}
+
+One likely interpretation route is that model choice under constrained hardware is task-contingent rather than universally ordered. For instance, a reasoning-oriented 7B model may be the right choice for mathematical or analytic workloads but a weaker choice for interactive assistants if latency is substantially worse. Likewise, a 4B model that responds quickly and adapts well through QLoRA may be a better operational choice than a stronger but slower 8B model in many domain deployments.
+
+Another important point is the distinction between baseline strength and adaptability. A model that is not the strongest zero-shot baseline may still become the most useful deployed model if QLoRA yields stable gains at low cost. This is precisely why adaptation must be treated as part of the model selection problem rather than an afterthought.
+
+Limitations should also be stated clearly. A single-GPU study is practically important, but it does not cover distributed serving, very long-context workloads, or larger reasoning models above 8B parameters. In addition, domain-specific findings may depend on the size and construction quality of the custom benchmark. The paper should therefore avoid overgeneralizing beyond the target deployment regime and should frame the conclusions as guidance for consumer-GPU deployment rather than universal statements about model quality.

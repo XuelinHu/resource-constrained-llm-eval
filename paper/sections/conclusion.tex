@@ -1,0 +1,7 @@
+\label{sec:conclusion}
+
+This paper investigates open LLMs up to 8B parameters under a strict single-GPU constraint and studies how QLoRA changes their practical utility for domain-specific deployment. The central premise is that model selection on a consumer GPU is a joint optimization problem over quality, memory, latency, and adaptation cost rather than a simple benchmark ranking exercise.
+
+The final version of the paper should conclude with three layers of findings: which model is the strongest baseline, which model provides the best overall deployment tradeoff, and which model responds most effectively to low-cost QLoRA adaptation. If these three answers differ, that difference is itself an important result because it shows that the best benchmark model is not always the best deployed model.
+
+The main practical contribution is a reproducible experimental and writing pipeline that supports systematic evaluation, lightweight domain adaptation, and evidence-driven model selection on a single RTX 3090. This makes the study directly useful for laboratories and engineering teams that need publishable analysis and deployable results under realistic hardware constraints.

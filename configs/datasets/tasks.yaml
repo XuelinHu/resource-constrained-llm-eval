@@ -1,0 +1,34 @@
+tasks:
+  mmlu:
+    suite: lm_eval
+    task_name: mmlu
+    metric: acc
+    split: test
+
+  gsm8k:
+    suite: lm_eval
+    task_name: gsm8k
+    metric: exact_match
+    split: test
+
+  humaneval:
+    suite: lm_eval
+    task_name: humaneval
+    metric: pass_at_1
+    split: test
+
+  ceval:
+    suite: lm_eval
+    task_name: ceval-valid
+    metric: acc
+    split: validation
+
+  domain_qa:
+    suite: local_jsonl
+    train_file: data/domain/train.jsonl
+    valid_file: data/domain/valid.jsonl
+    test_file: data/domain/test.jsonl
+    metric: exact_match
+    prompt_field: prompt
+    answer_field: answer
+    text_field: text

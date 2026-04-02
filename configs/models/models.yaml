@@ -1,0 +1,56 @@
+models:
+  qwen3_0_6b:
+    hf_id: Qwen/Qwen3-0.6B
+    family: qwen3
+    params_b: 0.6
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: true
+
+  qwen3_1_7b:
+    hf_id: Qwen/Qwen3-1.7B
+    family: qwen3
+    params_b: 1.7
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: true
+
+  qwen3_4b:
+    hf_id: Qwen/Qwen3-4B
+    family: qwen3
+    params_b: 4.0
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: true
+
+  qwen3_8b:
+    hf_id: Qwen/Qwen3-8B
+    family: qwen3
+    params_b: 8.0
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: true
+
+  qwen2_5_7b_instruct:
+    hf_id: Qwen/Qwen2.5-7B-Instruct
+    family: qwen2_5
+    params_b: 7.0
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: false
+
+  deepseek_r1_distill_qwen_7b:
+    hf_id: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
+    family: deepseek_r1_distill
+    params_b: 7.0
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: true
+
+  gemma_3_4b:
+    hf_id: google/gemma-3-4b-it
+    family: gemma3
+    params_b: 4.0
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: false

@@ -1,0 +1,31 @@
+\label{sec:methodology}
+
+This section formalizes the evaluation protocol used throughout the paper. The study combines baseline benchmarking, deployment-oriented efficiency measurement, and QLoRA-based adaptation under a fixed hardware budget. Let $\mathcal{M}$ denote the set of candidate open models and let $\mathcal{T}$ denote the task suite. In our setting, $\mathcal{T}$ contains five task categories: general knowledge, mathematical reasoning, code generation, Chinese evaluation, and domain-specific question answering.
+
+For each model $m \in \mathcal{M}$, the baseline stage produces two groups of observations. The first group contains task-level performance scores collected from standard benchmarks. The second group contains efficiency measurements obtained under controlled generation settings on the same GPU, including peak VRAM, response latency, and token throughput. The two groups are analyzed jointly rather than independently.
+
+To make the comparison explicit, we define a utility vector for model $m$ as
+\[
+U(m) = \left[S(m), V(m), L(m), R(m)\right],
+\]
+where $S(m)$ is the task-performance component, $V(m)$ is peak VRAM usage, $L(m)$ is mean latency, and $R(m)$ is throughput measured in generated tokens per second. Because these dimensions have different units and optimization directions, the paper reports both raw values and normalized ratios such as score per GB and score per second when appropriate. The intention is not to collapse all model behavior into a single scalar, but to expose the tradeoffs that matter for deployment.
+
+\textbf{Baseline evaluation.} For the general benchmark subset, all models are evaluated using the same framework, deterministic decoding policy, and zero-shot or fixed-shot setting. This reduces prompt and harness variance across models. For the domain benchmark, the evaluation uses exact-match or normalized-match criteria depending on task format. Since small domain test sets can be sensitive to phrasing, we report both the strict score and selected qualitative examples in the appendix or supplementary files.
+
+\textbf{Efficiency measurement.} Efficiency is measured by running each model on the same prompt set under fixed generation settings. Let $x_i$ denote the $i$-th efficiency prompt and let $y_i$ denote the generated continuation. The latency of one instance is measured as
+\[
+L_i(m) = t^{\text{end}}_i - t^{\text{start}}_i,
+\]
+and the corresponding throughput is
+\[
+R_i(m) = \frac{|y_i|}{L_i(m)},
+\]
+where $|y_i|$ is the number of generated tokens. Reported efficiency values are means or medians aggregated over the prompt set. Peak VRAM is collected from the CUDA runtime during generation.
+
+\textbf{QLoRA adaptation.} For domain adaptation, we adopt QLoRA because it enables 4-bit training while updating only a small subset of trainable low-rank parameters. Given a selected subset $\mathcal{M}' \subset \mathcal{M}$, each model is adapted on the domain training set and then re-evaluated on both domain and general tasks. The adaptation gain is measured by
+\[
+\Delta S_{\text{domain}}(m) = S_{\text{after}}(m) - S_{\text{before}}(m),
+\]
+along with the associated cost in training time, VRAM, and adapter size. In addition to absolute gain, we also care about efficiency of adaptation. A model that improves slightly but requires much longer fine-tuning may be less attractive than a model with a smaller absolute score but cheaper and more stable adaptation behavior.
+
+\textbf{Analysis protocol.} The final analysis proceeds in three steps. First, it identifies the strongest baseline models by joint task and efficiency behavior. Second, it applies QLoRA to a selected subset of candidate models that are either strong general-purpose baselines or potentially attractive efficiency choices. Third, it compares pre- and post-adaptation performance to determine whether low-cost specialization changes the deployment recommendation. This closed-loop design is central to the paper because it ensures that adaptation is treated as part of the deployment decision rather than as a detached training exercise.
