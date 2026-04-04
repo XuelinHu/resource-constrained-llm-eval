@@ -33,9 +33,10 @@ def build_lm_eval_command(
     num_fewshot: int,
     output_path: Path,
     precision: str,
-    batch_size: str,
+    batch_size: str | int,
+    limit: int | None = None,
 ) -> list[str]:
-    return [
+    command = [
         "lm_eval",
         "--model",
         "hf",
@@ -48,10 +49,13 @@ def build_lm_eval_command(
         "--device",
         "cuda:0",
         "--batch_size",
-        batch_size,
+        str(batch_size),
         "--output_path",
         str(output_path),
     ]
+    if limit is not None:
+        command.extend(["--limit", str(limit)])
+    return command
 
 
 def _extract_text_from_outputs(tokenizer, generated_ids, input_length: int) -> str:
@@ -241,6 +245,14 @@ def parse_lm_eval_metrics(path: Path, model_key: str, precision: str) -> list[di
     return rows
 
 
+def resolve_lm_eval_result_path(expected_path: Path) -> Path | None:
+    if expected_path.exists():
+        return expected_path
+    pattern = f"{expected_path.stem}_*.json"
+    candidates = sorted(expected_path.parent.glob(pattern), key=lambda path: path.stat().st_mtime, reverse=True)
+    return candidates[0] if candidates else None
+
+
 def run_eval(configs: dict, model_key: str, precision: str | None = None) -> int:
     exp_cfg = configs["experiment"]["experiment"]
     baseline_cfg = configs["experiment"]["baseline"]
@@ -275,12 +287,14 @@ def run_eval(configs: dict, model_key: str, precision: str | None = None) -> int
         output_path=lm_eval_output_path,
         precision=precision,
         batch_size=baseline_cfg["batch_size"],
+        limit=baseline_cfg.get("lm_eval_limit"),
     )
     exit_code = run_command(command, cwd=configs["root"])
 
     summary_rows: list[dict] = []
-    if lm_eval_output_path.exists():
-        summary_rows.extend(parse_lm_eval_metrics(lm_eval_output_path, model_key, precision))
+    resolved_lm_eval_output_path = resolve_lm_eval_result_path(lm_eval_output_path)
+    if resolved_lm_eval_output_path is not None:
+        summary_rows.extend(parse_lm_eval_metrics(resolved_lm_eval_output_path, model_key, precision))
 
     domain_row = run_local_domain_eval(configs, model_key, precision, output_dir)
     summary_rows.append(domain_row)

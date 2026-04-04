@@ -1,0 +1,57 @@
+experiment:
+  name: pilot_single_gpu_3090
+  device: cuda:0
+  gpu_name: RTX_3090
+  vram_gb: 24
+  seed: 42
+  output_root: results/pilot_single_gpu_3090
+
+baseline:
+  models:
+    - qwen3_0_6b
+    - qwen3_1_7b
+  tasks:
+    - gsm8k
+    - domain_qa
+  num_fewshot: 0
+  lm_eval_limit: 10
+  batch_size: 1
+  precision: bf16
+  max_new_tokens: 64
+  temperature: 0.0
+  top_p: 1.0
+  do_sample: false
+  efficiency_prompt_file: data/efficiency/prompts.jsonl
+  efficiency_num_samples: 1
+  warmup_prompts: 0
+
+quantization:
+  modes:
+    - bf16
+    - int4
+
+qlora:
+  candidate_models:
+    - qwen3_4b
+    - qwen2_5_7b_instruct
+    - gemma_3_4b
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - up_proj
+    - down_proj
+    - gate_proj
+  lora_r: 64
+  lora_alpha: 16
+  lora_dropout: 0.05
+  learning_rate: 2.0e-4
+  num_train_epochs: 3
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  max_seq_length: 2048
+  warmup_ratio: 0.03
+  logging_steps: 10
+  save_strategy: epoch
+  evaluation_strategy: epoch

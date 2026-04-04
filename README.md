@@ -122,6 +122,24 @@ python -m src.rc_llm_eval.cli run-qlora \
   --dataset domain_qa
 ```
 
+## Recommended Run Order
+
+Before the full paper sweep, optionally prefetch baseline models into the local Hugging Face cache:
+
+```bash
+conda activate rc-llm-eval
+bash scripts/run_prefetch_models.sh
+```
+
+Then run a pilot on a real target model:
+
+```bash
+conda activate rc-llm-eval
+bash scripts/run_baseline_pilot.sh
+```
+
+Use `FORMAL_EXPERIMENT_CHECKLIST.md` as the gate before starting the full baseline and QLoRA runs.
+
 ## Notes
 
 - The current codebase is a scaffold focused on experiment orchestration and paper production.
