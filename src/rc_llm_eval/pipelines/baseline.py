@@ -1,18 +1,22 @@
 from __future__ import annotations
 
+import json
+import os
 import statistics
 import time
 from pathlib import Path
 
+from lm_eval import evaluator
+from lm_eval.models.huggingface import HFLM
 import torch
 
 from ..utils.io import read_json, read_jsonl, write_csv
 from ..utils.modeling import clear_cuda, get_inference_device, load_model_and_tokenizer
-from ..utils.system import ensure_directory, run_command, write_json
+from ..utils.system import ensure_directory, write_json
 from ..utils.text import normalize_answer
 
 
-def build_model_args(model_cfg: dict, precision: str) -> str:
+def build_model_args(model_cfg: dict, precision: str, peft_path: str | None = None) -> str:
     args = [
         f"pretrained={model_cfg['hf_id']}",
         "trust_remote_code=True",
@@ -24,6 +28,8 @@ def build_model_args(model_cfg: dict, precision: str) -> str:
         args.append("bnb_4bit_quant_type=nf4")
     else:
         args.append(f"dtype={model_cfg.get('default_dtype', 'bfloat16')}")
+    if peft_path:
+        args.append(f"peft={peft_path}")
     return ",".join(args)
 
 
@@ -34,6 +40,7 @@ def build_lm_eval_command(
     output_path: Path,
     precision: str,
     batch_size: str | int,
+    peft_path: str | None = None,
     limit: int | None = None,
 ) -> list[str]:
     command = [
@@ -41,7 +48,7 @@ def build_lm_eval_command(
         "--model",
         "hf",
         "--model_args",
-        build_model_args(model_cfg, precision),
+        build_model_args(model_cfg, precision, peft_path),
         "--tasks",
         ",".join(task_names),
         "--num_fewshot",
@@ -71,7 +78,14 @@ def _safe_memory_stats() -> tuple[float, float]:
     return allocated, reserved
 
 
-def run_efficiency_benchmark(configs: dict, model_key: str, precision: str, output_dir: Path) -> dict:
+def run_efficiency_benchmark(
+    configs: dict,
+    model_key: str,
+    precision: str,
+    output_dir: Path,
+    file_stem: str,
+    peft_path: str | None = None,
+) -> dict:
     baseline_cfg = configs["experiment"]["baseline"]
     model_cfg = configs["models"][model_key]
     prompt_file = configs["root"] / baseline_cfg["efficiency_prompt_file"]
@@ -82,6 +96,7 @@ def run_efficiency_benchmark(configs: dict, model_key: str, precision: str, outp
         model_cfg=model_cfg,
         quantization_mode=precision,
         dtype_name=model_cfg.get("default_dtype", "bfloat16"),
+        peft_path=peft_path,
     )
     device = get_inference_device(model)
 
@@ -147,15 +162,22 @@ def run_efficiency_benchmark(configs: dict, model_key: str, precision: str, outp
         "peak_memory_allocated_gb": round(peak_allocated_gb, 4),
         "peak_memory_reserved_gb": round(peak_reserved_gb, 4),
     }
-    write_json(output_dir / f"{model_key}_{precision}_efficiency.json", payload)
-    write_json(output_dir / f"{model_key}_{precision}_efficiency_generations.json", {"samples": outputs})
+    write_json(output_dir / f"{file_stem}_efficiency.json", payload)
+    write_json(output_dir / f"{file_stem}_efficiency_generations.json", {"samples": outputs})
 
     del model
     clear_cuda()
     return payload
 
 
-def run_local_domain_eval(configs: dict, model_key: str, precision: str, output_dir: Path) -> dict:
+def run_local_domain_eval(
+    configs: dict,
+    model_key: str,
+    precision: str,
+    output_dir: Path,
+    file_stem: str,
+    peft_path: str | None = None,
+) -> dict:
     dataset_cfg = configs["tasks"]["domain_qa"]
     model_cfg = configs["models"][model_key]
     records = read_jsonl(configs["root"] / dataset_cfg["test_file"])
@@ -165,6 +187,7 @@ def run_local_domain_eval(configs: dict, model_key: str, precision: str, output_
         model_cfg=model_cfg,
         quantization_mode=precision,
         dtype_name=model_cfg.get("default_dtype", "bfloat16"),
+        peft_path=peft_path,
     )
     device = get_inference_device(model)
 
@@ -207,8 +230,8 @@ def run_local_domain_eval(configs: dict, model_key: str, precision: str, output_
         "score": round(score, 6),
         "num_examples": len(records),
     }
-    write_json(output_dir / f"{model_key}_{precision}_domain_qa.json", payload)
-    write_json(output_dir / f"{model_key}_{precision}_domain_generations.json", {"samples": generations})
+    write_json(output_dir / f"{file_stem}_domain_qa.json", payload)
+    write_json(output_dir / f"{file_stem}_domain_generations.json", {"samples": generations})
 
     del model
     clear_cuda()
@@ -253,7 +276,86 @@ def resolve_lm_eval_result_path(expected_path: Path) -> Path | None:
     return candidates[0] if candidates else None
 
 
-def run_eval(configs: dict, model_key: str, precision: str | None = None) -> int:
+def run_lm_eval(
+    configs: dict,
+    model_key: str,
+    precision: str,
+    output_path: Path,
+    peft_path: str | None = None,
+) -> int:
+    baseline_cfg = configs["experiment"]["baseline"]
+    exp_cfg = configs["experiment"]["experiment"]
+    model_cfg = configs["models"][model_key]
+    tasks = configs["tasks"]
+    task_names = [tasks[task]["task_name"] for task in baseline_cfg["tasks"] if tasks[task]["suite"] == "lm_eval"]
+
+    model = None
+    lm = None
+    clear_cuda()
+
+    gen_kwargs = {
+        "max_gen_toks": baseline_cfg["max_new_tokens"],
+        "do_sample": baseline_cfg["do_sample"],
+    }
+    if baseline_cfg["do_sample"]:
+        gen_kwargs["temperature"] = baseline_cfg["temperature"]
+        gen_kwargs["top_p"] = baseline_cfg["top_p"]
+
+    previous_code_eval = os.environ.get("HF_ALLOW_CODE_EVAL")
+    os.environ["HF_ALLOW_CODE_EVAL"] = "1"
+    try:
+        model, tokenizer = load_model_and_tokenizer(
+            model_cfg=model_cfg,
+            quantization_mode=precision,
+            dtype_name=model_cfg.get("default_dtype", "bfloat16"),
+            peft_path=peft_path,
+        )
+
+        lm = HFLM(
+            pretrained=model,
+            tokenizer=tokenizer,
+            trust_remote_code=True,
+            dtype=model_cfg.get("default_dtype", "bfloat16"),
+            batch_size=baseline_cfg["batch_size"],
+            device=exp_cfg["device"],
+        )
+
+        results = evaluator.simple_evaluate(
+            model=lm,
+            tasks=task_names,
+            num_fewshot=baseline_cfg["num_fewshot"],
+            batch_size=baseline_cfg["batch_size"],
+            device=exp_cfg["device"],
+            limit=baseline_cfg.get("lm_eval_limit"),
+            log_samples=False,
+            gen_kwargs=gen_kwargs,
+            confirm_run_unsafe_code=True,
+        )
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps(results, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        return 0
+    except Exception:
+        return 1
+    finally:
+        if previous_code_eval is None:
+            os.environ.pop("HF_ALLOW_CODE_EVAL", None)
+        else:
+            os.environ["HF_ALLOW_CODE_EVAL"] = previous_code_eval
+        if lm is not None:
+            del lm
+        if model is not None:
+            del model
+        clear_cuda()
+
+
+def run_eval(
+    configs: dict,
+    model_key: str,
+    precision: str | None = None,
+    peft_path: str | None = None,
+    output_group: str = "baseline",
+    label: str | None = None,
+) -> int:
     exp_cfg = configs["experiment"]["experiment"]
     baseline_cfg = configs["experiment"]["baseline"]
     models = configs["models"]
@@ -266,10 +368,11 @@ def run_eval(configs: dict, model_key: str, precision: str | None = None) -> int
     precision = precision or baseline_cfg["precision"]
     task_names = [tasks[task]["task_name"] for task in baseline_cfg["tasks"] if tasks[task]["suite"] == "lm_eval"]
 
-    output_dir = ensure_directory(configs["root"] / exp_cfg["output_root"] / "baseline" / model_key)
-    lm_eval_output_path = output_dir / f"{model_key}_{precision}_lm_eval.json"
+    output_dir = ensure_directory(configs["root"] / exp_cfg["output_root"] / output_group / model_key)
+    file_stem = f"{model_key}_{precision}" if not label else f"{model_key}_{precision}_{label}"
+    lm_eval_output_path = output_dir / f"{file_stem}_lm_eval.json"
     write_json(
-        output_dir / f"{model_key}_{precision}_plan.json",
+        output_dir / f"{file_stem}_plan.json",
         {
             "model": model_key,
             "hf_id": model_cfg["hf_id"],
@@ -277,36 +380,50 @@ def run_eval(configs: dict, model_key: str, precision: str | None = None) -> int
             "tasks": task_names,
             "device": exp_cfg["device"],
             "batch_size": baseline_cfg["batch_size"],
+            "output_group": output_group,
+            "label": label,
+            "peft_path": peft_path,
         },
     )
 
-    command = build_lm_eval_command(
-        model_cfg=model_cfg,
-        task_names=task_names,
-        num_fewshot=baseline_cfg["num_fewshot"],
-        output_path=lm_eval_output_path,
+    exit_code = run_lm_eval(
+        configs=configs,
+        model_key=model_key,
         precision=precision,
-        batch_size=baseline_cfg["batch_size"],
-        limit=baseline_cfg.get("lm_eval_limit"),
+        output_path=lm_eval_output_path,
+        peft_path=peft_path,
     )
-    exit_code = run_command(command, cwd=configs["root"])
 
     summary_rows: list[dict] = []
     resolved_lm_eval_output_path = resolve_lm_eval_result_path(lm_eval_output_path)
     if resolved_lm_eval_output_path is not None:
         summary_rows.extend(parse_lm_eval_metrics(resolved_lm_eval_output_path, model_key, precision))
 
-    domain_row = run_local_domain_eval(configs, model_key, precision, output_dir)
+    domain_row = run_local_domain_eval(
+        configs,
+        model_key,
+        precision,
+        output_dir,
+        file_stem=file_stem,
+        peft_path=peft_path,
+    )
     summary_rows.append(domain_row)
 
-    efficiency_row = run_efficiency_benchmark(configs, model_key, precision, output_dir)
-    write_json(output_dir / f"{model_key}_{precision}_summary.json", {"metrics": summary_rows, "efficiency": efficiency_row})
-    write_csv(output_dir / f"{model_key}_{precision}_summary.csv", summary_rows)
+    efficiency_row = run_efficiency_benchmark(
+        configs,
+        model_key,
+        precision,
+        output_dir,
+        file_stem=file_stem,
+        peft_path=peft_path,
+    )
+    write_json(output_dir / f"{file_stem}_summary.json", {"metrics": summary_rows, "efficiency": efficiency_row})
+    write_csv(output_dir / f"{file_stem}_summary.csv", summary_rows)
     return exit_code
 
 
-def summarize_results(configs: dict) -> None:
-    baseline_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / "baseline"
+def summarize_results(configs: dict, output_group: str = "baseline") -> None:
+    baseline_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / output_group
     metric_rows: list[dict] = []
     efficiency_rows: list[dict] = []
 

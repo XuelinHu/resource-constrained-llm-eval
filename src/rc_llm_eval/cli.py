@@ -29,6 +29,21 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["bf16", "int8", "int4"],
         help="Optional precision override",
     )
+    run_eval_parser.add_argument(
+        "--peft-adapter",
+        default=None,
+        help="Optional PEFT adapter directory for post-QLoRA evaluation",
+    )
+    run_eval_parser.add_argument(
+        "--output-group",
+        default="baseline",
+        help="Output subgroup under the experiment result root",
+    )
+    run_eval_parser.add_argument(
+        "--label",
+        default=None,
+        help="Optional file label suffix to distinguish repeated evaluations",
+    )
 
     run_qlora_parser = subparsers.add_parser("run-qlora", help="Run QLoRA for one model and dataset")
     run_qlora_parser.add_argument("--experiment", required=True, help="Path to experiment config")
@@ -37,6 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     summarize_parser = subparsers.add_parser("summarize-results", help="Aggregate baseline result files")
     summarize_parser.add_argument("--experiment", required=True, help="Path to experiment config")
+    summarize_parser.add_argument(
+        "--output-group",
+        default="baseline",
+        help="Result subgroup under the experiment output root to aggregate",
+    )
 
     export_parser = subparsers.add_parser("export-paper-tables", help="Generate paper-ready tables from results")
     export_parser.add_argument("--experiment", required=True, help="Path to experiment config")
@@ -65,12 +85,19 @@ def main() -> int:
 
     configs = load_all_configs(args.experiment)
     if args.command == "run-eval":
-        return run_eval(configs, args.model, args.precision)
+        return run_eval(
+            configs,
+            args.model,
+            args.precision,
+            peft_path=args.peft_adapter,
+            output_group=args.output_group,
+            label=args.label,
+        )
     if args.command == "run-qlora":
         run_qlora(configs, args.model, args.dataset)
         return 0
     if args.command == "summarize-results":
-        summarize_results(configs)
+        summarize_results(configs, output_group=args.output_group)
         return 0
     if args.command == "export-paper-tables":
         export_paper_tables(configs)

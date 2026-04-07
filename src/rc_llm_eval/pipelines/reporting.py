@@ -38,6 +38,7 @@ def _write_simple_latex_table(df: pd.DataFrame, output_path: Path, caption: str,
 
 def export_paper_tables(configs: dict) -> None:
     baseline_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / "baseline"
+    qlora_eval_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / "qlora_eval"
     paper_tables_dir = configs["root"] / "paper" / "tables"
     results_tables_dir = baseline_dir / "tables"
     results_tables_dir.mkdir(parents=True, exist_ok=True)
@@ -85,3 +86,27 @@ def export_paper_tables(configs: dict) -> None:
         "Automatically generated efficiency table from aggregated results.",
         "tab:generated-efficiency-results",
     )
+
+    qlora_metrics_path = qlora_eval_dir / "all_metrics.csv"
+    if qlora_metrics_path.exists():
+        qlora_metrics_df = pd.read_csv(qlora_metrics_path)
+        baseline_domain = metrics_df[metrics_df["task"] == "domain_qa"][["model", "score"]].rename(
+            columns={"score": "baseline_domain_qa"}
+        )
+        adapted_domain = qlora_metrics_df[qlora_metrics_df["task"] == "domain_qa"][["model", "score"]].rename(
+            columns={"score": "adapted_domain_qa"}
+        )
+        qlora_compare_df = baseline_domain.merge(adapted_domain, on="model", how="inner")
+        if not qlora_compare_df.empty:
+            qlora_compare_df["domain_qa_gain"] = (
+                qlora_compare_df["adapted_domain_qa"] - qlora_compare_df["baseline_domain_qa"]
+            ).round(6)
+            qlora_output_csv = results_tables_dir / "qlora_results.csv"
+            qlora_output_tex = paper_tables_dir / "generated_qlora_results.tex"
+            qlora_compare_df.to_csv(qlora_output_csv, index=False)
+            _write_simple_latex_table(
+                qlora_compare_df.fillna("--"),
+                qlora_output_tex,
+                "Automatically generated before/after QLoRA comparison on the domain benchmark.",
+                "tab:generated-qlora-results",
+            )

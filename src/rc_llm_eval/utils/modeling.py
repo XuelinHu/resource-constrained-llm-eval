@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import torch
+from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 
@@ -38,6 +39,7 @@ def load_model_and_tokenizer(
     model_cfg: dict,
     quantization_mode: str,
     dtype_name: str,
+    peft_path: str | None = None,
 ):
     quantization_config = build_quantization_config(quantization_mode, dtype_name)
     model_kwargs = {
@@ -55,6 +57,8 @@ def load_model_and_tokenizer(
     tokenizer.padding_side = "left"
 
     model = AutoModelForCausalLM.from_pretrained(model_cfg["hf_id"], **model_kwargs)
+    if peft_path:
+        model = PeftModel.from_pretrained(model, peft_path)
     model.eval()
     return model, tokenizer
 
