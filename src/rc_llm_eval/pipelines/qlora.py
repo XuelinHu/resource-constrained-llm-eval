@@ -1,3 +1,5 @@
+"""QLoRA 训练流水线。"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,6 +21,7 @@ from ..utils.system import ensure_directory, write_json
 
 
 def _tokenize_dataset(dataset, tokenizer, text_field: str, max_length: int):
+    """将原始文本数据集转成自回归训练所需的 token/label 结构。"""
     def encode(batch: dict) -> dict:
         tokens = tokenizer(
             batch[text_field],
@@ -33,6 +36,7 @@ def _tokenize_dataset(dataset, tokenizer, text_field: str, max_length: int):
 
 
 def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
+    """执行单个模型在指定数据集上的 QLoRA 训练与评估。"""
     exp_cfg = configs["experiment"]["experiment"]
     qlora_cfg = configs["experiment"]["qlora"]
     model_cfg = configs["models"][model_key]
@@ -59,6 +63,7 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
 
     tokenizer = AutoTokenizer.from_pretrained(model_cfg["hf_id"], trust_remote_code=True)
     if tokenizer.pad_token is None:
+        # 训练阶段同样保证 batch 内补齐行为稳定。
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
@@ -70,6 +75,7 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
         trust_remote_code=True,
     )
     model.config.use_cache = False
+    # 4bit 训练前先做 k-bit 训练准备，再挂载 LoRA 适配器。
     model = prepare_model_for_kbit_training(model)
 
     peft_config = LoraConfig(
@@ -127,6 +133,7 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
 
+    # 先训练再评估，并把关键指标和适配器权重都落盘。
     train_result = trainer.train()
     write_json(output_dir / "train_metrics.json", train_result.metrics)
     eval_metrics = trainer.evaluate()

@@ -1,3 +1,9 @@
+"""预下载实验所需基础模型到本地 Hugging Face 缓存。
+
+该脚本会读取实验配置中的 baseline 模型列表，并对每个模型做
+有限重试，以降低网络抖动对正式实验前准备阶段的影响。
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -11,6 +17,7 @@ from src.rc_llm_eval.utils.config import load_all_configs
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """定义命令行参数。"""
     parser = argparse.ArgumentParser(description="Prefetch baseline models into the local Hugging Face cache.")
     parser.add_argument(
         "--experiment",
@@ -27,6 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
+    """逐个模型下载必要文件，并汇总失败项。"""
     args = build_parser().parse_args()
     configs = load_all_configs(args.experiment)
     baseline_model_keys = configs["experiment"]["baseline"]["models"]
@@ -65,6 +73,7 @@ def main() -> int:
                 if attempt == args.retries:
                     failed_models.append(model_key)
                 else:
+                    # 简单退避，避免短时间内连续重试同一远端接口。
                     time.sleep(min(30, 5 * attempt))
 
     if failed_models:

@@ -1,3 +1,5 @@
+"""基线评测、领域问答评测与效率测试流水线。"""
+
 from __future__ import annotations
 
 import json
@@ -17,6 +19,7 @@ from ..utils.text import normalize_answer
 
 
 def build_model_args(model_cfg: dict, precision: str, peft_path: str | None = None) -> str:
+    """拼接 lm-eval 使用的 Hugging Face 模型参数字符串。"""
     args = [
         f"pretrained={model_cfg['hf_id']}",
         "trust_remote_code=True",
@@ -43,6 +46,7 @@ def build_lm_eval_command(
     peft_path: str | None = None,
     limit: int | None = None,
 ) -> list[str]:
+    """构造 lm-eval CLI 命令，但当前仓库更常用 Python API 直调。"""
     command = [
         "lm_eval",
         "--model",
@@ -66,11 +70,13 @@ def build_lm_eval_command(
 
 
 def _extract_text_from_outputs(tokenizer, generated_ids, input_length: int) -> str:
+    """只截取新生成的 token，避免把原始 prompt 解码回输出。"""
     new_tokens = generated_ids[0][input_length:]
     return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
 def _safe_memory_stats() -> tuple[float, float]:
+    """读取 CUDA 峰值显存；无 CUDA 时返回零值。"""
     if not torch.cuda.is_available():
         return 0.0, 0.0
     allocated = torch.cuda.max_memory_allocated() / (1024**3)
@@ -86,6 +92,7 @@ def run_efficiency_benchmark(
     file_stem: str,
     peft_path: str | None = None,
 ) -> dict:
+    """执行吞吐、时延和峰值显存的效率基准测试。"""
     baseline_cfg = configs["experiment"]["baseline"]
     model_cfg = configs["models"][model_key]
     prompt_file = configs["root"] / baseline_cfg["efficiency_prompt_file"]
@@ -116,6 +123,7 @@ def run_efficiency_benchmark(
         generation_kwargs.pop("temperature", None)
         generation_kwargs.pop("top_p", None)
 
+    # 预热阶段让 CUDA 图和内核缓存先稳定下来，减少首样本抖动。
     warmup_count = min(baseline_cfg["warmup_prompts"], len(prompts))
     for record in prompts[:warmup_count]:
         encoded = tokenizer(record["prompt"], return_tensors="pt").to(device)
@@ -133,6 +141,7 @@ def run_efficiency_benchmark(
         with torch.inference_mode():
             generated = model.generate(**encoded, **generation_kwargs)
         if torch.cuda.is_available():
+            # 在计时结束前同步，确保 latency 覆盖真实 GPU 执行时间。
             torch.cuda.synchronize()
         latency = time.perf_counter() - start
         answer = _extract_text_from_outputs(tokenizer, generated, prompt_length)
@@ -178,6 +187,7 @@ def run_local_domain_eval(
     file_stem: str,
     peft_path: str | None = None,
 ) -> dict:
+    """在本地域问答集上执行精确匹配评估。"""
     dataset_cfg = configs["tasks"]["domain_qa"]
     model_cfg = configs["models"][model_key]
     records = read_jsonl(configs["root"] / dataset_cfg["test_file"])
@@ -239,6 +249,7 @@ def run_local_domain_eval(
 
 
 def parse_lm_eval_metrics(path: Path, model_key: str, precision: str) -> list[dict]:
+    """从 lm-eval 原始 JSON 中抽取统一格式的任务指标。"""
     payload = read_json(path)
     results = payload.get("results", {})
     rows: list[dict] = []
@@ -269,6 +280,7 @@ def parse_lm_eval_metrics(path: Path, model_key: str, precision: str) -> list[di
 
 
 def resolve_lm_eval_result_path(expected_path: Path) -> Path | None:
+    """兼容 lm-eval 自动追加时间戳时的结果文件命名差异。"""
     if expected_path.exists():
         return expected_path
     pattern = f"{expected_path.stem}_*.json"
@@ -283,6 +295,7 @@ def run_lm_eval(
     output_path: Path,
     peft_path: str | None = None,
 ) -> int:
+    """通过 lm-eval Python API 执行标准任务集评测。"""
     baseline_cfg = configs["experiment"]["baseline"]
     exp_cfg = configs["experiment"]["experiment"]
     model_cfg = configs["models"][model_key]
@@ -301,6 +314,7 @@ def run_lm_eval(
         gen_kwargs["temperature"] = baseline_cfg["temperature"]
         gen_kwargs["top_p"] = baseline_cfg["top_p"]
 
+    # 某些代码生成类任务需要显式允许执行评测代码。
     previous_code_eval = os.environ.get("HF_ALLOW_CODE_EVAL")
     os.environ["HF_ALLOW_CODE_EVAL"] = "1"
     try:
@@ -356,6 +370,7 @@ def run_eval(
     output_group: str = "baseline",
     label: str | None = None,
 ) -> int:
+    """执行单个模型的完整评测流程并输出汇总文件。"""
     exp_cfg = configs["experiment"]["experiment"]
     baseline_cfg = configs["experiment"]["baseline"]
     models = configs["models"]
@@ -399,6 +414,7 @@ def run_eval(
     if resolved_lm_eval_output_path is not None:
         summary_rows.extend(parse_lm_eval_metrics(resolved_lm_eval_output_path, model_key, precision))
 
+    # 无论 lm-eval 是否成功，都尝试补充本地域任务与效率指标，方便排查问题。
     domain_row = run_local_domain_eval(
         configs,
         model_key,
@@ -423,6 +439,7 @@ def run_eval(
 
 
 def summarize_results(configs: dict, output_group: str = "baseline") -> None:
+    """扫描汇总 JSON，生成聚合后的总表 CSV。"""
     baseline_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / output_group
     metric_rows: list[dict] = []
     efficiency_rows: list[dict] = []

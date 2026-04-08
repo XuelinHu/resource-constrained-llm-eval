@@ -1,1 +1,5 @@
-# Marker package so `python -m src.rc_llm_eval.cli` works from repository root.
+"""仓库根包占位模块。
+
+保留该文件是为了支持在仓库根目录下通过
+`python -m src.rc_llm_eval.cli` 直接运行命令行入口。
+"""

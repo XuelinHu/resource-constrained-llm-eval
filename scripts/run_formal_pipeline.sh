@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 正式实验总控脚本：预下载、baseline、多精度评测、QLoRA、导表全串起来。
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXPERIMENT="${1:-configs/experiments/single_gpu_3090.yaml}"
 DATASET="${2:-domain_qa}"
@@ -48,6 +49,7 @@ echo "HF_HUB_DISABLE_XET=${HF_HUB_DISABLE_XET}"
 echo "Run root: ${RUN_ROOT}"
 
 log_failure() {
+  # 统一失败日志格式，方便后续回看是哪个阶段、哪个模型出问题。
   local stage="$1"
   local model="$2"
   local detail="$3"
@@ -55,6 +57,7 @@ log_failure() {
 }
 
 run_or_log() {
+  # 对非致命失败做记录，但不中断整个正式实验大流程。
   local stage="$1"
   local model="$2"
   shift 2
@@ -66,6 +69,7 @@ run_or_log() {
 }
 
 required_free_mib() {
+  # 基于参数量和阶段估算最低空闲显存，避免盲目开跑导致 OOM。
   local stage="$1"
   local model="$2"
   local precision="${3:-bf16}"
@@ -95,6 +99,7 @@ PY
 }
 
 wait_for_gpu_budget() {
+  # 单卡串行环境下，等到显存回收到阈值以上再启动下一轮任务。
   local stage="$1"
   local model="$2"
   local precision="${3:-bf16}"
@@ -120,6 +125,7 @@ fi
 AVAILABLE_MODELS=()
 echo "[$(date '+%F %T')] Checking local model accessibility"
 for model in "${MODELS[@]}"; do
+  # 只保留已经能在本地缓存中解析配置的模型，减少正式阶段中途失败。
   if "${PYTHON_BIN}" - "${EXPERIMENT}" "${model}" <<'PY'
 from src.rc_llm_eval.utils.config import load_all_configs
 from transformers import AutoConfig

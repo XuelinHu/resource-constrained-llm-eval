@@ -1,3 +1,5 @@
+"""实验结果汇总与论文表格导出流程。"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +8,7 @@ import pandas as pd
 
 
 def _escape_latex(value: object) -> str:
+    """转义 LaTeX 表格中最常见的特殊字符。"""
     text = str(value)
     return (
         text.replace("\\", "\\textbackslash{}")
@@ -16,6 +19,7 @@ def _escape_latex(value: object) -> str:
 
 
 def _write_simple_latex_table(df: pd.DataFrame, output_path: Path, caption: str, label: str) -> None:
+    """将 DataFrame 写成简单的 booktabs 风格 LaTeX 表格。"""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     columns = list(df.columns)
     alignment = "l" + "c" * (len(columns) - 1)
@@ -37,6 +41,7 @@ def _write_simple_latex_table(df: pd.DataFrame, output_path: Path, caption: str,
 
 
 def export_paper_tables(configs: dict) -> None:
+    """从聚合 CSV 生成论文和结果目录下的衍生表格。"""
     baseline_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / "baseline"
     qlora_eval_dir = configs["root"] / configs["experiment"]["experiment"]["output_root"] / "qlora_eval"
     paper_tables_dir = configs["root"] / "paper" / "tables"
@@ -53,6 +58,7 @@ def export_paper_tables(configs: dict) -> None:
     metrics_df = pd.read_csv(metrics_path)
     efficiency_df = pd.read_csv(efficiency_path)
 
+    # 主结果表按模型为行、任务为列透视，便于直接送入论文。
     main_df = (
         metrics_df.pivot_table(index="model", columns="task", values="score", aggfunc="first")
         .reset_index()
@@ -90,6 +96,7 @@ def export_paper_tables(configs: dict) -> None:
     qlora_metrics_path = qlora_eval_dir / "all_metrics.csv"
     if qlora_metrics_path.exists():
         qlora_metrics_df = pd.read_csv(qlora_metrics_path)
+        # 仅对领域问答任务做前后对比，突出微调收益。
         baseline_domain = metrics_df[metrics_df["task"] == "domain_qa"][["model", "score"]].rename(
             columns={"score": "baseline_domain_qa"}
         )

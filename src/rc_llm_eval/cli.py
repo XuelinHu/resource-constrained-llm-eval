@@ -1,3 +1,8 @@
+"""命令行入口。
+
+统一暴露基线评测、QLoRA 训练、结果聚合和论文表格导出能力。
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -10,6 +15,7 @@ from .utils.config import load_all_configs
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """构建 CLI 参数解析器与全部子命令。"""
     parser = argparse.ArgumentParser(description="Single-GPU LLM evaluation workspace")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -64,6 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def cmd_print_plan(args: argparse.Namespace) -> None:
+    """打印当前实验配置的核心计划信息。"""
     configs = load_all_configs(args.experiment)
     payload = {
         "experiment": configs["experiment"]["experiment"],
@@ -76,6 +83,7 @@ def cmd_print_plan(args: argparse.Namespace) -> None:
 
 
 def main() -> int:
+    """根据子命令分发到对应流水线。"""
     parser = build_parser()
     args = parser.parse_args()
 
