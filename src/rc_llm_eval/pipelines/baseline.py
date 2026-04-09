@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 import json
 import os
 import statistics
 import time
 from pathlib import Path
+from typing import Any
 
 from lm_eval import evaluator
 from lm_eval.models.huggingface import HFLM
@@ -14,8 +16,88 @@ import torch
 
 from ..utils.io import read_json, read_jsonl, write_csv
 from ..utils.modeling import clear_cuda, get_inference_device, load_model_and_tokenizer
+from ..utils.notifications import build_markdown_message, build_run_name, format_duration, send_dingtalk_notification
 from ..utils.system import ensure_directory, write_json
 from ..utils.text import normalize_answer
+
+
+def _build_eval_success_message(
+    *,
+    project_name: str,
+    run_name: str,
+    model_key: str,
+    output_group: str,
+    precision: str,
+    batch_size: str | int,
+    start_time: datetime,
+    end_time: datetime,
+    output_dir: str,
+    peft_path: str | None,
+    summary_rows: list[dict[str, Any]],
+    efficiency_row: dict[str, Any],
+) -> str:
+    core_metrics = [
+        f"{row.get('task')}={row.get('score')}"
+        for row in summary_rows
+        if row.get("score") is not None
+    ]
+    core_metric_text = ", ".join(core_metrics[:5]) if core_metrics else "N/A"
+    return build_markdown_message(
+        "实验完成",
+        [
+            ("项目名", project_name),
+            ("实验名", run_name),
+            ("模型名", model_key),
+            ("数据集名", output_group),
+            ("precision", precision),
+            ("batch size", batch_size),
+            ("peft_path", peft_path),
+            ("开始时间", start_time.strftime("%Y-%m-%d %H:%M:%S")),
+            ("结束时间", end_time.strftime("%Y-%m-%d %H:%M:%S")),
+            ("总耗时", format_duration((end_time - start_time).total_seconds())),
+            ("核心指标", core_metric_text),
+            ("mean_latency_s", efficiency_row.get("mean_latency_s")),
+            ("mean_tokens_per_second", efficiency_row.get("mean_tokens_per_second")),
+            ("TensorBoard", "N/A"),
+            ("输出目录", output_dir),
+            ("说明", "评测已完成"),
+        ]
+    )
+
+
+def _build_eval_failure_message(
+    *,
+    project_name: str,
+    run_name: str,
+    model_key: str,
+    output_group: str,
+    precision: str,
+    batch_size: str | int,
+    start_time: datetime,
+    failure_time: datetime,
+    output_dir: str,
+    peft_path: str | None,
+    exc: Exception,
+) -> str:
+    return build_markdown_message(
+        "实验失败",
+        [
+            ("项目名", project_name),
+            ("实验名", run_name),
+            ("模型名", model_key),
+            ("数据集名", output_group),
+            ("precision", precision),
+            ("batch size", batch_size),
+            ("peft_path", peft_path),
+            ("开始时间", start_time.strftime("%Y-%m-%d %H:%M:%S")),
+            ("失败时间", failure_time.strftime("%Y-%m-%d %H:%M:%S")),
+            ("已运行时长", format_duration((failure_time - start_time).total_seconds())),
+            ("错误摘要", f"{type(exc).__name__}: {exc}"),
+            ("TensorBoard", "N/A"),
+            ("输出目录", output_dir),
+            ("说明", "评测执行失败"),
+        ]
+    )
 
 
 def build_model_args(model_cfg: dict, precision: str, peft_path: str | None = None) -> str:
@@ -371,6 +453,7 @@ def run_eval(
     label: str | None = None,
 ) -> int:
     """执行单个模型的完整评测流程并输出汇总文件。"""
+    start_time = datetime.now()
     exp_cfg = configs["experiment"]["experiment"]
     baseline_cfg = configs["experiment"]["baseline"]
     models = configs["models"]
@@ -381,61 +464,105 @@ def run_eval(
 
     model_cfg = models[model_key]
     precision = precision or baseline_cfg["precision"]
+    run_name = build_run_name(
+        prefix_parts=[model_key, output_group],
+        batch_size=baseline_cfg["batch_size"],
+        precision=precision,
+        label=label,
+        timestamp=start_time,
+    )
     task_names = [tasks[task]["task_name"] for task in baseline_cfg["tasks"] if tasks[task]["suite"] == "lm_eval"]
 
     output_dir = ensure_directory(configs["root"] / exp_cfg["output_root"] / output_group / model_key)
     file_stem = f"{model_key}_{precision}" if not label else f"{model_key}_{precision}_{label}"
-    lm_eval_output_path = output_dir / f"{file_stem}_lm_eval.json"
-    write_json(
-        output_dir / f"{file_stem}_plan.json",
-        {
-            "model": model_key,
-            "hf_id": model_cfg["hf_id"],
-            "precision": precision,
-            "tasks": task_names,
-            "device": exp_cfg["device"],
-            "batch_size": baseline_cfg["batch_size"],
-            "output_group": output_group,
-            "label": label,
-            "peft_path": peft_path,
-        },
-    )
+    try:
+        lm_eval_output_path = output_dir / f"{file_stem}_lm_eval.json"
+        write_json(
+            output_dir / f"{file_stem}_plan.json",
+            {
+                "run_name": run_name,
+                "model": model_key,
+                "hf_id": model_cfg["hf_id"],
+                "precision": precision,
+                "tasks": task_names,
+                "device": exp_cfg["device"],
+                "batch_size": baseline_cfg["batch_size"],
+                "output_group": output_group,
+                "label": label,
+                "peft_path": peft_path,
+            },
+        )
 
-    exit_code = run_lm_eval(
-        configs=configs,
-        model_key=model_key,
-        precision=precision,
-        output_path=lm_eval_output_path,
-        peft_path=peft_path,
-    )
+        exit_code = run_lm_eval(
+            configs=configs,
+            model_key=model_key,
+            precision=precision,
+            output_path=lm_eval_output_path,
+            peft_path=peft_path,
+        )
 
-    summary_rows: list[dict] = []
-    resolved_lm_eval_output_path = resolve_lm_eval_result_path(lm_eval_output_path)
-    if resolved_lm_eval_output_path is not None:
-        summary_rows.extend(parse_lm_eval_metrics(resolved_lm_eval_output_path, model_key, precision))
+        summary_rows: list[dict] = []
+        resolved_lm_eval_output_path = resolve_lm_eval_result_path(lm_eval_output_path)
+        if resolved_lm_eval_output_path is not None:
+            summary_rows.extend(parse_lm_eval_metrics(resolved_lm_eval_output_path, model_key, precision))
 
-    # 无论 lm-eval 是否成功，都尝试补充本地域任务与效率指标，方便排查问题。
-    domain_row = run_local_domain_eval(
-        configs,
-        model_key,
-        precision,
-        output_dir,
-        file_stem=file_stem,
-        peft_path=peft_path,
-    )
-    summary_rows.append(domain_row)
+        # 无论 lm-eval 是否成功，都尝试补充本地域任务与效率指标，方便排查问题。
+        domain_row = run_local_domain_eval(
+            configs,
+            model_key,
+            precision,
+            output_dir,
+            file_stem=file_stem,
+            peft_path=peft_path,
+        )
+        summary_rows.append(domain_row)
 
-    efficiency_row = run_efficiency_benchmark(
-        configs,
-        model_key,
-        precision,
-        output_dir,
-        file_stem=file_stem,
-        peft_path=peft_path,
-    )
-    write_json(output_dir / f"{file_stem}_summary.json", {"metrics": summary_rows, "efficiency": efficiency_row})
-    write_csv(output_dir / f"{file_stem}_summary.csv", summary_rows)
-    return exit_code
+        efficiency_row = run_efficiency_benchmark(
+            configs,
+            model_key,
+            precision,
+            output_dir,
+            file_stem=file_stem,
+            peft_path=peft_path,
+        )
+        write_json(output_dir / f"{file_stem}_summary.json", {"metrics": summary_rows, "efficiency": efficiency_row})
+        write_csv(output_dir / f"{file_stem}_summary.csv", summary_rows)
+        send_dingtalk_notification(
+            _build_eval_success_message(
+                project_name=configs["root"].name,
+                run_name=run_name,
+                model_key=model_key,
+                output_group=output_group,
+                precision=precision,
+                batch_size=baseline_cfg["batch_size"],
+                start_time=start_time,
+                end_time=datetime.now(),
+                output_dir=str(output_dir),
+                peft_path=peft_path,
+                summary_rows=summary_rows,
+                efficiency_row=efficiency_row,
+            ),
+            err=False,
+        )
+        return exit_code
+    except Exception as exc:
+        send_dingtalk_notification(
+            _build_eval_failure_message(
+                project_name=configs["root"].name,
+                run_name=run_name,
+                model_key=model_key,
+                output_group=output_group,
+                precision=precision,
+                batch_size=baseline_cfg["batch_size"],
+                start_time=start_time,
+                failure_time=datetime.now(),
+                output_dir=str(output_dir),
+                peft_path=peft_path,
+                exc=exc,
+            ),
+            err=True,
+        )
+        raise
 
 
 def summarize_results(configs: dict, output_group: str = "baseline") -> None:
