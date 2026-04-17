@@ -161,6 +161,7 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
     output_dir = ensure_directory(configs["root"] / exp_cfg["output_root"] / "qlora" / model_key)
     project_name = configs["root"].name
     log_dir = build_tensorboard_log_dir(
+        project_root=configs["root"],
         project_name=project_name,
         model_name=model_key,
         dataset_name=dataset_key,

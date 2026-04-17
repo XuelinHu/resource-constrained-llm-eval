@@ -29,6 +29,12 @@ Target model pool:
 - `Qwen2.5-7B-Instruct`
 - `DeepSeek-R1-Distill-Qwen-7B`
 - `Gemma-3-4B`
+- `Phi-3-mini-4k-instruct`
+- `Yi-6B-Chat`
+- `Mistral-7B-Instruct-v0.3`
+- `Meta-Llama-3.1-8B-Instruct`
+- `GLM-4-9B-Chat-HF`
+- `Gemma-2-9B-IT`
 
 Planned paper scope:
 
