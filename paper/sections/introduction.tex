@@ -1,25 +1,63 @@
-Large language models (LLMs) have become a standard foundation for question answering, code generation, mathematical reasoning, and domain-specific assistant systems. However, the practical cost of deploying state-of-the-art models remains high. Many strong open models either require multiple high-memory GPUs or accept substantial latency penalties when served on commodity hardware. This creates a gap between benchmark-oriented model development and the deployment conditions actually available in most academic laboratories and applied engineering teams. In practice, a large share of model adoption still happens on a single workstation GPU, where memory, latency, and maintainability are binding constraints rather than secondary considerations.
+Large language models have become practical tools for question answering,
+translation, and domain-specific technical support. In railway engineering and
+education, many tasks involve specialized terminology, bilingual documentation,
+maintenance regulations, and safety-oriented procedural knowledge. These
+characteristics make railway applications a meaningful test case for open LLMs:
+the model must handle both general reasoning and domain-specific expressions,
+while also remaining deployable in realistic laboratory environments.
 
-This paper focuses on that deployment regime. Specifically, we study open LLMs up to 8B parameters under a fixed single-GPU resource budget represented by an NVIDIA RTX 3090 with 24GB of VRAM. The scope includes seven models from three widely used open families: Qwen3 models from 0.6B to 8B, Qwen2.5-7B-Instruct, DeepSeek-R1-Distill-Qwen-7B, and Gemma 3 4B. These models are representative for two reasons. First, they cover a practical scale range that can still be loaded and adapted on consumer hardware. Second, they reflect different design priorities, including lightweight dense instruction models and reasoning-oriented distilled variants.
+Most applied laboratories do not have access to large multi-GPU clusters. A
+single workstation GPU, such as an NVIDIA RTX 3090 with 24GB of VRAM, remains a
+common hardware boundary for local experimentation, fine-tuning, and prototype
+deployment. Under this constraint, model selection cannot be based on benchmark
+accuracy alone. A useful model must fit into memory, respond with acceptable
+latency, support low-bit inference, and be adaptable to local data at reasonable
+cost.
 
-The objective of this work is not to produce another static leaderboard. A pure ranking of benchmark scores provides limited value when the target deployment platform is fixed and resource-constrained. Instead, the central question is which model offers the best performance-efficiency tradeoff when memory headroom, inference throughput, and adaptation cost are jointly considered. This perspective is particularly important in Chinese academic and industrial contexts, where one often needs a model that can be evaluated locally, fine-tuned with moderate effort, and then integrated into a vertical application without access to large clusters.
+This paper therefore focuses on an application-oriented question: how should
+open LLMs be evaluated and adapted for railway-domain tasks under a single-GPU
+resource constraint? We do not propose a new neural architecture or a new
+fine-tuning algorithm. Instead, we build a reproducible experimental framework
+that combines three elements: a railway bilingual QA dataset, a multi-model
+single-GPU benchmark, and QLoRA-based domain adaptation.
 
-To move beyond a score-only comparison, we organize the study as a closed-loop experimental pipeline. We first run unified baseline evaluations on general knowledge, mathematical reasoning, code generation, Chinese benchmarks, and a domain benchmark. We then measure deployment-oriented efficiency indicators, including peak VRAM, latency, and token throughput. Finally, we apply QLoRA~\cite{qlora} to selected models and re-evaluate them to determine whether low-cost adaptation can materially improve domain performance under the same hardware budget. This design makes the paper closer to a systems-and-application study than a benchmark note.
+The model pool includes nine locally available open models from Qwen, Qwen 2.5,
+DeepSeek-R1-Distill, Phi, Yi, and Mistral families. This model pool
+covers sub-1B, 1B-class, 4B-class, 6B/7B-class, and 8B-class models, enabling a
+practical comparison across scale and model family. The railway-domain dataset
+is generated from local railway technical documents and contains bilingual
+terminology and traction power supply regulation samples. This dataset is used
+both for local evaluation and for QLoRA adaptation.
 
-The main research questions are as follows:
+The research questions are:
 \begin{enumerate}[leftmargin=1.5em]
-  \item Which open models up to 8B parameters provide the best performance-efficiency tradeoff under a single 24GB GPU constraint?
-  \item How much domain benefit can QLoRA provide without exceeding the memory budget of a single RTX 3090?
-  \item Are there clear capability breakpoints across model scales for knowledge, reasoning, code, Chinese evaluation, and domain tasks?
-  \item Do reasoning-oriented small models justify their additional inference cost in this deployment regime?
+  \item Which open LLMs provide the best railway-domain and general benchmark
+  performance under a single RTX 3090 24GB constraint?
+  \item How do bf16, int8, and int4 settings affect the tradeoff among accuracy,
+  memory footprint, latency, and throughput?
+  \item Can QLoRA adaptation improve railway-domain performance using the
+  constructed dataset while preserving practical deployability?
+  \item Which models are most suitable for resource-constrained railway-domain
+  applications after considering both baseline performance and adaptation cost?
 \end{enumerate}
 
-The main contributions of this paper are summarized as follows.
+The contributions are:
 \begin{enumerate}[leftmargin=1.5em]
-  \item We present a reproducible single-GPU evaluation protocol for open LLMs up to 8B parameters, explicitly targeting a resource-constrained deployment scenario instead of an unconstrained benchmark scenario.
-  \item We compare model utility along both task and systems dimensions, including general benchmark performance, Chinese capability, domain performance, peak memory usage, latency, and throughput.
-  \item We implement a QLoRA-based adaptation pipeline and analyze whether domain-specific gains justify the additional training and serving cost under a 24GB VRAM budget.
-  \item We provide model selection guidance for practitioners who need to choose between smaller instruct models and reasoning-oriented distilled models on commodity hardware.
+  \item We construct a railway-domain bilingual QA dataset from railway
+  terminology and traction power supply regulation documents, and define a
+  reproducible local JSONL evaluation format.
+  \item We evaluate a ten-model open LLM pool under a fixed single-GPU hardware
+  budget, covering both public benchmarks and railway-domain QA.
+  \item We compare low-bit inference settings and report deployment-oriented
+  measurements including memory use, latency, and throughput.
+  \item We apply QLoRA to representative models and analyze whether lightweight
+  adaptation changes the model selection recommendation for railway-domain use.
 \end{enumerate}
 
-The rest of the paper is organized as follows. \Cref{sec:related_work} reviews prior research on open LLM evaluation, efficient adaptation, and resource-constrained deployment. \Cref{sec:methodology} describes the joint performance-efficiency analysis framework. \Cref{sec:experimental_setup} details the hardware, software, model pool, and benchmark suite. \Cref{sec:results} presents baseline, efficiency, and QLoRA results, followed by interpretation and limitations in \Cref{sec:discussion}. Finally, \Cref{sec:conclusion} concludes the paper.
+The rest of this paper is organized as follows. \Cref{sec:related_work}
+reviews open LLM evaluation, parameter-efficient fine-tuning, and constrained
+deployment. \Cref{sec:methodology} describes the evaluation and adaptation
+framework. \Cref{sec:experimental_setup} introduces the model pool, dataset,
+hardware, and metrics. \Cref{sec:results} will report baseline, efficiency, and
+QLoRA results. \Cref{sec:discussion} discusses deployment implications and
+limitations, and \Cref{sec:conclusion} concludes the study.

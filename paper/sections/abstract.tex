@@ -1,1 +1,16 @@
-Open large language models below 8B parameters are increasingly attractive for laboratories and vertical applications that cannot rely on multi-GPU infrastructure. However, many existing comparisons emphasize benchmark scores alone and do not adequately characterize the deployment tradeoff between task quality, memory footprint, latency, throughput, and adaptation cost under realistic single-GPU constraints. This paper studies seven open models that can be deployed on a single RTX 3090 24GB GPU, including Qwen3 models from 0.6B to 8B, Qwen2.5-7B-Instruct, DeepSeek-R1-Distill-Qwen-7B, and Gemma 3 4B. We evaluate these models on general knowledge, mathematical reasoning, code generation, Chinese evaluation, and a domain-specific benchmark, and we further apply QLoRA-based adaptation to representative models under the same hardware budget. The study is designed to answer three practical questions: which models provide the best performance-efficiency tradeoff, how much domain improvement QLoRA can deliver on consumer hardware, and whether reasoning-oriented small models justify their additional inference cost. The expected contribution is a reproducible evaluation and adaptation pipeline together with deployment-oriented model selection guidance for single-GPU environments.
+Open large language models (LLMs) provide a promising route for railway-domain
+question answering and bilingual technical assistance, but many deployment
+settings cannot rely on multi-GPU infrastructure. This paper studies the
+evaluation, quantization, and QLoRA-based domain adaptation of open LLMs under a
+single RTX 3090 24GB constraint. We construct a railway-domain bilingual QA
+dataset from traction power supply regulations and railway technical
+terminology, and evaluate a locally deployable model pool covering Qwen, Qwen
+2.5, DeepSeek-R1-Distill, Gemma, Phi, Yi, and Mistral families. The study is
+positioned as an application-oriented and experimental evaluation rather than a
+new model architecture. It asks which open models are practically usable under a
+single-GPU budget, how low-bit inference changes the performance-efficiency
+tradeoff, and whether QLoRA improves railway-domain performance without
+exceeding the available hardware budget. The expected outcome is a reproducible
+framework for resource-constrained railway LLM evaluation and adaptation,
+together with empirical guidance for model selection in engineering education
+and railway technical applications.

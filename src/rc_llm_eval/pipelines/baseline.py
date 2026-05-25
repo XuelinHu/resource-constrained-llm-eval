@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 from datetime import datetime
+from collections import Counter
 import json
 import os
+import re
 import statistics
 import time
 from pathlib import Path
 from typing import Any
 
-from lm_eval import evaluator
-from lm_eval.models.huggingface import HFLM
 import torch
 
 from ..utils.io import read_json, read_jsonl, write_csv
@@ -19,6 +19,45 @@ from ..utils.modeling import clear_cuda, get_inference_device, load_model_and_to
 from ..utils.notifications import build_markdown_message, build_run_name, format_duration, send_dingtalk_notification
 from ..utils.system import ensure_directory, write_json
 from ..utils.text import normalize_answer
+
+
+def _f1_from_units(prediction_units: list[str], reference_units: list[str]) -> float:
+    """Compute overlap F1 over characters or tokens."""
+    if not prediction_units and not reference_units:
+        return 1.0
+    if not prediction_units or not reference_units:
+        return 0.0
+    prediction_counts = Counter(prediction_units)
+    reference_counts = Counter(reference_units)
+    overlap = sum((prediction_counts & reference_counts).values())
+    if overlap == 0:
+        return 0.0
+    precision = overlap / len(prediction_units)
+    recall = overlap / len(reference_units)
+    return 2 * precision * recall / (precision + recall)
+
+
+def _char_units(text: str) -> list[str]:
+    return [char for char in normalize_answer(text).replace(" ", "")]
+
+
+def _token_units(text: str) -> list[str]:
+    return normalize_answer(text).split()
+
+
+def _domain_sample_metrics(prediction: str, reference: str) -> dict[str, float | bool]:
+    normalized_prediction = normalize_answer(prediction)
+    normalized_reference = normalize_answer(reference)
+    prediction_chars = _char_units(prediction)
+    reference_chars = _char_units(reference)
+    reference_len = max(len(reference_chars), 1)
+    return {
+        "exact_match": normalized_prediction == normalized_reference,
+        "char_f1": _f1_from_units(prediction_chars, reference_chars),
+        "token_f1": _f1_from_units(_token_units(prediction), _token_units(reference)),
+        "reference_contained": bool(normalized_reference and normalized_reference in normalized_prediction),
+        "length_ratio": len(prediction_chars) / reference_len,
+    }
 
 
 def _build_eval_success_message(
@@ -157,6 +196,23 @@ def _extract_text_from_outputs(tokenizer, generated_ids, input_length: int) -> s
     return tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
 
 
+def _local_domain_max_new_tokens(category: str) -> int:
+    """Use short generation budgets for answer-only local railway tasks."""
+    if category.startswith("terminology_"):
+        return 32
+    if category.endswith("_translation"):
+        return 64
+    return 64
+
+
+def _clean_domain_prediction(text: str) -> str:
+    """Keep only the first answer line and remove common answer prefixes."""
+    first_line = next((line.strip() for line in text.splitlines() if line.strip()), "")
+    first_line = first_line.strip()
+    first_line = re.sub(r"^(?:answer|final answer|translation|term)\s*[:：]\s*", "", first_line, flags=re.IGNORECASE)
+    return first_line.strip(" \t\"'“”‘’")
+
+
 def _safe_memory_stats() -> tuple[float, float]:
     """读取 CUDA 峰值显存；无 CUDA 时返回零值。"""
     if not torch.cuda.is_available():
@@ -268,9 +324,10 @@ def run_local_domain_eval(
     output_dir: Path,
     file_stem: str,
     peft_path: str | None = None,
-) -> dict:
-    """在本地域问答集上执行精确匹配评估。"""
-    dataset_cfg = configs["tasks"]["domain_qa"]
+    task_key: str = "domain_qa",
+) -> list[dict]:
+    """在本地域问答集上执行生成式指标评估。"""
+    dataset_cfg = configs["tasks"][task_key]
     model_cfg = configs["models"][model_key]
     records = read_jsonl(configs["root"] / dataset_cfg["test_file"])
 
@@ -286,10 +343,15 @@ def run_local_domain_eval(
     prompt_field = dataset_cfg["prompt_field"]
     answer_field = dataset_cfg["answer_field"]
     generations: list[dict] = []
-    hits = 0
+    metric_values: dict[str, list[float]] = {
+        "exact_match": [],
+        "char_f1": [],
+        "token_f1": [],
+        "reference_contained": [],
+        "length_ratio": [],
+    }
 
-    generation_kwargs = {
-        "max_new_tokens": 128,
+    base_generation_kwargs = {
         "do_sample": False,
         "pad_token_id": tokenizer.pad_token_id,
         "eos_token_id": tokenizer.eos_token_id,
@@ -298,36 +360,48 @@ def run_local_domain_eval(
     for row in records:
         encoded = tokenizer(row[prompt_field], return_tensors="pt").to(device)
         prompt_length = int(encoded["input_ids"].shape[1])
+        max_new_tokens = _local_domain_max_new_tokens(str(row.get("category", "")))
+        generation_kwargs = {
+            **base_generation_kwargs,
+            "max_new_tokens": max_new_tokens,
+        }
         with torch.inference_mode():
             generated = model.generate(**encoded, **generation_kwargs)
-        prediction = _extract_text_from_outputs(tokenizer, generated, prompt_length)
+        raw_prediction = _extract_text_from_outputs(tokenizer, generated, prompt_length)
+        prediction = _clean_domain_prediction(raw_prediction)
         ref = row[answer_field]
-        is_correct = normalize_answer(prediction) == normalize_answer(ref)
-        hits += int(is_correct)
+        sample_metrics = _domain_sample_metrics(prediction, ref)
+        for metric_name, metric_value in sample_metrics.items():
+            metric_values[metric_name].append(float(metric_value))
         generations.append(
             {
                 "prompt": row[prompt_field],
                 "reference": ref,
+                "raw_prediction": raw_prediction,
                 "prediction": prediction,
-                "exact_match": is_correct,
+                "max_new_tokens": max_new_tokens,
+                "category": row.get("category"),
+                "metrics": sample_metrics,
             }
         )
 
-    score = hits / len(records) if records else 0.0
-    payload = {
-        "model": model_key,
-        "precision": precision,
-        "task": "domain_qa",
-        "metric": "exact_match",
-        "score": round(score, 6),
-        "num_examples": len(records),
-    }
-    write_json(output_dir / f"{file_stem}_domain_qa.json", payload)
+    rows = [
+        {
+            "model": model_key,
+            "precision": precision,
+            "task": task_key,
+            "metric": metric_name,
+            "score": round(statistics.mean(values), 6) if values else 0.0,
+            "num_examples": len(records),
+        }
+        for metric_name, values in metric_values.items()
+    ]
+    write_json(output_dir / f"{file_stem}_{task_key}.json", {"metrics": rows})
     write_json(output_dir / f"{file_stem}_domain_generations.json", {"samples": generations})
 
     del model
     clear_cuda()
-    return payload
+    return rows
 
 
 def parse_lm_eval_metrics(path: Path, model_key: str, precision: str) -> list[dict]:
@@ -383,6 +457,13 @@ def run_lm_eval(
     model_cfg = configs["models"][model_key]
     tasks = configs["tasks"]
     task_names = [tasks[task]["task_name"] for task in baseline_cfg["tasks"] if tasks[task]["suite"] == "lm_eval"]
+    if not task_names:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(json.dumps({"results": {}}, indent=2, ensure_ascii=False), encoding="utf-8")
+        return 0
+
+    from lm_eval import evaluator
+    from lm_eval.models.huggingface import HFLM
 
     model = None
     lm = None
@@ -472,6 +553,7 @@ def run_eval(
         timestamp=start_time,
     )
     task_names = [tasks[task]["task_name"] for task in baseline_cfg["tasks"] if tasks[task]["suite"] == "lm_eval"]
+    local_task_keys = [task for task in baseline_cfg["tasks"] if tasks[task]["suite"] == "local_jsonl"]
 
     output_dir = ensure_directory(configs["root"] / exp_cfg["output_root"] / output_group / model_key)
     file_stem = f"{model_key}_{precision}" if not label else f"{model_key}_{precision}_{label}"
@@ -507,15 +589,17 @@ def run_eval(
             summary_rows.extend(parse_lm_eval_metrics(resolved_lm_eval_output_path, model_key, precision))
 
         # 无论 lm-eval 是否成功，都尝试补充本地域任务与效率指标，方便排查问题。
-        domain_row = run_local_domain_eval(
-            configs,
-            model_key,
-            precision,
-            output_dir,
-            file_stem=file_stem,
-            peft_path=peft_path,
-        )
-        summary_rows.append(domain_row)
+        for local_task_key in local_task_keys:
+            domain_rows = run_local_domain_eval(
+                configs,
+                model_key,
+                precision,
+                output_dir,
+                file_stem=file_stem,
+                peft_path=peft_path,
+                task_key=local_task_key,
+            )
+            summary_rows.extend(domain_rows)
 
         efficiency_row = run_efficiency_benchmark(
             configs,

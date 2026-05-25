@@ -34,7 +34,7 @@ qlora:
   candidate_models:
     - qwen3_4b
     - qwen2_5_7b_instruct
-    - gemma_3_4b
+    - phi_3_mini_4k_instruct
   target_modules:
     - q_proj
     - k_proj

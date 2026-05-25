@@ -9,9 +9,14 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
+import sys
 import time
 
 from huggingface_hub import snapshot_download
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from src.rc_llm_eval.utils.config import load_all_configs
 
@@ -30,6 +35,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=3,
         help="Number of download attempts for each model.",
     )
+    parser.add_argument(
+        "--model",
+        action="append",
+        dest="models",
+        default=None,
+        help="Specific model key(s) to prefetch. Can be provided multiple times.",
+    )
     return parser
 
 
@@ -38,6 +50,15 @@ def main() -> int:
     args = build_parser().parse_args()
     configs = load_all_configs(args.experiment)
     baseline_model_keys = configs["experiment"]["baseline"]["models"]
+    if args.models:
+        requested_models = list(dict.fromkeys(args.models))
+        missing_models = [model_key for model_key in requested_models if model_key not in configs["models"]]
+        if missing_models:
+            print("Unknown model keys:")
+            for model_key in missing_models:
+                print(f"- {model_key}")
+            return 1
+        baseline_model_keys = requested_models
 
     print(f"HF_HUB_DISABLE_XET={os.environ.get('HF_HUB_DISABLE_XET', '')}")
     print(f"HF_HOME={os.environ.get('HF_HOME', str(Path.home() / '.cache' / 'huggingface'))}")

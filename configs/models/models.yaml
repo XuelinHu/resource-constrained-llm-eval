@@ -55,6 +55,14 @@ models:
     default_dtype: bfloat16
     supports_thinking: false
 
+  gemma_4_e4b_it:
+    hf_id: google/gemma-4-E4B-it
+    family: gemma4
+    params_b: 4.0
+    type: dense
+    default_dtype: bfloat16
+    supports_thinking: false
+
   llama_3_1_8b_instruct:
     hf_id: meta-llama/Meta-Llama-3.1-8B-Instruct
     family: llama3_1
@@ -85,6 +93,7 @@ models:
     params_b: 3.8
     type: dense
     default_dtype: bfloat16
+    trust_remote_code: false
     supports_thinking: false
 
   glm_4_9b_chat_hf:

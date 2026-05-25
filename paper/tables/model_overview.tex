@@ -1,18 +1,20 @@
 \begin{table}[t]
 \centering
-\caption{Model pool used in the single-GPU study. Replace the ``Notes'' column with brief remarks such as reasoning-oriented, Chinese-strong, or adaptation candidate.}
+\caption{Formal model pool used in the single-GPU railway-domain study.}
 \label{tab:model-overview}
 \begin{tabular}{lccc}
 \toprule
-Model & Params (B) & Family & Notes \\
+Model & Params (B) & Family & Role \\
 \midrule
-Qwen3-0.6B & 0.6 & Qwen3 & Smallest baseline \\
+Qwen3-0.6B & 0.6 & Qwen3 & Small baseline \\
 Qwen3-1.7B & 1.7 & Qwen3 & Lightweight baseline \\
-Qwen3-4B & 4.0 & Qwen3 & Main adaptation candidate \\
-Qwen3-8B & 8.0 & Qwen3 & Largest baseline under budget \\
-Qwen2.5-7B-Instruct & 7.0 & Qwen2.5 & Strong instruct baseline \\
-DeepSeek-R1-Distill-Qwen-7B & 7.0 & DeepSeek-R1 & Reasoning-oriented baseline \\
-Gemma 3 4B & 4.0 & Gemma 3 & Cross-family comparison \\
+Qwen3-4B & 4.0 & Qwen3 & QLoRA candidate \\
+Qwen3-8B & 8.0 & Qwen3 & Largest Qwen3 baseline \\
+Qwen2.5-7B-Instruct & 7.0 & Qwen2.5 & QLoRA candidate \\
+DeepSeek-R1-Distill-Qwen-7B & 7.0 & DeepSeek & Reasoning-oriented baseline \\
+Phi-3-mini-4k-instruct & 3.8 & Phi & QLoRA candidate \\
+Yi-6B-Chat & 6.0 & Yi & Chinese-English baseline \\
+Mistral-7B-Instruct-v0.3 & 7.0 & Mistral & International baseline \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -191,7 +191,11 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
         bnb_4bit_use_double_quant=True,
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(model_cfg["hf_id"], trust_remote_code=True)
+    trust_remote_code = model_cfg.get("trust_remote_code", True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_cfg["hf_id"],
+        trust_remote_code=trust_remote_code,
+    )
     if tokenizer.pad_token is None:
         # 训练阶段同样保证 batch 内补齐行为稳定。
         tokenizer.pad_token = tokenizer.eos_token
@@ -202,7 +206,7 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
         quantization_config=bnb_config,
         device_map="auto",
         torch_dtype=resolve_dtype(model_cfg.get("default_dtype", "bfloat16")),
-        trust_remote_code=True,
+        trust_remote_code=trust_remote_code,
     )
     model.config.use_cache = False
     # 4bit 训练前先做 k-bit 训练准备，再挂载 LoRA 适配器。

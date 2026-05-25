@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXPERIMENT="${1:-configs/experiments/single_gpu_3090.yaml}"
 DATASET="${2:-domain_qa}"
-PYTHON_BIN="${PYTHON_BIN:-python}"
+PYTHON_BIN="${PYTHON_BIN:-/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 export PYTHONPATH="${PYTHONPATH:-.}"
 
@@ -25,14 +25,20 @@ mkdir -p "${RUN_ROOT}"
 : > "${FAIL_LOG}"
 : > "${SKIP_LOG}"
 
-MODELS=(
-  qwen3_0_6b
-  qwen3_1_7b
-  qwen3_4b
-  qwen3_8b
-  qwen2_5_7b_instruct
-  deepseek_r1_distill_qwen_7b
-  gemma_3_4b
+mapfile -t MODELS < <("${PYTHON_BIN}" - "${EXPERIMENT}" <<'PY'
+from src.rc_llm_eval.utils.config import load_all_configs
+import sys
+configs = load_all_configs(sys.argv[1])
+print("\n".join(configs["experiment"]["baseline"]["models"]))
+PY
+)
+
+mapfile -t QLORA_MODELS < <("${PYTHON_BIN}" - "${EXPERIMENT}" <<'PY'
+from src.rc_llm_eval.utils.config import load_all_configs
+import sys
+configs = load_all_configs(sys.argv[1])
+print("\n".join(configs["experiment"]["qlora"]["candidate_models"]))
+PY
 )
 
 PRECISIONS=(
@@ -167,7 +173,7 @@ done
 "${PYTHON_BIN}" -m src.rc_llm_eval.cli summarize-results --experiment "${EXPERIMENT}" --output-group baseline
 
 echo "[$(date '+%F %T')] Step 3/5: qlora training"
-for model in qwen3_4b qwen2_5_7b_instruct gemma_3_4b; do
+for model in "${QLORA_MODELS[@]}"; do
   if printf '%s\n' "${AVAILABLE_MODELS[@]}" | grep -qx "${model}"; then
     wait_for_gpu_budget "qlora_train" "${model}" "int4"
     echo "[$(date '+%F %T')] QLoRA ${model}"
@@ -179,7 +185,7 @@ for model in qwen3_4b qwen2_5_7b_instruct gemma_3_4b; do
 done
 
 echo "[$(date '+%F %T')] Step 4/5: qlora adapted evaluation"
-for model in qwen3_4b qwen2_5_7b_instruct gemma_3_4b; do
+for model in "${QLORA_MODELS[@]}"; do
   if [[ -d "${RUN_ROOT}/qlora/${model}/adapter" ]]; then
     wait_for_gpu_budget "qlora_eval" "${model}" "int4"
     echo "[$(date '+%F %T')] QLoRA eval ${model}"

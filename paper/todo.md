@@ -2,10 +2,10 @@
 
 ## Before Writing Results
 
-1. Freeze the final model list.
-2. Freeze the final benchmark suite.
-3. Export all raw metrics into CSV files.
-4. Decide which 2-3 models receive QLoRA.
+1. Run the 1% smoke baseline over `configs/experiments/smoke_single_gpu_3090.yaml`.
+2. Run one QLoRA smoke test with `qwen3_4b` on `domain_qa_smoke`.
+3. Freeze the formal benchmark suite after smoke validation.
+4. Export all raw formal metrics into CSV files.
 5. Prepare one domain dataset description table.
 
 ## Figures to Produce

@@ -50,8 +50,9 @@ def load_model_and_tokenizer(
 ):
     """加载基础模型、分词器，并在需要时挂载 PEFT 适配器。"""
     quantization_config = build_quantization_config(quantization_mode, dtype_name)
+    trust_remote_code = model_cfg.get("trust_remote_code", True)
     model_kwargs = {
-        "trust_remote_code": True,
+        "trust_remote_code": trust_remote_code,
         "device_map": "auto",
     }
     if quantization_config is None:
@@ -59,7 +60,10 @@ def load_model_and_tokenizer(
     else:
         model_kwargs["quantization_config"] = quantization_config
 
-    tokenizer = AutoTokenizer.from_pretrained(model_cfg["hf_id"], trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_cfg["hf_id"],
+        trust_remote_code=trust_remote_code,
+    )
     if tokenizer.pad_token is None:
         # 许多因果语言模型没有独立 pad token，这里回退到 eos token。
         tokenizer.pad_token = tokenizer.eos_token
