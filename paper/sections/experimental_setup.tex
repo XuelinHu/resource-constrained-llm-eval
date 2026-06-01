@@ -23,11 +23,6 @@ contains 22,164 training examples, 2,770 validation examples, and 2,770 test
 examples. Each JSONL record stores the prompt, expected answer, combined text,
 category, and source.
 
-\textbf{Smoke dataset.} A stratified 1\% smoke split is generated before formal
-runs. It contains 222 training examples, 28 validation examples, and 28 test
-examples. The smoke split is used to verify data loading, model loading,
-adapter training, generation snapshots, and table export paths.
-
 \textbf{Benchmark suite.} Public benchmark tasks include MMLU, C-Eval, GSM8K,
 and HumanEval. The local Domain QA task is included in the pipeline, but the
 current aggregate CSV contains a one-sample exact-match sanity result rather

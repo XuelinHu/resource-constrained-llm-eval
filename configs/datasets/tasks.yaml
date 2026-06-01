@@ -33,11 +33,11 @@ tasks:
     answer_field: answer
     text_field: text
 
-  domain_qa_smoke:
+  domain_regqa:
     suite: local_jsonl
-    train_file: data/domain_smoke/train.jsonl
-    valid_file: data/domain_smoke/valid.jsonl
-    test_file: data/domain_smoke/test.jsonl
+    train_file: data/domain_regqa/train.jsonl
+    valid_file: data/domain_regqa/valid.jsonl
+    test_file: data/domain_regqa/test.jsonl
     metric: exact_match
     prompt_field: prompt
     answer_field: answer

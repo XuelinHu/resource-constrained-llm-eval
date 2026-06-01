@@ -55,15 +55,18 @@ def load_model_and_tokenizer(
         "trust_remote_code": trust_remote_code,
         "device_map": "auto",
     }
+    cache_dir = model_cfg.get("cache_dir")
+    if cache_dir:
+        model_kwargs["cache_dir"] = cache_dir
     if quantization_config is None:
         model_kwargs["torch_dtype"] = resolve_dtype(dtype_name)
     else:
         model_kwargs["quantization_config"] = quantization_config
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_cfg["hf_id"],
-        trust_remote_code=trust_remote_code,
-    )
+    tokenizer_kwargs = {"trust_remote_code": trust_remote_code}
+    if cache_dir:
+        tokenizer_kwargs["cache_dir"] = cache_dir
+    tokenizer = AutoTokenizer.from_pretrained(model_cfg["hf_id"], **tokenizer_kwargs)
     if tokenizer.pad_token is None:
         # 许多因果语言模型没有独立 pad token，这里回退到 eos token。
         tokenizer.pad_token = tokenizer.eos_token
