@@ -23,8 +23,9 @@ HF_HUB = Path.home() / ".cache" / "huggingface" / "hub"
 REQUIRED_DATA_FIELDS = {"prompt", "answer", "text", "category", "source"}
 
 
-def model_cache_dir(hf_id: str) -> Path:
-    return HF_HUB / f"models--{hf_id.replace('/', '--')}"
+def model_cache_dir(hf_id: str, cache_root: str | None = None) -> Path:
+    root = Path(cache_root) if cache_root else HF_HUB
+    return root / f"models--{hf_id.replace('/', '--')}"
 
 
 def latest_snapshot(cache_dir: Path) -> Path | None:
@@ -35,8 +36,9 @@ def latest_snapshot(cache_dir: Path) -> Path | None:
     return snapshots[-1] if snapshots else None
 
 
-def model_status(hf_id: str) -> dict[str, Any]:
-    cache_dir = model_cache_dir(hf_id)
+def model_status(model_cfg: dict[str, Any]) -> dict[str, Any]:
+    hf_id = model_cfg["hf_id"]
+    cache_dir = model_cache_dir(hf_id, model_cfg.get("cache_dir"))
     snapshot = latest_snapshot(cache_dir)
     status = {
         "hf_id": hf_id,
@@ -122,7 +124,7 @@ def main() -> int:
     incomplete_models: list[str] = []
     for model_key in baseline_models:
         cfg = configs["models"][model_key]
-        status = model_status(cfg["hf_id"])
+        status = model_status(cfg)
         marker = "OK" if status["complete"] else "MISSING"
         if not status["complete"]:
             incomplete_models.append(model_key)
@@ -136,7 +138,7 @@ def main() -> int:
     print("QLoRA candidates")
     for model_key in qlora_models:
         cfg = configs["models"][model_key]
-        status = model_status(cfg["hf_id"])
+        status = model_status(cfg)
         marker = "OK" if status["complete"] else "MISSING"
         print(f"- {marker} {model_key}: {cfg['hf_id']}")
     print()
@@ -164,11 +166,10 @@ def main() -> int:
     print("Foreground commands to run after confirmation")
     print("1. python scripts/check_experiment_readiness.py --experiment configs/experiments/single_gpu_3090.yaml")
     print("2. bash scripts/run_baseline_pilot.sh")
-    print("3. bash scripts/run_qlora_smoke.sh")
-    print("4. bash scripts/run_baseline_all.sh")
-    print("5. bash scripts/run_qlora_all.sh")
-    print("6. bash scripts/run_qlora_eval_all.sh")
-    print("7. python -m src.rc_llm_eval.cli export-paper-tables --experiment configs/experiments/single_gpu_3090.yaml")
+    print("3. bash scripts/run_baseline_all.sh")
+    print("4. bash scripts/run_qlora_all.sh")
+    print("5. bash scripts/run_qlora_eval_all.sh")
+    print("6. python -m src.rc_llm_eval.cli export-paper-tables --experiment configs/experiments/single_gpu_3090.yaml")
     return 1 if incomplete_models else 0
 
 

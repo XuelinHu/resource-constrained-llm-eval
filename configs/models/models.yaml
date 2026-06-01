@@ -33,6 +33,7 @@ models:
 
   gemma_3_4b:
     hf_id: google/gemma-3-4b-it
+    cache_dir: /ds1/workspace/ai/hf_cache/hub
     family: gemma3
     params_b: 4.0
     type: dense
@@ -49,6 +50,7 @@ models:
 
   gemma_2_9b_it:
     hf_id: google/gemma-2-9b-it
+    cache_dir: /ds1/workspace/ai/hf_cache/hub
     family: gemma2
     params_b: 9.0
     type: dense
@@ -74,6 +76,7 @@ models:
 
   glm_4_9b_chat_hf:
     hf_id: THUDM/glm-4-9b-chat-hf
+    cache_dir: /ds1/workspace/ai/hf_cache/hub
     family: glm4
     params_b: 9.0
     type: dense

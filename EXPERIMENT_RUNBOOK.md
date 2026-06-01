@@ -28,18 +28,6 @@ python scripts/check_experiment_readiness.py --experiment configs/experiments/si
 
 Expected time: under 1 minute.
 
-## Step 0.5: Full Smoke Baseline on 1% Data
-
-This command rebuilds the stratified 1% smoke dataset, checks local model and
-dataset readiness, and then runs the configured smoke baseline in the foreground.
-
-```bash
-bash scripts/run_smoke_full.sh
-```
-
-Expected time: several hours if all ten smoke models are executed. It is a
-smoke test, not a formal result source.
-
 ## Step 1: Pilot Baseline
 
 This validates the baseline evaluation path with the pilot config.
@@ -51,20 +39,7 @@ bash scripts/run_baseline_pilot.sh
 Expected time: 30 minutes to half a day, depending on GPU availability and task
 runtime.
 
-## Step 2: QLoRA Smoke
-
-This validates the training path with one model and the railway `domain_qa`
-dataset.
-
-```bash
-bash scripts/run_qlora_smoke.sh
-```
-
-Expected time: several hours for a full pilot-config run. If this is too long,
-reduce `num_train_epochs`, `max_seq_length`, or train subset handling before
-launching it.
-
-## Step 3: Formal Baseline
+## Step 2: Formal Baseline
 
 This runs baseline evaluation for every configured formal model in the foreground.
 
@@ -74,7 +49,7 @@ bash scripts/run_baseline_all.sh
 
 Expected time: 1 to 3 days, depending on task count and GPU throughput.
 
-## Step 4: Formal QLoRA
+## Step 3: Formal QLoRA
 
 This trains the configured QLoRA candidate models in sequence.
 
@@ -84,7 +59,7 @@ bash scripts/run_qlora_all.sh
 
 Expected time: 2 to 4 days for the current candidate set.
 
-## Step 5: Adapted Evaluation
+## Step 4: Adapted Evaluation
 
 This evaluates trained adapters after QLoRA.
 
@@ -94,7 +69,7 @@ bash scripts/run_qlora_eval_all.sh
 
 Expected time: several hours to 1 day.
 
-## Step 6: Paper Tables
+## Step 5: Paper Tables
 
 ```bash
 python -m src.rc_llm_eval.cli export-paper-tables --experiment configs/experiments/single_gpu_3090.yaml

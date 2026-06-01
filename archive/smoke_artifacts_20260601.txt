@@ -1,3 +1,262 @@
+Smoke Artifacts Archive
+Created: 2026-06-01 19:48:02
+Purpose: preserve deprecated smoke-test scripts, configuration, and data after formal experiment paths replaced them.
+
+Archived files:
+- scripts/run_qlora_smoke.sh
+- scripts/run_smoke_full.sh
+- scripts/build_domain_smoke_dataset.py
+- configs/experiments/smoke_single_gpu_3090.yaml
+- data/domain_smoke/README.md
+- data/domain_smoke/train.jsonl
+- data/domain_smoke/valid.jsonl
+- data/domain_smoke/test.jsonl
+
+====================================================================================================
+FILE: scripts/run_qlora_smoke.sh
+====================================================================================================
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Foreground-only QLoRA smoke run. This uses the pilot config and one model so
+# the user can verify the training path before launching formal experiments.
+EXPERIMENT="${1:-configs/experiments/pilot_single_gpu_3090.yaml}"
+MODEL="${2:-qwen3_4b}"
+DATASET="${3:-domain_qa}"
+PYTHON_BIN="${PYTHON_BIN:-/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python}"
+
+export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+export PYTHONPATH="${PYTHONPATH:-.}"
+
+"${PYTHON_BIN}" -m src.rc_llm_eval.cli run-qlora \
+  --experiment "${EXPERIMENT}" \
+  --model "${MODEL}" \
+  --dataset "${DATASET}"
+
+
+====================================================================================================
+FILE: scripts/run_smoke_full.sh
+====================================================================================================
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Foreground-only full smoke test over the configured smoke model pool.
+# This script is intentionally not launched automatically.
+EXPERIMENT="${1:-configs/experiments/smoke_single_gpu_3090.yaml}"
+PYTHON_BIN="${PYTHON_BIN:-/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python}"
+
+export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+export PYTHONPATH="${PYTHONPATH:-.}"
+
+"${PYTHON_BIN}" scripts/build_domain_smoke_dataset.py
+"${PYTHON_BIN}" scripts/check_experiment_readiness.py --experiment "${EXPERIMENT}"
+
+mapfile -t MODELS < <("${PYTHON_BIN}" - "${EXPERIMENT}" <<'PY'
+from src.rc_llm_eval.utils.config import load_all_configs
+import sys
+configs = load_all_configs(sys.argv[1])
+print("\n".join(configs["experiment"]["baseline"]["models"]))
+PY
+)
+
+for model in "${MODELS[@]}"; do
+  summary_path="results/smoke_single_gpu_3090/smoke_baseline/${model}/${model}_int4_domain_qa_smoke_summary.json"
+  if [[ "${SMOKE_FORCE:-0}" != "1" && -f "${summary_path}" ]]; then
+    echo "Skipping completed smoke model: ${model}"
+    continue
+  fi
+  if [[ "${SMOKE_FORCE:-0}" == "1" ]]; then
+    echo "Re-running smoke model: ${model}"
+  fi
+  "${PYTHON_BIN}" -m src.rc_llm_eval.cli run-eval \
+    --experiment "${EXPERIMENT}" \
+    --model "${model}" \
+    --precision int4 \
+    --output-group smoke_baseline \
+    --label domain_qa_smoke
+done
+
+"${PYTHON_BIN}" -m src.rc_llm_eval.cli summarize-results \
+  --experiment "${EXPERIMENT}" \
+  --output-group smoke_baseline
+
+
+====================================================================================================
+FILE: scripts/build_domain_smoke_dataset.py
+====================================================================================================
+"""Build a stratified 1% smoke dataset from the full railway domain dataset."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import random
+from collections import defaultdict
+from pathlib import Path
+from typing import Any
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_SOURCE_DIR = REPO_ROOT / "data" / "domain"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "domain_smoke"
+
+
+def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def stratified_sample(rows: list[dict[str, Any]], ratio: float, seed: int) -> list[dict[str, Any]]:
+    rng = random.Random(seed)
+    by_category: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_category[str(row.get("category", "unknown"))].append(row)
+
+    sampled: list[dict[str, Any]] = []
+    for category_rows in by_category.values():
+        rows_copy = list(category_rows)
+        rng.shuffle(rows_copy)
+        sample_size = max(1, round(len(rows_copy) * ratio))
+        sampled.extend(rows_copy[:sample_size])
+    rng.shuffle(sampled)
+    return sampled
+
+
+def write_readme(output_dir: Path, counts: dict[str, int], ratio: float) -> None:
+    lines = [
+        "# Railway Domain Smoke Dataset",
+        "",
+        f"This dataset is a stratified {ratio:.2%} sample of `data/domain`.",
+        "It is intended for foreground smoke tests only, not formal reporting.",
+        "",
+        "## Splits",
+        "",
+    ]
+    for split, count in counts.items():
+        lines.append(f"- {split}: {count}")
+    lines.append("")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "README.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Build the railway domain smoke dataset.")
+    parser.add_argument("--source-dir", type=Path, default=DEFAULT_SOURCE_DIR)
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--ratio", type=float, default=0.01)
+    parser.add_argument("--seed", type=int, default=42)
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    counts: dict[str, int] = {}
+    for split in ["train", "valid", "test"]:
+        rows = read_jsonl(args.source_dir / f"{split}.jsonl")
+        sampled = stratified_sample(rows, args.ratio, args.seed)
+        write_jsonl(args.output_dir / f"{split}.jsonl", sampled)
+        counts[split] = len(sampled)
+        print(f"{split}: source={len(rows)} smoke={len(sampled)}")
+    write_readme(args.output_dir, counts, args.ratio)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+
+
+====================================================================================================
+FILE: configs/experiments/smoke_single_gpu_3090.yaml
+====================================================================================================
+experiment:
+  name: smoke_single_gpu_3090
+  device: cuda:0
+  gpu_name: RTX_3090
+  vram_gb: 24
+  seed: 42
+  output_root: results/smoke_single_gpu_3090
+
+baseline:
+  models:
+    - qwen3_4b
+    - qwen3_8b
+    - qwen2_5_7b_instruct
+    - deepseek_r1_distill_qwen_7b
+    - phi_3_mini_4k_instruct
+    - yi_6b_chat
+    - mistral_7b_instruct_v0_3
+  tasks:
+    - domain_qa_smoke
+  num_fewshot: 0
+  batch_size: 1
+  precision: int4
+  max_new_tokens: 64
+  temperature: 0.0
+  top_p: 1.0
+  do_sample: false
+  efficiency_prompt_file: data/efficiency/prompts.jsonl
+  efficiency_num_samples: 1
+  warmup_prompts: 0
+
+quantization:
+  modes:
+    - int4
+
+qlora:
+  candidate_models:
+    - qwen3_4b
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - up_proj
+    - down_proj
+    - gate_proj
+  lora_r: 16
+  lora_alpha: 16
+  lora_dropout: 0.05
+  learning_rate: 2.0e-4
+  num_train_epochs: 1
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  max_seq_length: 1024
+  warmup_ratio: 0.03
+  logging_steps: 5
+  save_strategy: epoch
+  evaluation_strategy: epoch
+
+
+====================================================================================================
+FILE: data/domain_smoke/README.md
+====================================================================================================
+# Railway Domain Smoke Dataset
+
+This dataset is a stratified 1.00% sample of `data/domain`.
+It is intended for foreground smoke tests only, not formal reporting.
+
+## Splits
+
+- train: 222
+- valid: 28
+- test: 28
+
+
+====================================================================================================
+FILE: data/domain_smoke/train.jsonl
+====================================================================================================
 {"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\npolymer material", "answer": "聚合材料", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\npolymer material\nAnswer: 聚合材料", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
 {"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n自流平地面", "answer": "self-leveling floor", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n自流平地面\nAnswer: self-leveling floor", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
 {"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n电缆托架", "answer": "cable bracket", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n电缆托架\nAnswer: cable bracket", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
@@ -220,3 +479,70 @@
 {"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\npre-sag", "answer": "预弛度", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\npre-sag\nAnswer: 预弛度", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
 {"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nice-supplying line", "answer": "加冰线", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nice-supplying line\nAnswer: 加冰线", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
 {"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ncoding", "answer": "电码化", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ncoding\nAnswer: 电码化", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+
+
+====================================================================================================
+FILE: data/domain_smoke/valid.jsonl
+====================================================================================================
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n冷硬铸铁车轮", "answer": "chilled iron wheel", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n冷硬铸铁车轮\nAnswer: chilled iron wheel", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nheat well", "answer": "热源井", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nheat well\nAnswer: 热源井", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n衬板", "answer": "dunnage", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n衬板\nAnswer: dunnage", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Translate the following railway-domain Chinese text into English.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n拉线及下锚零部件不得与回流线、保护线、地线间形成环流通路。", "answer": "The pull wire and anchor parts shall not form a circulation path with the return line, protection line and ground line.", "text": "Question: Translate the following railway-domain Chinese text into English.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n拉线及下锚零部件不得与回流线、保护线、地线间形成环流通路。\nAnswer: The pull wire and anchor parts shall not form a circulation path with the return line, protection line and ground line.", "category": "zh_to_en_translation", "source": "规章43：ECRL牵引供电设备运行维护管理办法（修订）_zh2en_transResult.docx"}
+{"prompt": "Translate the following railway-domain English text into Chinese.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nOCS operation and maintenance should adhere to the principle of \"prevention first, re-inspection and careful repair\", follow the principle of \"regular inspection, condition-based maintenance and life management\", follow the professional, mechanized and intensive maintenance mode, rely on railway power supply safety inspection and monitoring system and other means, establish an information resource sharing platform, and implement the separate organization mode of \"operation, inspection and maintenance\" to ensure the operation quality, safety and reliability of OCS.", "answer": "接触网运行维修应坚持“预防为主、重检慎修”的方针，按照“定期检测、状态维修、寿命管理”的原则，遵循专业化、机械化、集约化维修方式，依靠铁路供电安全检测监测系统等手段，建立信息资源共享平台，实行“运行、检测、维修” 分开的组织模式，确保接触网运行品质和安全可靠性。", "text": "Question: Translate the following railway-domain English text into Chinese.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nOCS operation and maintenance should adhere to the principle of \"prevention first, re-inspection and careful repair\", follow the principle of \"regular inspection, condition-based maintenance and life management\", follow the professional, mechanized and intensive maintenance mode, rely on railway power supply safety inspection and monitoring system and other means, establish an information resource sharing platform, and implement the separate organization mode of \"operation, inspection and maintenance\" to ensure the operation quality, safety and reliability of OCS.\nAnswer: 接触网运行维修应坚持“预防为主、重检慎修”的方针，按照“定期检测、状态维修、寿命管理”的原则，遵循专业化、机械化、集约化维修方式，依靠铁路供电安全检测监测系统等手段，建立信息资源共享平台，实行“运行、检测、维修” 分开的组织模式，确保接触网运行品质和安全可靠性。", "category": "en_to_zh_translation", "source": "规章43：ECRL牵引供电设备运行维护管理办法（修订）_zh2en_transResult.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n通风车", "answer": "ventilated box car", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n通风车\nAnswer: ventilated box car", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n重型轨道", "answer": "heavy track", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n重型轨道\nAnswer: heavy track", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n探伤", "answer": "flaw detection", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n探伤\nAnswer: flaw detection", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\npoling boards", "answer": "插板", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\npoling boards\nAnswer: 插板", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n前塔", "answer": "front tower", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n前塔\nAnswer: front tower", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nsign", "answer": "标志", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nsign\nAnswer: 标志", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nfloor", "answer": "地板", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nfloor\nAnswer: 地板", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ndefinition,resolution,articulation", "answer": "清晰度", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ndefinition,resolution,articulation\nAnswer: 清晰度", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nimpedance angle", "answer": "阻抗角", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nimpedance angle\nAnswer: 阻抗角", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nauto-spot board", "answer": "自动选点", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nauto-spot board\nAnswer: 自动选点", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n表面龟裂", "answer": "surface checking;chequered surface", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n表面龟裂\nAnswer: surface checking;chequered surface", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n配砟整形车", "answer": "ballast regulator", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n配砟整形车\nAnswer: ballast regulator", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n轨行式起重机", "answer": "crane on-track;rail-mounted", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n轨行式起重机\nAnswer: crane on-track;rail-mounted", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n自复位按钮", "answer": "nonstick button", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n自复位按钮\nAnswer: nonstick button", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nboiler tube", "answer": "炉管", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nboiler tube\nAnswer: 炉管", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nelevated structure", "answer": "高架结构", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nelevated structure\nAnswer: 高架结构", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ncoldplate", "answer": "冷板", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ncoldplate\nAnswer: 冷板", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nnoise peak", "answer": "噪音峰值", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nnoise peak\nAnswer: 噪音峰值", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n上行咽喉", "answer": "up throat", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n上行咽喉\nAnswer: up throat", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n汽车轮渡", "answer": "car-ferry", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n汽车轮渡\nAnswer: car-ferry", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ndetector", "answer": "检波器", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ndetector\nAnswer: 检波器", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\naxial force", "answer": "轴向力", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\naxial force\nAnswer: 轴向力", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n报警装置", "answer": "alarming device;warning device; alarm device", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n报警装置\nAnswer: alarming device;warning device; alarm device", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+
+
+====================================================================================================
+FILE: data/domain_smoke/test.jsonl
+====================================================================================================
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n高压细水雾灭火装置", "answer": "high-pressure water", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n高压细水雾灭火装置\nAnswer: high-pressure water", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ntangent to curve(TC)", "answer": "直圆点", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ntangent to curve(TC)\nAnswer: 直圆点", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n黄皮书", "answer": "yellow book", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n黄皮书\nAnswer: yellow book", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Translate the following railway-domain English text into Chinese.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nStandard state: 0. Warning value: 2 places. Threshold value: 4 places.", "answer": "标准状态：0 处。警示值：2 处。限界值：4 处。", "text": "Question: Translate the following railway-domain English text into Chinese.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nStandard state: 0. Warning value: 2 places. Threshold value: 4 places.\nAnswer: 标准状态：0 处。警示值：2 处。限界值：4 处。", "category": "en_to_zh_translation", "source": "规章43：ECRL牵引供电设备运行维护管理办法（修订）_zh2en_transResult.docx"}
+{"prompt": "Translate the following railway-domain Chinese text into English.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n⑵机械破坏符合为 60~300kN 的盘形悬式绝缘子交流耐压试验电压值均取 60kV。", "answer": "⑵ The AC withstand voltage test values of disk suspension insulators with mechanical failure coincidence of 60 ~ 300kN are all 60kV.", "text": "Question: Translate the following railway-domain Chinese text into English.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n⑵机械破坏符合为 60~300kN 的盘形悬式绝缘子交流耐压试验电压值均取 60kV。\nAnswer: ⑵ The AC withstand voltage test values of disk suspension insulators with mechanical failure coincidence of 60 ~ 300kN are all 60kV.", "category": "zh_to_en_translation", "source": "规章43：ECRL牵引供电设备运行维护管理办法（修订）_zh2en_transResult.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n滚动支座", "answer": "roller bearing", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n滚动支座\nAnswer: roller bearing", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n网内呼叫", "answer": "on-netcall", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n网内呼叫\nAnswer: on-netcall", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n异步数据", "answer": "asynchronous data", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n异步数据\nAnswer: asynchronous data", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nbrake pipe", "answer": "列车管", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nbrake pipe\nAnswer: 列车管", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n安全性", "answer": "safety,security", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n安全性\nAnswer: safety,security", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nmodule", "answer": "模块", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nmodule\nAnswer: 模块", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nrolling-off trip", "answer": "溜放钩", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nrolling-off trip\nAnswer: 溜放钩", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nvertical subsystem", "answer": "垂直子系统", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nvertical subsystem\nAnswer: 垂直子系统", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nround duct", "answer": "圆形风管", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nround duct\nAnswer: 圆形风管", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ntram", "answer": "有轨电车", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ntram\nAnswer: 有轨电车", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n干砌片石", "answer": "dry rubble", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n干砌片石\nAnswer: dry rubble", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n不透水层", "answer": "impervious layer", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n不透水层\nAnswer: impervious layer", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n接地", "answer": "grounding", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n接地\nAnswer: grounding", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n摺棚柱", "answer": "diaphragm post", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n摺棚柱\nAnswer: diaphragm post", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ncrank axle", "answer": "曲柄轴", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ncrank axle\nAnswer: 曲柄轴", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nambulance coach", "answer": "救援车", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nambulance coach\nAnswer: 救援车", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nrocker wagon", "answer": "摆式货车", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nrocker wagon\nAnswer: 摆式货车", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nwing walls", "answer": "耳墙", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nwing walls\nAnswer: 耳墙", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n离子氮化", "answer": "ionic nitriding", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n离子氮化\nAnswer: ionic nitriding", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n高强度螺栓", "answer": "high-strength bolt", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n高强度螺栓\nAnswer: high-strength bolt", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nbroken height", "answer": "断高", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\nbroken height\nAnswer: 断高", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ninterception", "answer": "拦截", "text": "Question: Provide the Chinese railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\ninterception\nAnswer: 拦截", "category": "terminology_en_to_zh", "source": "铁路中英文词汇（全）.docx"}
+{"prompt": "Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n超越管", "answer": "plant discharges", "text": "Question: Provide the English railway technical term.\nReturn only the final answer. Do not explain. Do not add prefixes, suffixes, quotes, or labels.\n超越管\nAnswer: plant discharges", "category": "terminology_zh_to_en", "source": "铁路中英文词汇（全）.docx"}
+

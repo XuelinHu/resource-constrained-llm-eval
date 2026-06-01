@@ -145,6 +145,8 @@ def build_model_args(model_cfg: dict, precision: str, peft_path: str | None = No
         f"pretrained={model_cfg['hf_id']}",
         "trust_remote_code=True",
     ]
+    if model_cfg.get("cache_dir"):
+        args.append(f"cache_dir={model_cfg['cache_dir']}")
     if precision == "int8":
         args.append("load_in_8bit=True")
     elif precision == "int4":
