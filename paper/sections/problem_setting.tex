@@ -1,0 +1,35 @@
+\label{sec:problem_setting}
+
+The application target is local railway-domain bilingual assistance rather than
+general-purpose online chatbot service. The intended users are railway
+engineering students, laboratory researchers, and technical staff who need
+fast access to bilingual terminology and operation-and-maintenance knowledge.
+In this setting, the model receives a short technical prompt and is expected to
+return a concise answer without long reasoning traces, unrelated explanation,
+or unsafe operational advice.
+
+The input space contains two common task families. The first is terminology
+translation, where the model maps a railway technical expression between
+Chinese and English. The second is regulation-oriented translation or
+question-answering, where the prompt contains a sentence or paragraph from
+traction power supply operation-and-maintenance material. The output is a
+single target-language answer or domain-specific phrase. These tasks are small
+in context length, but difficult for generic models because many answers depend
+on specialized railway vocabulary and conventional wording.
+
+The deployment constraint is fixed to a single NVIDIA RTX 3090 GPU with 24GB of
+VRAM. This constraint reflects a realistic laboratory workstation and rules out
+multi-GPU serving, full-parameter fine-tuning of larger models, and expensive
+hyperparameter searches. Therefore, the model selection problem is
+multi-objective: the selected model must be accurate enough for technical use,
+fit reliably into memory, answer at usable latency, and support a low-cost
+adaptation path.
+
+The current dataset contains 22,164 training samples, 2,770 validation samples,
+and 2,770 test samples. A 1\% smoke subset is used to validate the pipeline
+before longer runs. The present result export includes public benchmark scores
+for six completed model-precision combinations and a one-sample Domain QA
+sanity check. This means the draft reports mature public benchmark and
+efficiency measurements, while the domain QA and QLoRA results should be read
+as pipeline-completeness evidence until the full 2,770-sample domain test
+evaluation is rerun and exported.

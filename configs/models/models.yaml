@@ -1,20 +1,4 @@
 models:
-  qwen3_0_6b:
-    hf_id: Qwen/Qwen3-0.6B
-    family: qwen3
-    params_b: 0.6
-    type: dense
-    default_dtype: bfloat16
-    supports_thinking: true
-
-  qwen3_1_7b:
-    hf_id: Qwen/Qwen3-1.7B
-    family: qwen3
-    params_b: 1.7
-    type: dense
-    default_dtype: bfloat16
-    supports_thinking: true
-
   qwen3_4b:
     hf_id: Qwen/Qwen3-4B
     family: qwen3
@@ -59,14 +43,6 @@ models:
     hf_id: google/gemma-4-E4B-it
     family: gemma4
     params_b: 4.0
-    type: dense
-    default_dtype: bfloat16
-    supports_thinking: false
-
-  llama_3_1_8b_instruct:
-    hf_id: meta-llama/Meta-Llama-3.1-8B-Instruct
-    family: llama3_1
-    params_b: 8.0
     type: dense
     default_dtype: bfloat16
     supports_thinking: false

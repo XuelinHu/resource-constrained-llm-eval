@@ -1,63 +1,64 @@
-Large language models have become practical tools for question answering,
-translation, and domain-specific technical support. In railway engineering and
-education, many tasks involve specialized terminology, bilingual documentation,
-maintenance regulations, and safety-oriented procedural knowledge. These
-characteristics make railway applications a meaningful test case for open LLMs:
-the model must handle both general reasoning and domain-specific expressions,
-while also remaining deployable in realistic laboratory environments.
+Large language models have become practical tools for translation, question
+answering, code assistance, and technical support. Their adoption in railway
+engineering is promising because railway documents contain bilingual
+terminology, maintenance regulations, and procedural knowledge that are
+frequently queried in education and laboratory settings. However, practical
+deployment is constrained by hardware. Many teams can access a single
+workstation GPU but cannot rely on multi-GPU inference, large-scale
+full-parameter fine-tuning, or remote proprietary services.
 
-Most applied laboratories do not have access to large multi-GPU clusters. A
-single workstation GPU, such as an NVIDIA RTX 3090 with 24GB of VRAM, remains a
-common hardware boundary for local experimentation, fine-tuning, and prototype
-deployment. Under this constraint, model selection cannot be based on benchmark
-accuracy alone. A useful model must fit into memory, respond with acceptable
-latency, support low-bit inference, and be adaptable to local data at reasonable
-cost.
+This paper studies that practical boundary directly. The target environment is
+a single NVIDIA RTX 3090 GPU with 24GB of VRAM. Under this constraint, model
+selection cannot be reduced to a public leaderboard score. A usable model must
+fit reliably into memory, answer with acceptable latency, support low-bit
+inference, and remain adaptable to local railway data. These constraints make
+open models such as Qwen~\cite{qwen3,qwen25},
+DeepSeek~\cite{deepseekllm,deepseekr1}, Phi~\cite{phi3}, Yi~\cite{yi2024open},
+and Mistral~\cite{mistral7b} especially relevant, but they also require
+consistent local measurement.
 
-This paper therefore focuses on an application-oriented question: how should
-open LLMs be evaluated and adapted for railway-domain tasks under a single-GPU
-resource constraint? We do not propose a new neural architecture or a new
-fine-tuning algorithm. Instead, we build a reproducible experimental framework
-that combines three elements: a railway bilingual QA dataset, a multi-model
-single-GPU benchmark, and QLoRA-based domain adaptation.
+The work is positioned as an AI application and experimental evaluation paper,
+not as a new model architecture. We build a railway bilingual dataset from
+local technical terminology and traction power supply documents, evaluate
+locally cached models on public and domain-oriented tasks, and test a QLoRA
+adaptation path for selected candidates. The current local model cache contains
+more models than the completed result export; the formal table in this draft
+therefore distinguishes the planned model pool from the subset whose public
+benchmark and efficiency results have already been exported.
 
-The model pool includes nine locally available open models from Qwen, Qwen 2.5,
-DeepSeek-R1-Distill, Phi, Yi, and Mistral families. This model pool
-covers sub-1B, 1B-class, 4B-class, 6B/7B-class, and 8B-class models, enabling a
-practical comparison across scale and model family. The railway-domain dataset
-is generated from local railway technical documents and contains bilingual
-terminology and traction power supply regulation samples. This dataset is used
-both for local evaluation and for QLoRA adaptation.
-
-The research questions are:
+The study is guided by four research questions:
 \begin{enumerate}[leftmargin=1.5em]
-  \item Which open LLMs provide the best railway-domain and general benchmark
-  performance under a single RTX 3090 24GB constraint?
-  \item How do bf16, int8, and int4 settings affect the tradeoff among accuracy,
-  memory footprint, latency, and throughput?
-  \item Can QLoRA adaptation improve railway-domain performance using the
-  constructed dataset while preserving practical deployability?
+  \item Which completed open LLM baselines provide the strongest public
+  benchmark performance under a single RTX 3090 24GB constraint?
+  \item How do bf16, int8, and int4 inference settings change memory footprint,
+  latency, and generated-token throughput on the same machine?
+  \item What does the current QLoRA adapter export show, and what must be rerun
+  before making final domain-adaptation claims?
   \item Which models are most suitable for resource-constrained railway-domain
-  applications after considering both baseline performance and adaptation cost?
+  deployment when accuracy, memory, and latency are considered together?
 \end{enumerate}
 
 The contributions are:
 \begin{enumerate}[leftmargin=1.5em]
-  \item We construct a railway-domain bilingual QA dataset from railway
-  terminology and traction power supply regulation documents, and define a
-  reproducible local JSONL evaluation format.
-  \item We evaluate a ten-model open LLM pool under a fixed single-GPU hardware
-  budget, covering both public benchmarks and railway-domain QA.
-  \item We compare low-bit inference settings and report deployment-oriented
-  measurements including memory use, latency, and throughput.
-  \item We apply QLoRA to representative models and analyze whether lightweight
-  adaptation changes the model selection recommendation for railway-domain use.
+  \item We construct a railway-domain bilingual QA dataset with 22,164 training
+  samples, 2,770 validation samples, and 2,770 test samples from local railway
+  terminology and regulation material.
+  \item We implement a reproducible single-GPU evaluation workflow that records
+  public benchmark scores, local domain outputs, latency, throughput, and peak
+  VRAM for multiple precision settings.
+  \item We report the completed baseline and efficiency results currently
+  available in the project CSV exports and clearly separate mature results from
+  one-sample domain sanity checks.
+  \item We curate a 90-entry BibTeX library and JSON literature-method matrix
+  covering model families, resource-efficient LLM deployment, evaluation,
+  PEFT, pruning, and federated adaptation.
 \end{enumerate}
 
-The rest of this paper is organized as follows. \Cref{sec:related_work}
-reviews open LLM evaluation, parameter-efficient fine-tuning, and constrained
-deployment. \Cref{sec:methodology} describes the evaluation and adaptation
-framework. \Cref{sec:experimental_setup} introduces the model pool, dataset,
-hardware, and metrics. \Cref{sec:results} will report baseline, efficiency, and
-QLoRA results. \Cref{sec:discussion} discusses deployment implications and
-limitations, and \Cref{sec:conclusion} concludes the study.
+The rest of this paper follows the PeerJ Computer Science application-paper
+structure. \Cref{sec:related_work} reviews model evaluation, efficient
+adaptation, and resource-constrained deployment. \Cref{sec:problem_setting}
+defines the railway application scenario. \Cref{sec:methodology} describes the
+evaluation and adaptation workflow. \Cref{sec:experimental_setup} presents the
+dataset, model pool, hardware, and metrics. \Cref{sec:results} reports the
+current exported results, and \Cref{sec:discussion} discusses deployment
+implications and limitations.

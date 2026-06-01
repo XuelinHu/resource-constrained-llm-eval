@@ -279,3 +279,10 @@ Use `FORMAL_EXPERIMENT_CHECKLIST.md` as the gate before starting the full baseli
 - The current codebase is a scaffold focused on experiment orchestration and paper production.
 - Benchmark execution still depends on local model access, datasets, and your final prompt/evaluation policy.
 - Keep all generated outputs under `results/` so tables can be imported into LaTeX cleanly.
+
+## format
+- https://peerj.com/articles/cs-3773/
+- https://peerj.com/articles/cs-3762/
+- https://www.overleaf.com/latex/templates/latex-template-for-peerj-journal-and-pre-print-submissions/ptdwfrqxqzbn
+- https://peerj.com/about/policies-and-procedures/#discipline-standards
+- https://peerj.com/about/author-instructions/#reference-format

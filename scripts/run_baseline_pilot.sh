@@ -7,7 +7,7 @@ HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 export HF_HUB_DISABLE_XET
 
 MODELS=(
-  qwen3_0_6b
+  qwen3_4b
 )
 
 echo "Running pilot baseline with experiment: ${EXPERIMENT}"

@@ -1,14 +1,14 @@
 \begin{table*}[t]
 \centering
-\caption{QLoRA adaptation results on selected models. Add adapter size and training time if your target venue values implementation detail.}
+\scriptsize
+\caption{Current QLoRA adapter evaluation export. The Domain QA exact-match score is not yet a mature domain benchmark result because the current adapter evaluation summary contains one test sample.}
 \label{tab:qlora-results}
 \begin{tabular}{lccccc}
 \toprule
-Model & Before Domain QA & After Domain QA & $\Delta$ Domain & General Avg. Before & General Avg. After \\
+Model & Baseline Domain & Adapter Domain & Adapter MMLU & Adapter C-Eval & Tokens/s \\
 \midrule
-Qwen3-4B & -- & -- & -- & -- & -- \\
-Qwen2.5-7B-Instruct & -- & -- & -- & -- & -- \\
-Gemma 3 4B & -- & -- & -- & -- & -- \\
+Qwen3-4B & 0.000 & 0.000 & -- & -- & 13.149 \\
+Qwen2.5-7B-Instruct & 0.000 & 0.000 & 0.710 & 0.789 & 18.032 \\
 \bottomrule
 \end{tabular}
 \end{table*}

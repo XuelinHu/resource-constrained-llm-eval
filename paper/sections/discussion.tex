@@ -1,18 +1,44 @@
 \label{sec:discussion}
 
-The discussion will interpret the final experimental results from a deployment
-perspective. The central point is that railway-domain LLM selection under a
-single-GPU constraint is a multi-objective decision rather than a leaderboard
-ranking.
+The results show that resource-constrained model selection is a multi-objective
+engineering decision. Qwen2.5-7B-Instruct and Qwen3-8B are currently the best
+accuracy-oriented choices, but their memory footprints and latency are not
+always necessary for a terminology-heavy local assistant. Conversely,
+Qwen3-0.6B and Qwen3-1.7B are much cheaper to run and may be sufficient for
+frequent bilingual term lookup or classroom demonstrations.
 
-The final paper should discuss whether larger models consistently outperform
-smaller models, whether int4 inference provides an acceptable quality-efficiency
-tradeoff, and whether QLoRA changes the model recommendation. If a smaller
-model adapts strongly to railway data, it may be more useful in practice than a
-larger baseline model with higher latency.
+The efficiency table also cautions against treating quantization as a universal
+speedup. Int4 reduces memory clearly for the Qwen3 models, yet bf16 is faster
+on the tested prompt set. Int8 is generally the slowest path in the current
+environment. This behavior is plausible because quantized inference depends on
+kernel support, dequantization overhead, batch size, and sequence length. For
+deployment, the correct question is therefore not whether int4 is theoretically
+smaller, but whether its measured memory saving is worth its observed latency
+cost on the target machine.
 
-Limitations should be stated explicitly. The study is limited to one GPU class,
-one local railway-domain corpus, and open models that are available in the local
-environment. It does not claim to introduce a new algorithm, and it should not
-generalize beyond the evaluated hardware and dataset without additional
-experiments.
+The QLoRA results should be interpreted conservatively. The adapter training
+and evaluation path is operational, and the Qwen2.5 adapted export preserves
+public benchmark scores close to the baseline. However, the current Domain QA
+summary uses one sample, so it cannot estimate real railway-domain accuracy.
+The next draft should replace this sanity check with full-test exact-match
+scores, qualitative error categories, and examples of terminology or regulation
+phrases that improve after adaptation.
+
+There are several limitations. First, the reported hardware is one GPU class,
+so the measured speed may differ on Ada, Hopper, consumer laptop GPUs, or CPU
+edge devices. Second, the current completed public results cover six models,
+while the planned formal model pool contains nine models and the broader local
+cache contains additional models reserved for future extension. Third, the
+railway-domain evaluation requires stronger answer normalization because exact
+match can underestimate correct translations with acceptable wording variants.
+Finally, the paper does not propose a new algorithm; its value is in
+deployment-oriented measurement, dataset construction, and transparent
+separation of completed results from pending experiments.
+
+Despite these limitations, the draft already provides useful practical
+guidance. A laboratory that wants a strong single-GPU baseline should begin
+with Qwen2.5-7B-Instruct or Qwen3-8B. A laboratory that wants the cheapest
+interactive model should start with Qwen3-1.7B or Qwen3-0.6B. A laboratory that
+wants a balanced QLoRA candidate should prioritize Qwen3-4B and Qwen2.5-7B,
+then rerun the full railway-domain test set before making a final deployment
+choice.

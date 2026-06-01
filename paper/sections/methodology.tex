@@ -1,35 +1,49 @@
 \label{sec:methodology}
 
-This study uses an application-oriented experimental methodology. The goal is
-to determine which open LLMs are practical for railway-domain use when the
-hardware budget is fixed to a single 24GB GPU. The method combines baseline
-evaluation, low-bit inference comparison, and QLoRA-based domain adaptation.
+The methodology is designed to answer a deployment-oriented model-selection
+question under a fixed hardware budget. It contains four stages: dataset
+construction, baseline evaluation, efficiency measurement, and adapter
+evaluation.
 
-\textbf{Baseline evaluation.} Each model is first evaluated without fine-tuning.
-This establishes the zero-adaptation capability of the model on public
-benchmarks and on the railway-domain QA test set. The local railway evaluation
-uses exact matching after answer normalization, while public benchmarks use the
-metrics defined by their respective evaluation harness tasks.
+\textbf{Dataset construction.} Railway-domain samples are converted into JSONL
+records with `prompt', `answer', `text', `category', and `source' fields. The
+prompt asks for either Chinese-to-English terminology, English-to-Chinese
+terminology, or regulation-oriented bilingual translation. The answer field is
+kept short and deterministic so that exact-match evaluation can be used after
+normalization. This design favors reproducibility and error inspection over
+open-ended generation scoring.
 
-\textbf{Efficiency measurement.} Accuracy alone is insufficient under a strict
-single-GPU constraint. For each model and precision setting, the pipeline records
-peak GPU memory, latency, and generated-token throughput on a fixed efficiency
-prompt set. These values are analyzed together with task scores to identify
-models that provide a favorable performance-efficiency tradeoff.
+\textbf{Baseline evaluation.} Each model is loaded locally and evaluated
+without task-specific fine-tuning. Public benchmark scores are collected with
+standard task metrics for MMLU, C-Eval, GSM8K, and HumanEval. The local Domain
+QA task uses exact match against the railway-domain answer field. For the
+current draft, public benchmark results are mature for the completed exported
+runs, while the Domain QA export is a one-sample sanity check.
 
-\textbf{Railway-domain adaptation.} For selected models, QLoRA is used to adapt
-the model to railway-domain samples. The adapted model is represented as a
-small adapter rather than a full copy of the base model. After adaptation, the
-same railway-domain evaluation is repeated. The adaptation gain is defined as:
-\[
-\Delta S_{\mathrm{domain}} = S_{\mathrm{after}} - S_{\mathrm{before}},
-\]
-where \(S_{\mathrm{before}}\) and \(S_{\mathrm{after}}\) are the domain test
-scores before and after QLoRA.
+\textbf{Precision comparison.} Baseline inference is executed under bf16, int8,
+and int4 settings where supported. The precision setting is not treated as a
+pure compression variable because the measured runtime depends on the model,
+quantization backend, kernels, and host software. We therefore report accuracy
+and efficiency together instead of assuming that lower-bit inference is always
+faster.
 
-\textbf{Deployment-oriented analysis.} The final analysis compares models along
-four dimensions: task score, memory footprint, latency, and adaptation response.
-This avoids treating the paper as a simple leaderboard. A model with the
-highest benchmark score may not be the best practical choice if it is too slow
-or too expensive to adapt. Conversely, a smaller model may become attractive if
-QLoRA yields strong domain improvement at low cost.
+\textbf{Efficiency measurement.} A fixed efficiency prompt set is used to
+measure peak allocated VRAM, mean latency, median latency, and generated-token
+throughput. These measurements make it possible to compare a high-scoring model
+with a smaller model that may be more useful in local service. The primary
+deployment analysis therefore considers score, memory, and latency jointly.
+
+\textbf{QLoRA adapter evaluation.} For selected models, the base model is loaded
+in 4-bit mode and LoRA adapters are trained on the railway-domain dataset. The
+LoRA configuration uses rank 64, alpha 16, dropout 0.05, and target modules
+covering attention and feed-forward projections. The adapter is then evaluated
+with the same local and public tasks when exported. The present adapter export
+contains Qwen3-4B and Qwen2.5-7B-Instruct; its Domain QA score is still a
+one-sample sanity result and must be rerun on the full test split before final
+domain conclusions are drawn.
+
+\textbf{Decision rule.} The final recommendation is not the model with the
+largest single benchmark score. A candidate is considered suitable only if it
+fits within the 24GB VRAM budget, has acceptable latency, preserves useful
+public benchmark quality, and can be adapted or evaluated on the railway data
+without destabilizing the workflow.
