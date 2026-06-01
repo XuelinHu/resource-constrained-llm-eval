@@ -21,21 +21,23 @@ run_id="$(date +%Y%m%d_%H%M%S)"
 log="logs/paper_experiment_chain_int8_queued_${run_id}.log"
 pidfile="logs/paper_experiment_chain_int8_queued_${run_id}.pid"
 
-{
-  echo "[$(date '+%F %T')] Waiting for current chain PID ${CURRENT_PID}"
-  while kill -0 "${CURRENT_PID}" 2>/dev/null; do
-    sleep 300
-  done
-  echo "[$(date '+%F %T')] Current chain finished; starting int8 chain"
-  exec env \
-    PYTHONUNBUFFERED=1 \
-    PRECISION=int8 \
-    BASELINE_GROUP=paper_baseline_int8 \
-    BASELINE_LABEL=public_domain_regqa \
-    ADAPTER_GROUP=paper_adapter_domainqa_int8 \
-    ADAPTER_LABEL=domainqa_adapter_public_domain_regqa \
-    bash scripts/run_paper_experiment_chain.sh
-} > "${log}" 2>&1 < /dev/null &
+setsid env ROOT_DIR="${ROOT_DIR}" CURRENT_PID="${CURRENT_PID}" bash -c '
+set -euo pipefail
+cd "${ROOT_DIR}"
+echo "[$(date "+%F %T")] Waiting for current chain PID ${CURRENT_PID}"
+while kill -0 "${CURRENT_PID}" 2>/dev/null; do
+  sleep 300
+done
+echo "[$(date "+%F %T")] Current chain finished; starting int8 chain"
+exec env \
+  PYTHONUNBUFFERED=1 \
+  PRECISION=int8 \
+  BASELINE_GROUP=paper_baseline_int8 \
+  BASELINE_LABEL=public_domain_regqa \
+  ADAPTER_GROUP=paper_adapter_domainqa_int8 \
+  ADAPTER_LABEL=domainqa_adapter_public_domain_regqa \
+  bash scripts/run_paper_experiment_chain.sh
+' > "${log}" 2>&1 < /dev/null &
 
 pid=$!
 printf '%s\n' "${pid}" > "${pidfile}"
