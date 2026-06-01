@@ -1,37 +1,71 @@
 \label{sec:results}
 
-This section will be completed after the formal experiments are executed. The
-planned result presentation has four parts.
-
 \subsection{Baseline Results}
 
-This subsection will report the public benchmark and railway-domain scores of
-the ten-model pool before adaptation. The analysis should identify the strongest
-general model, the strongest railway-domain baseline, and the smallest model
-that remains competitive under the single-GPU constraint.
+\Cref{tab:main-results} summarizes the completed public benchmark export. The
+strongest completed baselines are Qwen2.5-7B-Instruct and Qwen3-8B. In the
+current best-available precision rows, Qwen2.5-7B-Instruct reaches 0.718 on
+MMLU, 0.796 on C-Eval, and 0.665 on HumanEval. Qwen3-8B reaches 0.718 on MMLU,
+0.781 on C-Eval, and 0.659 on HumanEval. Qwen3-4B is the strongest smaller
+mid-scale baseline in the completed table, with 0.681 on MMLU, 0.715 on
+C-Eval, and 0.652 on HumanEval.
+
+The smaller Qwen3 models show the expected quality-efficiency pattern.
+Qwen3-1.7B improves substantially over Qwen3-0.6B, especially on MMLU and
+HumanEval, while still remaining much cheaper than 7B/8B models. GSM8K is zero
+or near-zero across the current export. This should be treated as an evaluation
+configuration issue or strict-answer-extraction warning until the math task is
+rechecked with the final prompting policy.
 
 \input{tables/main_results}
 
 \subsection{Efficiency Results}
 
-This subsection will compare bf16, int8, and int4 inference in terms of peak
-VRAM, latency, and token throughput. The key question is whether a lower-bit
-configuration preserves enough task performance to justify its memory and speed
-benefits.
+\Cref{tab:efficiency-results} shows that low-bit inference does not
+automatically improve runtime on the tested stack. For the Qwen3 family, int4
+substantially reduces peak allocated VRAM: Qwen3-8B drops from 15.30GB in bf16
+to 5.78GB in int4, and Qwen3-4B drops from 7.54GB to 2.55GB. However, bf16 is
+faster in the current efficiency prompt set. Qwen3-8B produces 39.69 tokens/s
+in bf16 and 22.46 tokens/s in int4; Qwen3-4B produces 38.74 tokens/s in bf16
+and 22.38 tokens/s in int4.
+
+The smallest models are most attractive when memory and speed dominate.
+Qwen3-0.6B uses 1.15GB in bf16 and reaches 54.28 tokens/s, while Qwen3-1.7B
+uses 3.24GB and reaches 52.88 tokens/s. The 7B-class Qwen2.5 and DeepSeek rows
+fit within 24GB, but their int4 memory reductions are modest in the current
+export. This reinforces the need to measure the actual backend rather than
+assuming a fixed theoretical compression ratio.
 
 \input{tables/efficiency_results}
 
 \subsection{QLoRA Adaptation Results}
 
-This subsection will compare railway-domain performance before and after QLoRA
-for the selected adaptation candidates. It should also report training cost,
-adapter size, and whether adaptation causes any degradation on public tasks.
+\Cref{tab:qlora-results} reports the current adapter evaluation export. The
+adapter run confirms that QLoRA training and evaluation can be executed in the
+single-GPU workflow, but the exported Domain QA score is still based on one
+test sample and is therefore not a final domain-effectiveness result. For
+Qwen2.5-7B-Instruct, the adapter export preserves public benchmark quality
+reasonably well relative to the bf16 baseline: adapted int4 MMLU is 0.710
+compared with 0.718 in the bf16 baseline, and adapted int4 C-Eval is 0.789
+compared with 0.796. The adapter HumanEval score is also close to the baseline
+value in the raw CSV. These observations are promising for pipeline viability,
+but they must be repeated with full-domain evaluation before claiming railway
+adaptation gains.
 
 \input{tables/qlora_results}
 
 \subsection{Model Selection Analysis}
 
-This subsection will synthesize the results into deployment guidance. The final
-recommendation should distinguish between the best accuracy-oriented model, the
-best efficiency-oriented model, and the best model after railway-domain
-adaptation.
+The current evidence supports three deployment recommendations. First, for
+accuracy-oriented single-GPU experiments, Qwen2.5-7B-Instruct and Qwen3-8B are
+the strongest completed choices. Second, for speed- and memory-oriented local
+services, Qwen3-0.6B and Qwen3-1.7B are the most practical lightweight
+candidates. Third, Qwen3-4B is a useful middle point because it is much cheaper
+than 7B/8B models while retaining competitive C-Eval and HumanEval scores.
+
+The model recommendation may change after the full railway-domain test split is
+exported. In particular, a smaller model that receives a strong QLoRA domain
+gain may be preferable to a larger baseline if it answers railway terminology
+queries with lower latency and memory cost. The next experimental priority is
+therefore not another public benchmark run, but a full 2,770-sample Domain QA
+baseline and adapter evaluation with stable answer normalization.

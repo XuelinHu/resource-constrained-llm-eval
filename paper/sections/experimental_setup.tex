@@ -1,50 +1,46 @@
 \label{sec:experimental_setup}
 
-\textbf{Hardware and software.} All experiments are designed for a single
-NVIDIA RTX 3090 GPU with 24GB of VRAM. The implementation uses PyTorch,
+\textbf{Hardware and software.} All reported measurements are produced on a
+single NVIDIA RTX 3090 GPU with 24GB of VRAM. The implementation uses PyTorch,
 Hugging Face Transformers, PEFT, BitsAndBytes, Datasets, and the Language Model
-Evaluation Harness. All scripts are executed in the foreground to keep GPU use
-observable and reproducible.
+Evaluation Harness. The pipeline writes raw JSON snapshots and aggregated CSV
+files under `results/single\_gpu\_3090/'.
 
-\textbf{Model pool.} The formal model pool contains nine locally cached open
-models. The pool intentionally excludes models that were not fully available in
-the local cache, whose access authorization was rejected during preparation, or
-whose architecture was not supported by the current Transformers environment.
-This keeps the formal experiment reproducible on the current hardware and
-software environment. \Cref{tab:model-overview} lists the final model pool.
+\textbf{Model pool.} The planned formal pool contains nine locally deployable
+open models, shown in \Cref{tab:model-overview}. The current result export is a
+completed subset: public benchmark and efficiency rows are available for
+Qwen3-0.6B, Qwen3-1.7B, Qwen3-4B, Qwen3-8B, Qwen2.5-7B-Instruct, and
+DeepSeek-R1-Distill-Qwen-7B. Phi-3-mini, Yi-6B-Chat, and
+Mistral-7B-Instruct-v0.3 remain in the planned pool but are not included in the
+current public-benchmark result table.
 
 \input{tables/model_overview}
 
-\textbf{Railway-domain dataset.} The domain dataset is generated from local
-railway bilingual corpus files under \texttt{data/corpus/railway}. The sources
-include railway technical terminology and traction power supply operation and
-maintenance regulations. The generated dataset contains four categories:
-Chinese-to-English terminology, English-to-Chinese terminology,
-Chinese-to-English regulation translation, and English-to-Chinese regulation
-translation. After conservative cleaning, the dataset contains 22,164 training
-examples, 2,770 validation examples, and 2,770 test examples.
+\textbf{Railway-domain dataset.} The local corpus is stored under
+`data/corpus/railway' and contains railway technical terminology and traction
+power supply operation-and-maintenance documents. The generated dataset
+contains 22,164 training examples, 2,770 validation examples, and 2,770 test
+examples. Each JSONL record stores the prompt, expected answer, combined text,
+category, and source.
 
-\textbf{Smoke dataset.} Before formal experiments, a stratified 1\% smoke
-dataset is generated from the full domain dataset. It contains 222 training
-examples, 28 validation examples, and 28 test examples. This smoke dataset is
-used only to validate data loading, model loading, evaluation output paths, and
-the foreground execution scripts.
+\textbf{Smoke dataset.} A stratified 1\% smoke split is generated before formal
+runs. It contains 222 training examples, 28 validation examples, and 28 test
+examples. The smoke split is used to verify data loading, model loading,
+adapter training, generation snapshots, and table export paths.
 
-\textbf{Benchmark suite.} The formal benchmark suite includes public evaluation
-tasks and a local railway-domain QA task. Public tasks are used to measure
-general language, reasoning, code, and Chinese capabilities. The local task is
-used to measure railway-domain terminology and regulation handling. The
-pipeline records raw generations and summary metrics so that both quantitative
-and qualitative analysis can be performed.
+\textbf{Benchmark suite.} Public benchmark tasks include MMLU, C-Eval, GSM8K,
+and HumanEval. The local Domain QA task is included in the pipeline, but the
+current aggregate CSV contains a one-sample exact-match sanity result rather
+than the full 2,770-sample test evaluation. This distinction is preserved in
+the result captions and discussion.
 
 \textbf{Quantization settings.} Baseline inference is evaluated under bf16,
-int8, and int4 settings where supported. These settings allow the paper to
-compare accuracy, peak memory, latency, and throughput under the same hardware
-constraint.
+int8, and int4 settings when supported by the current stack. For each
+model-precision pair, the pipeline records task scores, peak allocated VRAM,
+peak reserved VRAM, latency, and generated-token throughput.
 
-\textbf{QLoRA setup.} QLoRA is applied to a small representative subset:
-Qwen3-4B, Qwen2.5-7B-Instruct, and Phi-3-mini-4k-instruct. The base model is
-loaded in 4-bit mode, original weights are frozen, and LoRA adapters are trained
-on the railway-domain dataset. The goal is not to create a new adaptation
-algorithm, but to test whether low-cost domain adaptation is useful under a
-single-GPU budget.
+\textbf{QLoRA setup.} The QLoRA configuration uses 4-bit base loading, frozen
+base weights, LoRA rank 64, LoRA alpha 16, dropout 0.05, learning rate
+\(2\times10^{-4}\), three epochs, per-device train batch size 1, gradient
+accumulation 16, and maximum sequence length 2,048. The current adapter export
+contains Qwen3-4B and Qwen2.5-7B-Instruct.

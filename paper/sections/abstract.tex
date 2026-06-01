@@ -1,16 +1,20 @@
-Open large language models (LLMs) provide a promising route for railway-domain
-question answering and bilingual technical assistance, but many deployment
-settings cannot rely on multi-GPU infrastructure. This paper studies the
-evaluation, quantization, and QLoRA-based domain adaptation of open LLMs under a
-single RTX 3090 24GB constraint. We construct a railway-domain bilingual QA
-dataset from traction power supply regulations and railway technical
-terminology, and evaluate a locally deployable model pool covering Qwen, Qwen
-2.5, DeepSeek-R1-Distill, Gemma, Phi, Yi, and Mistral families. The study is
-positioned as an application-oriented and experimental evaluation rather than a
-new model architecture. It asks which open models are practically usable under a
-single-GPU budget, how low-bit inference changes the performance-efficiency
-tradeoff, and whether QLoRA improves railway-domain performance without
-exceeding the available hardware budget. The expected outcome is a reproducible
-framework for resource-constrained railway LLM evaluation and adaptation,
-together with empirical guidance for model selection in engineering education
-and railway technical applications.
+Open large language models (LLMs) are attractive for railway-domain bilingual
+question answering, but many laboratories and educational deployments are
+limited to a single workstation GPU. This paper presents an application-oriented
+evaluation and adaptation study under a fixed NVIDIA RTX 3090 24GB constraint.
+We build a railway-domain bilingual dataset from technical terminology and
+traction power supply operation-and-maintenance material, and evaluate locally
+cached open models from the Qwen, DeepSeek, Phi, Yi, and Mistral families. The
+current result export contains completed baseline and efficiency measurements
+for six models across bf16, int8, and int4 settings, plus an initial QLoRA
+adapter evaluation for two models. On the completed public benchmark runs,
+Qwen2.5-7B-Instruct and Qwen3-8B obtain the strongest overall scores, while
+Qwen3-0.6B and Qwen3-1.7B provide much lower memory footprints and faster bf16
+throughput. Low-bit inference substantially reduces memory for several models,
+but the measured int4 and int8 paths are not always faster than bf16 on the
+tested software stack. The Domain QA and QLoRA exports currently contain only a
+one-sample sanity check, so they are reported as pipeline-completeness evidence
+rather than final domain-effectiveness claims. The study contributes a
+reproducible single-GPU evaluation workflow, a railway bilingual QA dataset, a
+curated literature matrix, and deployment-oriented guidance for continuing the
+full domain evaluation.

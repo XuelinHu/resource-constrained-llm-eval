@@ -8,8 +8,7 @@ experiment:
 
 baseline:
   models:
-    - qwen3_0_6b
-    - qwen3_1_7b
+    - qwen3_4b
   tasks:
     - gsm8k
     - domain_qa
