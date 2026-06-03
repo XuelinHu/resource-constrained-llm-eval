@@ -1,18 +1,23 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
-\caption{Formal model pool used in the single-GPU railway-domain study.}
+\caption{Planned and partially completed local LLM pool for the single-RTX-3090 study. The status column separates completed exports from runs retained as placeholders in this manuscript draft.}
 \label{tab:model-overview}
-\begin{tabular}{lccc}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllll}
 \toprule
-Model & Params (B) & Family & Role \\
+Model ID & Family & Size & Primary role & Current manuscript status \\
 \midrule
-Qwen3-4B & 4.0 & Qwen3 & QLoRA candidate \\
-Qwen3-8B & 8.0 & Qwen3 & Largest Qwen3 baseline \\
-Qwen2.5-7B-Instruct & 7.0 & Qwen2.5 & QLoRA candidate \\
-DeepSeek-R1-Distill-Qwen-7B & 7.0 & DeepSeek & Reasoning-oriented baseline \\
-Phi-3-mini-4k-instruct & 3.8 & Phi & QLoRA candidate \\
-Yi-6B-Chat & 6.0 & Yi & Chinese-English baseline \\
-Mistral-7B-Instruct-v0.3 & 7.0 & Mistral & International baseline \\
+qwen3\_4b & Qwen3 & 4B & compact multilingual baseline & int4 public/domain results exported \\
+qwen3\_8b & Qwen3 & 8B & strongest compact baseline & int4 public/domain results exported; Adapter-A trained \\
+qwen2\_5\_7b\_instruct & Qwen2.5 & 7B & instruction baseline and adapter target & Adapter-A full evaluation exported \\
+deepseek\_r1\_distill\_qwen\_7b & DeepSeek distill & 7B & reasoning-oriented baseline & efficiency export available; latest domain run pending \\
+mistral\_7b\_instruct\_v0\_3 & Mistral & 7B & multilingual/code-oriented baseline & placeholder \\
+phi\_3\_mini\_4k\_instruct & Phi-3 & 3.8B & small reasoning baseline & placeholder \\
+yi\_6b\_chat & Yi & 6B & Chinese/English chat baseline & placeholder \\
+gemma\_3\_4b & Gemma 3 & 4B & lightweight multilingual baseline & placeholder \\
+gemma\_2\_9b\_it & Gemma 2 & 9B & larger instruction baseline & placeholder \\
+glm\_4\_9b\_chat\_hf & GLM-4 & 9B & Chinese-oriented chat baseline & placeholder \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{tabular}%
+}
+\end{table*}

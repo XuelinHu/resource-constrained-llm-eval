@@ -86,9 +86,13 @@ run_or_notify_failure "readiness_check" \
 echo "[$(date '+%F %T')] Stage 1: ${PRECISION} baseline over public + domain + regqa tasks"
 for model in "${MODELS[@]}"; do
   summary_path="${output_root}/${BASELINE_GROUP}/${model}/${model}_${PRECISION}_${BASELINE_LABEL}_summary.json"
-  if [[ "${FORCE:-0}" != "1" && -f "${summary_path}" ]]; then
+  lm_eval_path="${output_root}/${BASELINE_GROUP}/${model}/${model}_${PRECISION}_${BASELINE_LABEL}_lm_eval.json"
+  if [[ "${FORCE:-0}" != "1" && -f "${summary_path}" && -f "${lm_eval_path}" ]]; then
     echo "[$(date '+%F %T')] Skip completed baseline: ${model}"
     continue
+  fi
+  if [[ "${FORCE:-0}" != "1" && -f "${summary_path}" && ! -f "${lm_eval_path}" ]]; then
+    echo "[$(date '+%F %T')] Re-run incomplete baseline missing lm-eval output: ${model}"
   fi
   echo "[$(date '+%F %T')] Baseline ${model} ${PRECISION}"
   run_or_notify_failure "baseline_${model}_${PRECISION}" \

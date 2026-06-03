@@ -12,12 +12,15 @@
 \usepackage{subcaption}
 \usepackage{siunitx}
 \usepackage{hyperref}
+\hypersetup{hidelinks}
 \usepackage[nameinlink,noabbrev]{cleveref}
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{url}
 
-\title{Resource-Constrained Evaluation and QLoRA-Based Adaptation of Open LLMs for Railway-Domain Bilingual QA}
+\newcommand{\placeholder}[1]{\textcolor{blue}{\textbf{[Placeholder: #1]}}}
+
+\title{Resource-Constrained Evaluation and Adaptation of Local Open LLMs for Railway-Domain QA on a Single RTX 3090}
 \author{Your Name}
 \date{\today}
 
@@ -38,13 +41,16 @@
 \section{Problem Setting and Application Scenario}
 \input{sections/problem_setting}
 
+\section{Datasets}
+\input{sections/datasets}
+
 \section{Methodology}
 \input{sections/methodology}
 
 \section{Experimental Setup}
 \input{sections/experimental_setup}
 
-\section{Results}
+\section{Results and Analysis}
 \input{sections/results}
 
 \section{Discussion}

@@ -1,14 +1,19 @@
 \begin{table*}[t]
 \centering
-\scriptsize
-\caption{Current QLoRA adapter evaluation export. The Domain QA exact-match score is not yet a mature domain benchmark result because the current adapter evaluation summary contains one test sample.}
+\caption{Current adaptation-evaluation exports and placeholders for the final before/after comparison. The exported qwen2.5 Adapter-A row is a full Domain-QA evaluation; Domain-RegQA and mixed-data adapter rows remain planned.}
 \label{tab:qlora-results}
-\begin{tabular}{lccccc}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrrl}
 \toprule
-Model & Baseline Domain & Adapter Domain & Adapter MMLU & Adapter C-Eval & Tokens/s \\
+Model & Setting & Domain-QA EM & Domain-QA Char-F1 & Ref. contained & MMLU & C-Eval & Tokens/s & Status \\
 \midrule
-Qwen3-4B & 0.000 & 0.000 & -- & -- & 13.149 \\
-Qwen2.5-7B-Instruct & 0.000 & 0.000 & 0.710 & 0.789 & 18.032 \\
+qwen2\_5\_7b\_instruct & Adapter-A / Domain-QA & 0.000 & 0.163 & 0.420 & 0.711 & 0.785 & 18.17 & exported \\
+qwen2\_5\_7b\_instruct & baseline int4 & -- & -- & -- & -- & -- & -- & placeholder \\
+qwen2\_5\_7b\_instruct & Adapter-C / mixed & -- & -- & -- & -- & -- & -- & placeholder \\
+qwen3\_8b & baseline int4 & 0.094 & 0.317 & 0.189 & 0.717 & 0.782 & 22.46 & exported \\
+qwen3\_8b & Adapter-A / Domain-QA & -- & -- & -- & -- & -- & -- & placeholder \\
+qwen3\_8b & Adapter-C / mixed & -- & -- & -- & -- & -- & -- & placeholder \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}

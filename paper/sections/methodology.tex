@@ -1,49 +1,59 @@
 \label{sec:methodology}
 
-The methodology is designed to answer a deployment-oriented model-selection
-question under a fixed hardware budget. It contains four stages: dataset
-construction, baseline evaluation, efficiency measurement, and adapter
-evaluation.
+The methodology is designed to support deployment-oriented model selection
+under a fixed hardware budget. It contains six stages: model-pool definition,
+baseline evaluation, domain-task evaluation, efficiency measurement, QLoRA
+adaptation, and multi-objective analysis.
 
-\textbf{Dataset construction.} Railway-domain samples are converted into JSONL
-records with `prompt', `answer', `text', `category', and `source' fields. The
-prompt asks for either Chinese-to-English terminology, English-to-Chinese
-terminology, or regulation-oriented bilingual translation. The answer field is
-kept short and deterministic so that exact-match evaluation can be used after
-normalization. This design favors reproducibility and error inspection over
-open-ended generation scoring.
+\subsection{Model-Pool Definition}
 
-\textbf{Baseline evaluation.} Each model is loaded locally and evaluated
-without task-specific fine-tuning. Public benchmark scores are collected with
-standard task metrics for MMLU, C-Eval, GSM8K, and HumanEval. The local Domain
-QA task uses exact match against the railway-domain answer field. For the
-current draft, public benchmark results are mature for the completed exported
-runs, while the Domain QA export is a one-sample sanity check.
+The formal pool follows the latest project configuration rather than the older
+partial result export. It contains ten local open models from Qwen, DeepSeek,
+Mistral, Phi, Yi, Gemma, and GLM families. The pool intentionally mixes 4B--9B
+models because a single RTX 3090 deployment must consider both capability and
+operational cost. Models that are not yet evaluated are still listed in the
+tables as placeholders, which keeps the final experiment matrix visible.
 
-\textbf{Precision comparison.} Baseline inference is executed under bf16, int8,
-and int4 settings where supported. The precision setting is not treated as a
-pure compression variable because the measured runtime depends on the model,
-quantization backend, kernels, and host software. We therefore report accuracy
-and efficiency together instead of assuming that lower-bit inference is always
-faster.
+\subsection{Baseline and Public Evaluation}
 
-\textbf{Efficiency measurement.} A fixed efficiency prompt set is used to
-measure peak allocated VRAM, mean latency, median latency, and generated-token
-throughput. These measurements make it possible to compare a high-scoring model
-with a smaller model that may be more useful in local service. The primary
-deployment analysis therefore considers score, memory, and latency jointly.
+Each model is loaded locally and evaluated without task-specific fine-tuning.
+The public benchmark suite contains MMLU, C-Eval, GSM8K, and HumanEval. These
+tasks measure broad knowledge, Chinese-oriented understanding, mathematical
+reasoning, and code generation. The current draft reports exported values when
+they exist and leaves missing ten-model int4 rows blank.
 
-\textbf{QLoRA adapter evaluation.} For selected models, the base model is loaded
-in 4-bit mode and LoRA adapters are trained on the railway-domain dataset. The
-LoRA configuration uses rank 64, alpha 16, dropout 0.05, and target modules
-covering attention and feed-forward projections. The adapter is then evaluated
-with the same local and public tasks when exported. The present adapter export
-contains Qwen3-4B and Qwen2.5-7B-Instruct; its Domain QA score is still a
-one-sample sanity result and must be rerun on the full test split before final
-domain conclusions are drawn.
+\subsection{Domain Evaluation}
 
-\textbf{Decision rule.} The final recommendation is not the model with the
-largest single benchmark score. A candidate is considered suitable only if it
-fits within the 24GB VRAM budget, has acceptable latency, preserves useful
-public benchmark quality, and can be adapted or evaluated on the railway data
-without destabilizing the workflow.
+Domain-QA and Domain-RegQA are evaluated with exact match, character-level F1,
+token-level F1, reference containment, and length ratio. Exact match is useful
+for deterministic terminology, but it is too strict for all valid translations.
+Character-level F1 and token-level F1 provide softer matching, while reference
+containment and length ratio reveal whether a model returns concise domain
+answers or long off-target responses.
+
+\subsection{Low-Bit Inference and Efficiency Measurement}
+
+Baseline inference is evaluated under bf16, int8, and int4 where supported by
+the local stack. The manuscript does not assume that quantization always
+improves speed. It records peak allocated VRAM, peak reserved VRAM, latency,
+and generated-token throughput, because backend kernels and dequantization
+overhead can make low-bit inference slower even when memory usage improves.
+
+\subsection{QLoRA Adaptation}
+
+QLoRA is used as the adaptation mechanism because it freezes the base model,
+loads the model in 4-bit form, and trains a small set of LoRA parameters. The
+completed Adapter-A setting trains on Domain-QA. Planned variants include
+Adapter-B on Domain-RegQA, Adapter-C on mixed Domain-QA + Domain-RegQA, and
+Adapter-D on mixed data with completion-only loss masking. These variants
+directly answer whether domain terminology, regulatory evidence, or mixed data
+is more useful for this resource-constrained setting.
+
+\subsection{Decision Rule}
+
+The final recommendation is not the model with the largest public benchmark
+score. A candidate is considered suitable only if it fits within 24GB VRAM,
+has acceptable latency, preserves useful public benchmark quality, and improves
+or maintains railway-domain metrics after adaptation. This decision rule
+matches the intended local deployment scenario more closely than a single
+leaderboard ranking.

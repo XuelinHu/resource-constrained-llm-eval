@@ -1,0 +1,25 @@
+\begin{table*}[t]
+\centering
+\caption{Current domain-task exports for int4 baseline inference. Domain-QA is evaluated on 2,770 held-out samples; Domain-RegQA is evaluated on 200 evidence-grounded samples. Placeholder rows mark planned experiments.}
+\label{tab:domain-results}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrl}
+\toprule
+Model & Task & EM & Char-F1 & Token-F1 & Ref. contained & Length ratio & Status \\
+\midrule
+qwen3\_4b & Domain-QA & 0.095 & 0.294 & 0.168 & 0.199 & 8.027 & exported \\
+qwen3\_4b & Domain-RegQA & 0.000 & 0.077 & 0.003 & 0.000 & 0.743 & exported \\
+qwen3\_8b & Domain-QA & 0.094 & 0.317 & 0.158 & 0.189 & 5.154 & exported \\
+qwen3\_8b & Domain-RegQA & 0.000 & 0.133 & 0.005 & 0.000 & 1.520 & exported \\
+qwen2\_5\_7b\_instruct & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+deepseek\_r1\_distill\_qwen\_7b & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+mistral\_7b\_instruct\_v0\_3 & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+phi\_3\_mini\_4k\_instruct & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+yi\_6b\_chat & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+gemma\_3\_4b & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+gemma\_2\_9b\_it & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+glm\_4\_9b\_chat\_hf & Domain-QA/RegQA & -- & -- & -- & -- & -- & placeholder \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

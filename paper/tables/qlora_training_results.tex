@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\caption{Completed QLoRA Adapter-A training runs and planned adapter variants. Adapter-A uses Domain-QA. Adapter-B, Adapter-C, and Adapter-D are placeholders for Domain-RegQA-only, mixed-data, and completion-only variants.}
+\label{tab:qlora-training-results}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrl}
+\toprule
+Model & Adapter/data & Epochs & Runtime s & Train loss & Eval loss & Eval accuracy & Status \\
+\midrule
+qwen2\_5\_7b\_instruct & Adapter-A / Domain-QA & 3 & 17,987 & 0.464 & 0.494 & 0.894 & trained \\
+qwen3\_8b & Adapter-A / Domain-QA & 3 & 24,052 & 0.488 & 0.507 & 0.889 & trained \\
+qwen2\_5\_7b\_instruct & Adapter-B / Domain-RegQA & -- & -- & -- & -- & -- & placeholder \\
+qwen2\_5\_7b\_instruct & Adapter-C / mixed Domain-QA+RegQA & -- & -- & -- & -- & -- & placeholder \\
+qwen2\_5\_7b\_instruct & Adapter-D / completion-only mixed & -- & -- & -- & -- & -- & placeholder \\
+qwen3\_8b & Adapter-C / mixed Domain-QA+RegQA & -- & -- & -- & -- & -- & placeholder \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

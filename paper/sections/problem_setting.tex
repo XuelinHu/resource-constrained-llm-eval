@@ -1,34 +1,30 @@
 \label{sec:problem_setting}
 
-The application target is local railway-domain bilingual assistance rather than
-general-purpose online chatbot service. The intended users are railway
-engineering students, laboratory researchers, and technical staff who need
-fast access to bilingual terminology and operation-and-maintenance knowledge.
-In this setting, the model receives a short technical prompt and is expected to
-return a concise answer without long reasoning traces, unrelated explanation,
-or unsafe operational advice.
+The target application is local railway-domain question answering and bilingual
+technical assistance. The intended users are railway engineering students,
+laboratory researchers, and technical staff who need fast access to
+domain-specific terminology, translation, and regulation-oriented information.
+The model receives a short prompt and is expected to return a concise answer
+without long unrelated explanations or unsafe operational recommendations.
 
-The input space contains two common task families. The first is terminology
-translation, where the model maps a railway technical expression between
-Chinese and English. The second is regulation-oriented translation or
-question-answering, where the prompt contains a sentence or paragraph from
-traction power supply operation-and-maintenance material. The output is a
-single target-language answer or domain-specific phrase. These tasks are small
-in context length, but difficult for generic models because many answers depend
-on specialized railway vocabulary and conventional wording.
+The task space has three parts. The first is bilingual terminology lookup,
+where a railway technical expression is mapped between Chinese and English. The
+second is technical translation, where the model translates a short railway
+operation or maintenance expression. The third is evidence-grounded regulatory
+QA, where the answer should be recoverable from a provided source passage or
+from a known regulatory clause. The first two tasks test domain vocabulary and
+wording. The third tests whether the model can answer regulatory questions
+without drifting away from evidence.
 
-The deployment constraint is fixed to a single NVIDIA RTX 3090 GPU with 24GB of
-VRAM. This constraint reflects a realistic laboratory workstation and rules out
-multi-GPU serving, full-parameter fine-tuning of larger models, and expensive
-hyperparameter searches. Therefore, the model selection problem is
-multi-objective: the selected model must be accurate enough for technical use,
-fit reliably into memory, answer at usable latency, and support a low-cost
-adaptation path.
+The deployment constraint is fixed: all inference and adaptation must be
+feasible on one NVIDIA RTX 3090 with 24GB of VRAM. This excludes multi-GPU
+serving, full-parameter fine-tuning for larger models, and large
+hyperparameter searches. The resulting model-selection problem is therefore
+multi-objective. A good candidate must fit in memory, respond with usable
+latency, retain broad public benchmark quality, and support low-cost domain
+adaptation.
 
-The current dataset contains 22,164 training samples, 2,770 validation samples,
-and 2,770 test samples. The present result export includes public benchmark
-scores for six completed model-precision combinations and a one-sample Domain
-QA sanity check. This means the draft reports mature public benchmark and
-efficiency measurements, while the domain QA and QLoRA results should be read
-as pipeline-completeness evidence until the full 2,770-sample domain test
-evaluation is rerun and exported.
+The paper treats missing results as part of the current project state rather
+than as hidden negative evidence. Existing exports are reported directly.
+Unfinished runs are marked as placeholders in the tables and should be filled
+by rerunning the corresponding experiment scripts under the same configuration.

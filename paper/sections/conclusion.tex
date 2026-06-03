@@ -1,20 +1,21 @@
 \label{sec:conclusion}
 
-This paper presents a PeerJ-style application-oriented draft for evaluating and
-adapting open LLMs under a single RTX 3090 24GB constraint. The project now
-contains a railway bilingual QA dataset, a reproducible evaluation workflow,
-compressed baseline result tables, a QLoRA adapter result table, a normalized
-BibTeX library, and a JSON literature-method matrix.
+This paper draft reorganizes a resource-constrained local LLM study for
+railway-domain QA on a single RTX 3090 24GB GPU. It aligns the manuscript with
+the latest work plan: a ten-model open LLM pool, two railway-domain datasets,
+public benchmark evaluation, int4 efficiency measurement, and QLoRA adaptation
+with planned data-composition ablations.
 
-The completed result export indicates that Qwen2.5-7B-Instruct and Qwen3-8B
-are the strongest accuracy-oriented baselines, while Qwen3-0.6B and Qwen3-1.7B
-are the most efficient lightweight choices. Qwen3-4B is a practical middle
-candidate for continued QLoRA testing. The current quantization results show
-clear memory savings for several int4 runs, but not consistent latency gains,
-which confirms the need for measurement on the actual deployment stack.
+The completed exports show that Qwen3-8B is currently the strongest int4
+public-benchmark baseline among the filled rows, while Qwen3-4B offers a lower
+memory alternative. Domain-QA performance is modest and Domain-RegQA remains
+difficult, confirming the need for domain-specific evaluation rather than
+public benchmarks alone. QLoRA Adapter-A training is operational within the
+24GB limit, but the current adaptation evidence indicates that additional
+mixed-data and completion-only variants are needed before making final
+deployment claims.
 
-The main unfinished empirical item is the full railway-domain evaluation. The
-current Domain QA and QLoRA domain scores are one-sample sanity checks, not
-final domain results. Once the 2,770-sample test split is rerun for baselines
-and adapters, the manuscript can be upgraded from a pipeline-complete draft to
-a full empirical paper with stronger domain conclusions.
+The manuscript is now structured so that unfinished experiments are explicit
+placeholders instead of implicit gaps. The next version should replace those
+placeholders with the final ten-model sweep, matched baseline-versus-adapter
+domain evaluations, data-composition ablations, and qualitative error analysis.

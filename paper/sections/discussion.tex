@@ -1,44 +1,41 @@
 \label{sec:discussion}
 
-The results show that resource-constrained model selection is a multi-objective
-engineering decision. Qwen2.5-7B-Instruct and Qwen3-8B are currently the best
-accuracy-oriented choices, but their memory footprints and latency are not
-always necessary for a terminology-heavy local assistant. Conversely,
-Qwen3-0.6B and Qwen3-1.7B are much cheaper to run and may be sufficient for
-frequent bilingual term lookup or classroom demonstrations.
+The current results already show that resource-constrained LLM selection is a
+multi-objective engineering problem. Qwen3-8B is the strongest exported int4
+public benchmark row, but it is not automatically the best deployment choice
+for every railway workload. Qwen3-4B uses less memory and remains competitive
+on HumanEval and C-Eval, while the 7B-class Qwen2.5 and DeepSeek efficiency
+exports provide higher int4 throughput at a larger memory cost. The final
+recommendation must therefore combine public quality, railway-domain quality,
+latency, and VRAM margin.
 
-The efficiency table also cautions against treating quantization as a universal
-speedup. Int4 reduces memory clearly for the Qwen3 models, yet bf16 is faster
-on the tested prompt set. Int8 is generally the slowest path in the current
-environment. This behavior is plausible because quantized inference depends on
-kernel support, dequantization overhead, batch size, and sequence length. For
-deployment, the correct question is therefore not whether int4 is theoretically
-smaller, but whether its measured memory saving is worth its observed latency
-cost on the target machine.
+The railway-domain results also show why public benchmarks are insufficient.
+The exported Qwen3-8B row is clearly stronger than Qwen3-4B on public tasks,
+yet both models struggle on Domain-RegQA. Evidence-grounded regulatory QA is
+not solved by general benchmark strength alone. This supports the paper's
+planned emphasis on domain-specific evaluation and data-composition ablation.
 
-The QLoRA results should be interpreted conservatively. The adapter training
-and evaluation path is operational, and the Qwen2.5 adapted export preserves
-public benchmark scores close to the baseline. However, the current Domain QA
-summary uses one sample, so it cannot estimate real railway-domain accuracy.
-The next draft should replace this sanity check with full-test exact-match
-scores, qualitative error categories, and examples of terminology or regulation
-phrases that improve after adaptation.
+The QLoRA artifacts are promising but incomplete. Adapter-A training works for
+Qwen2.5-7B-Instruct and Qwen3-8B within the 24GB constraint. The Qwen2.5
+Adapter-A evaluation preserves broad MMLU and C-Eval performance, but its
+Domain-QA exact match is still zero and outputs are often too long. This
+suggests that full-sequence adaptation on Domain-QA may not be sufficient.
+Completion-only masking and mixed regulatory evidence data are plausible next
+steps, which is why Adapter-C and Adapter-D are retained as required
+placeholders.
 
-There are several limitations. First, the reported hardware is one GPU class,
-so the measured speed may differ on Ada, Hopper, consumer laptop GPUs, or CPU
-edge devices. Second, the current completed public results cover six models,
-while the planned formal model pool contains nine models and the broader local
-cache contains additional models reserved for future extension. Third, the
-railway-domain evaluation requires stronger answer normalization because exact
-match can underestimate correct translations with acceptable wording variants.
-Finally, the paper does not propose a new algorithm; its value is in
-deployment-oriented measurement, dataset construction, and transparent
-separation of completed results from pending experiments.
+Several limitations remain. First, the final ten-model int4 sweep is not yet
+complete. Second, the current domain comparison covers only a subset of the
+formal model pool. Third, exact match is too strict for some bilingual
+translation cases, so the final paper should include qualitative examples and
+error categories. Fourth, all measurements target one GPU class and one local
+software stack; performance may differ on newer consumer GPUs, datacenter GPUs,
+or CPU-only edge machines. Finally, the paper is an application-oriented
+evaluation and adaptation study rather than a new compression or training
+algorithm.
 
-Despite these limitations, the draft already provides useful practical
-guidance. A laboratory that wants a strong single-GPU baseline should begin
-with Qwen2.5-7B-Instruct or Qwen3-8B. A laboratory that wants the cheapest
-interactive model should start with Qwen3-1.7B or Qwen3-0.6B. A laboratory that
-wants a balanced QLoRA candidate should prioritize Qwen3-4B and Qwen2.5-7B,
-then rerun the full railway-domain test set before making a final deployment
-choice.
+Despite these limitations, the reorganized draft provides a concrete path to a
+complete paper. The remaining work is well bounded: run the missing ten-model
+baseline rows, finish the Domain-RegQA and mixed-adapter evaluations, regenerate
+the tables from exported artifacts, and replace the placeholders with final
+numbers and error analysis.

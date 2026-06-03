@@ -1,18 +1,23 @@
 \begin{table*}[t]
 \centering
-\scriptsize
-\caption{Completed baseline benchmark results on a single RTX 3090 24GB GPU. The precision column reports the best available public-benchmark run for each model in the current CSV export; Domain QA is shown for pipeline completeness and currently contains one exact-match test sample.}
-\label{tab:main-results}
-\begin{tabular}{llccccc}
+\caption{Current public-benchmark exports for the latest manuscript plan. Missing rows are retained as explicit placeholders because the final ten-model int4 sweep has not yet been completed.}
+\label{tab:public-results}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrl}
 \toprule
-Model & Precision & MMLU & C-Eval & GSM8K & HumanEval & Domain QA \\
+Model & Precision & MMLU & C-Eval & GSM8K & HumanEval & Avg. & Status \\
 \midrule
-Qwen3-0.6B & int8 & 0.401 & 0.434 & 0.000 & 0.183 & 0.000 \\
-Qwen3-1.7B & int8 & 0.549 & 0.572 & 0.000 & 0.396 & 0.000 \\
-Qwen3-4B & int8 & 0.681 & 0.715 & 0.000 & 0.652 & 0.000 \\
-Qwen3-8B & int4 & 0.718 & 0.781 & 0.000 & 0.659 & 0.000 \\
-Qwen2.5-7B-Instruct & bf16 & 0.718 & 0.796 & 0.000 & 0.665 & 0.000 \\
-DeepSeek-R1-Distill-Qwen-7B & int8 & 0.527 & 0.492 & 0.000 & 0.116 & 0.000 \\
+qwen3\_4b & int4 & 0.668 & 0.689 & 0.000 & 0.585 & 0.486 & exported \\
+qwen3\_8b & int4 & 0.717 & 0.782 & 0.000 & 0.659 & 0.539 & exported \\
+qwen2\_5\_7b\_instruct & int4 & -- & -- & -- & -- & -- & placeholder \\
+deepseek\_r1\_distill\_qwen\_7b & int4 & -- & -- & -- & -- & -- & placeholder \\
+mistral\_7b\_instruct\_v0\_3 & int4 & -- & -- & -- & -- & -- & placeholder \\
+phi\_3\_mini\_4k\_instruct & int4 & -- & -- & -- & -- & -- & placeholder \\
+yi\_6b\_chat & int4 & -- & -- & -- & -- & -- & placeholder \\
+gemma\_3\_4b & int4 & -- & -- & -- & -- & -- & placeholder \\
+gemma\_2\_9b\_it & int4 & -- & -- & -- & -- & -- & placeholder \\
+glm\_4\_9b\_chat\_hf & int4 & -- & -- & -- & -- & -- & placeholder \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}

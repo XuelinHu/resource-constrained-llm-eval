@@ -9,6 +9,7 @@ import os
 import re
 import statistics
 import time
+import traceback
 from pathlib import Path
 from typing import Any
 
@@ -514,6 +515,7 @@ def run_lm_eval(
         output_path.write_text(json.dumps(results, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
         return 0
     except Exception:
+        traceback.print_exc()
         return 1
     finally:
         if previous_code_eval is None:

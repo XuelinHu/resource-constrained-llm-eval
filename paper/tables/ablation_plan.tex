@@ -1,0 +1,18 @@
+\begin{table*}[t]
+\centering
+\caption{Planned data-composition ablation. All rows are placeholders until the matched QLoRA variants are trained and evaluated under the same decoding and metric settings.}
+\label{tab:ablation-plan}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lllllll}
+\toprule
+Adapter & Training data & Loss mask & Domain-QA Char-F1 & Domain-RegQA Char-F1 & Public avg. & Status \\
+\midrule
+A & Domain-QA & full sequence & -- & -- & -- & trained; RegQA evaluation pending \\
+B & Domain-RegQA & full sequence & -- & -- & -- & placeholder \\
+C & Domain-QA + Domain-RegQA & full sequence & -- & -- & -- & placeholder \\
+D & Domain-QA + Domain-RegQA & completion only & -- & -- & -- & placeholder \\
+E & staged Domain-QA then RegQA & completion only & -- & -- & -- & optional placeholder \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

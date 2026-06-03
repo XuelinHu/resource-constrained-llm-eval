@@ -1,41 +1,49 @@
 \label{sec:experimental_setup}
 
-\textbf{Hardware and software.} All reported measurements are produced on a
-single NVIDIA RTX 3090 GPU with 24GB of VRAM. The implementation uses PyTorch,
-Hugging Face Transformers, PEFT, BitsAndBytes, Datasets, and the Language Model
-Evaluation Harness. The pipeline writes raw JSON snapshots and aggregated CSV
-files under `results/single\_gpu\_3090/'.
+\subsection{Hardware and Software}
 
-\textbf{Model pool.} The planned formal pool contains nine locally deployable
-open models, shown in \Cref{tab:model-overview}. The current result export is a
-completed subset: public benchmark and efficiency rows are available for
-Qwen3-0.6B, Qwen3-1.7B, Qwen3-4B, Qwen3-8B, Qwen2.5-7B-Instruct, and
-DeepSeek-R1-Distill-Qwen-7B. Phi-3-mini, Yi-6B-Chat, and
-Mistral-7B-Instruct-v0.3 remain in the planned pool but are not included in the
-current public-benchmark result table.
+All reported measurements target a single NVIDIA RTX 3090 GPU with 24GB of
+VRAM. The local workflow uses PyTorch, Hugging Face Transformers, PEFT,
+BitsAndBytes, Datasets, and the Language Model Evaluation Harness. Result
+artifacts are stored under \path{results/single_gpu_3090/}, and configuration
+files are stored under \path{configs/}.
+
+\subsection{Model Pool}
+
+\Cref{tab:model-overview} lists the ten-model pool used by the latest work
+plan. The table also marks which results are already exported in the current
+draft. Qwen3-4B and Qwen3-8B have exported int4 public and domain results.
+Qwen2.5-7B-Instruct has a completed Adapter-A evaluation.
+DeepSeek-R1-Distill-Qwen-7B has an int4 efficiency export. Mistral, Phi, Yi,
+Gemma, and GLM rows remain placeholders for the final sweep.
 
 \input{tables/model_overview}
 
-\textbf{Railway-domain dataset.} The local corpus is stored under
-`data/corpus/railway' and contains railway technical terminology and traction
-power supply operation-and-maintenance documents. The generated dataset
-contains 22,164 training examples, 2,770 validation examples, and 2,770 test
-examples. Each JSONL record stores the prompt, expected answer, combined text,
-category, and source.
+\subsection{Tasks and Metrics}
 
-\textbf{Benchmark suite.} Public benchmark tasks include MMLU, C-Eval, GSM8K,
-and HumanEval. The local Domain QA task is included in the pipeline, but the
-current aggregate CSV contains a one-sample exact-match sanity result rather
-than the full 2,770-sample test evaluation. This distinction is preserved in
-the result captions and discussion.
+The public benchmark suite contains MMLU, C-Eval, GSM8K, and HumanEval.
+Domain-QA and Domain-RegQA are evaluated with exact match, character-level F1,
+token-level F1, reference containment, and length ratio. Efficiency is measured
+with peak allocated VRAM, peak reserved VRAM, latency, and generated-token
+throughput. For QLoRA, the training export records runtime, training loss,
+evaluation loss, evaluation accuracy, and perplexity when available.
 
-\textbf{Quantization settings.} Baseline inference is evaluated under bf16,
-int8, and int4 settings when supported by the current stack. For each
-model-precision pair, the pipeline records task scores, peak allocated VRAM,
-peak reserved VRAM, latency, and generated-token throughput.
+\subsection{Precision and Adaptation Settings}
 
-\textbf{QLoRA setup.} The QLoRA configuration uses 4-bit base loading, frozen
-base weights, LoRA rank 64, LoRA alpha 16, dropout 0.05, learning rate
-\(2\times10^{-4}\), three epochs, per-device train batch size 1, gradient
-accumulation 16, and maximum sequence length 2,048. The current adapter export
-contains Qwen3-4B and Qwen2.5-7B-Instruct.
+The baseline plan compares bf16, int8, and int4 inference when supported. The
+primary final sweep is int4 because it is the most relevant setting for fitting
+multiple 4B--9B models into a 24GB deployment envelope. The completed QLoRA
+configuration uses 4-bit base loading, LoRA rank 64, LoRA alpha 16, dropout
+0.05, learning rate \(2\times10^{-4}\), three epochs, per-device training
+batch size 1, gradient accumulation 16, and maximum sequence length 2,048.
+
+\subsection{Current Result Boundary}
+
+The manuscript should be read as a reorganized draft based on current exports,
+not as a final locked result report. The following items are complete enough to
+report: Qwen3-4B and Qwen3-8B int4 public/domain baseline rows; selected int4
+efficiency rows; Qwen2.5-7B-Instruct Adapter-A full Domain-QA evaluation; and
+Adapter-A training metrics for Qwen2.5-7B-Instruct and Qwen3-8B. The following
+items remain placeholders: the final ten-model int4 public/domain sweep,
+Domain-RegQA adapter evaluation, mixed-data adapter training, completion-only
+adapter training, and all final statistical comparisons.

@@ -1,30 +1,23 @@
 \begin{table*}[t]
 \centering
-\small
-\caption{Deployment efficiency on the fixed efficiency prompt set. Lower latency and memory are better; higher generated-token throughput is better.}
+\caption{Current int4 efficiency exports on the RTX 3090 24GB platform. The four exported rows come from the existing baseline logs; remaining ten-model rows are retained as placeholders for the final sweep.}
 \label{tab:efficiency-results}
-\begin{tabular}{llccc}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrl}
 \toprule
-Model & Precision & Peak VRAM (GB) & Mean latency (s) & Tokens/s \\
+Model & Peak allocated GB & Peak reserved GB & Latency s & Tokens/s & Status \\
 \midrule
-Qwen3-0.6B & bf16 & 1.15 & 4.72 & 54.28 \\
-Qwen3-0.6B & int4 & 0.54 & 8.75 & 29.25 \\
-Qwen3-0.6B & int8 & 0.77 & 21.20 & 12.08 \\
-Qwen3-1.7B & bf16 & 3.24 & 4.84 & 52.88 \\
-Qwen3-1.7B & int4 & 1.30 & 9.07 & 28.24 \\
-Qwen3-1.7B & int8 & 1.95 & 21.36 & 11.99 \\
-Qwen3-4B & bf16 & 7.54 & 6.61 & 38.74 \\
-Qwen3-4B & int4 & 2.55 & 11.44 & 22.38 \\
-Qwen3-4B & int8 & 4.17 & 25.48 & 10.05 \\
-Qwen3-8B & bf16 & 15.30 & 6.45 & 39.69 \\
-Qwen3-8B & int4 & 5.78 & 11.40 & 22.46 \\
-Qwen3-8B & int8 & 8.85 & 25.13 & 10.19 \\
-Qwen2.5-7B-Instruct & bf16 & 14.21 & 5.49 & 46.60 \\
-Qwen2.5-7B-Instruct & int4 & 13.64 & 8.15 & 31.41 \\
-Qwen2.5-7B-Instruct & int8 & 8.16 & 20.15 & 12.71 \\
-DeepSeek-R1-Distill-Qwen-7B & bf16 & 14.21 & 5.49 & 46.64 \\
-DeepSeek-R1-Distill-Qwen-7B & int4 & 13.64 & 8.23 & 31.12 \\
-DeepSeek-R1-Distill-Qwen-7B & int8 & 8.26 & 19.30 & 13.26 \\
+qwen3\_4b & 2.55 & 3.29 & 11.44 & 22.38 & exported \\
+qwen3\_8b & 5.78 & 6.37 & 11.40 & 22.46 & exported \\
+qwen2\_5\_7b\_instruct & 13.64 & 14.44 & 8.15 & 31.41 & exported \\
+deepseek\_r1\_distill\_qwen\_7b & 13.64 & 14.44 & 8.23 & 31.12 & exported \\
+mistral\_7b\_instruct\_v0\_3 & -- & -- & -- & -- & placeholder \\
+phi\_3\_mini\_4k\_instruct & -- & -- & -- & -- & placeholder \\
+yi\_6b\_chat & -- & -- & -- & -- & placeholder \\
+gemma\_3\_4b & -- & -- & -- & -- & placeholder \\
+gemma\_2\_9b\_it & -- & -- & -- & -- & placeholder \\
+glm\_4\_9b\_chat\_hf & -- & -- & -- & -- & placeholder \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table*}

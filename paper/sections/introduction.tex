@@ -1,64 +1,70 @@
-Large language models have become practical tools for translation, question
-answering, code assistance, and technical support. Their adoption in railway
-engineering is promising because railway documents contain bilingual
-terminology, maintenance regulations, and procedural knowledge that are
-frequently queried in education and laboratory settings. However, practical
-deployment is constrained by hardware. Many teams can access a single
-workstation GPU but cannot rely on multi-GPU inference, large-scale
-full-parameter fine-tuning, or remote proprietary services.
+Large language models are increasingly used for translation, question
+answering, code assistance, and technical-document support. Railway engineering
+is a natural application area because its documents contain specialized
+bilingual terminology, operational regulations, inspection procedures, and
+maintenance knowledge. However, practical adoption in teaching laboratories and
+small research groups is constrained by hardware. A team may have access to one
+consumer workstation GPU, but not to multi-GPU inference, proprietary remote
+services, or large-scale full-parameter fine-tuning.
 
 This paper studies that practical boundary directly. The target environment is
 a single NVIDIA RTX 3090 GPU with 24GB of VRAM. Under this constraint, model
-selection cannot be reduced to a public leaderboard score. A usable model must
-fit reliably into memory, answer with acceptable latency, support low-bit
-inference, and remain adaptable to local railway data. These constraints make
-open models such as Qwen~\cite{qwen3,qwen25},
-DeepSeek~\cite{deepseekllm,deepseekr1}, Phi~\cite{phi3}, Yi~\cite{yi2024open},
-and Mistral~\cite{mistral7b} especially relevant, but they also require
-consistent local measurement.
+selection cannot be reduced to a public leaderboard score. A locally useful
+model must fit into memory, answer at acceptable latency, support low-bit
+inference, and remain adaptable to railway-domain data. Recent open models such
+as Qwen~\cite{qwen3,qwen25}, DeepSeek~\cite{deepseekllm,deepseekr1},
+Mistral~\cite{mistral7b}, Phi~\cite{phi3}, Yi~\cite{yi2024open},
+Gemma~\cite{gemma2024open,gemma2,gemma3}, and GLM-style Chinese-oriented
+models make this local deployment setting realistic, but they still require
+consistent measurement under the actual software and hardware stack.
 
-The work is positioned as an AI application and experimental evaluation paper,
-not as a new model architecture. We build a railway bilingual dataset from
-local technical terminology and traction power supply documents, evaluate
-locally cached models on public and domain-oriented tasks, and test a QLoRA
-adaptation path for selected candidates. The current local model cache contains
-more models than the completed result export; the formal table in this draft
-therefore distinguishes the planned model pool from the subset whose public
-benchmark and efficiency results have already been exported.
+The study is positioned as an AI application and experimental evaluation paper,
+not as a new model-architecture paper. We evaluate locally cached open LLMs on
+public benchmarks and railway-domain tasks, measure efficiency under low-bit
+settings, and test QLoRA adaptation for selected models. The current
+manuscript is also explicit about evidence maturity. Some experiments have
+already been exported as CSV and JSON artifacts; others remain planned in the
+latest work plan. Rather than hiding this boundary, the draft marks unfinished
+experiments as placeholders so that the paper can be completed systematically.
 
-The study is guided by four research questions:
+The work is guided by five research questions:
 \begin{enumerate}[leftmargin=1.5em]
-  \item Which completed open LLM baselines provide the strongest public
-  benchmark performance under a single RTX 3090 24GB constraint?
-  \item How do bf16, int8, and int4 inference settings change memory footprint,
-  latency, and generated-token throughput on the same machine?
-  \item What does the current QLoRA adapter export show, and what must be rerun
-  before making final domain-adaptation claims?
-  \item Which models are most suitable for resource-constrained railway-domain
-  deployment when accuracy, memory, and latency are considered together?
+  \item Which local open LLMs can be deployed stably under a single RTX 3090
+  24GB constraint?
+  \item How do low-bit inference settings affect public benchmark quality,
+  railway-domain quality, memory footprint, latency, and throughput?
+  \item Do public benchmark scores correlate with railway-domain QA and
+  regulatory QA behavior?
+  \item Can QLoRA improve domain behavior while preserving useful public
+  benchmark performance under the same 24GB constraint?
+  \item Which data composition is preferable for adaptation: Domain-QA,
+  Domain-RegQA, a mixed dataset, or a completion-only mixed variant?
 \end{enumerate}
 
-The contributions are:
+The contributions of this draft are:
 \begin{enumerate}[leftmargin=1.5em]
-  \item We construct a railway-domain bilingual QA dataset with 22,164 training
-  samples, 2,770 validation samples, and 2,770 test samples from local railway
-  terminology and regulation material.
-  \item We implement a reproducible single-GPU evaluation workflow that records
-  public benchmark scores, local domain outputs, latency, throughput, and peak
-  VRAM for multiple precision settings.
-  \item We report the completed baseline and efficiency results currently
-  available in the project CSV exports and clearly separate mature results from
-  one-sample domain sanity checks.
-  \item We curate a 90-entry BibTeX library and JSON literature-method matrix
-  covering model families, resource-efficient LLM deployment, evaluation,
-  PEFT, pruning, and federated adaptation.
+  \item We define a ten-model local LLM pool for a single RTX 3090 study and
+  align the manuscript tables with that latest plan.
+  \item We document two railway-domain datasets: Domain-QA for bilingual
+  terminology and translation, and Domain-RegQA for evidence-grounded
+  regulatory question answering.
+  \item We report the measurements already exported in the project, including
+  int4 public and domain results for Qwen3-4B and Qwen3-8B, efficiency rows for
+  selected models, and QLoRA Adapter-A artifacts.
+  \item We reorganize the paper into a complete empirical structure with
+  explicit placeholders for the remaining ten-model sweep, mixed-adapter
+  ablation, and final full-domain comparisons.
+  \item We maintain a normalized BibTeX library and literature-method matrix
+  covering open model families, resource-efficient deployment,
+  parameter-efficient adaptation, pruning, federated learning, and
+  resource-constrained applications.
 \end{enumerate}
 
-The rest of this paper follows the PeerJ Computer Science application-paper
+The remainder of the paper follows a PeerJ Computer Science application-paper
 structure. \Cref{sec:related_work} reviews model evaluation, efficient
-adaptation, and resource-constrained deployment. \Cref{sec:problem_setting}
-defines the railway application scenario. \Cref{sec:methodology} describes the
-evaluation and adaptation workflow. \Cref{sec:experimental_setup} presents the
-dataset, model pool, hardware, and metrics. \Cref{sec:results} reports the
-current exported results, and \Cref{sec:discussion} discusses deployment
-implications and limitations.
+adaptation, and constrained deployment. \Cref{sec:problem_setting} defines the
+railway QA scenario. \Cref{sec:datasets} summarizes the two local datasets.
+\Cref{sec:methodology} describes the evaluation and adaptation workflow.
+\Cref{sec:experimental_setup} presents the hardware, model pool, and metrics.
+\Cref{sec:results} reports completed results and placeholders, and
+\Cref{sec:discussion} discusses deployment implications and limitations.

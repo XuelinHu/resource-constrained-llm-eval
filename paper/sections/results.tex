@@ -1,71 +1,105 @@
 \label{sec:results}
 
-\subsection{Baseline Results}
+\subsection{Result Availability}
 
-\Cref{tab:main-results} summarizes the completed public benchmark export. The
-strongest completed baselines are Qwen2.5-7B-Instruct and Qwen3-8B. In the
-current best-available precision rows, Qwen2.5-7B-Instruct reaches 0.718 on
-MMLU, 0.796 on C-Eval, and 0.665 on HumanEval. Qwen3-8B reaches 0.718 on MMLU,
-0.781 on C-Eval, and 0.659 on HumanEval. Qwen3-4B is the strongest smaller
-mid-scale baseline in the completed table, with 0.681 on MMLU, 0.715 on
-C-Eval, and 0.652 on HumanEval.
+The latest project plan is broader than the current result export. Therefore,
+the tables below use two statuses: exported and placeholder. Exported rows are
+read from existing CSV or JSON artifacts. Placeholder rows represent planned
+experiments that should be filled before submission. This convention prevents
+the paper from overstating incomplete evidence while still showing the full
+experimental design.
 
-The smaller Qwen3 models show the expected quality-efficiency pattern.
-Qwen3-1.7B improves substantially over Qwen3-0.6B, especially on MMLU and
-HumanEval, while still remaining much cheaper than 7B/8B models. GSM8K is zero
-or near-zero across the current export. This should be treated as an evaluation
-configuration issue or strict-answer-extraction warning until the math task is
-rechecked with the final prompting policy.
+\subsection{Public Benchmark Results}
+
+\Cref{tab:public-results} summarizes the current int4 public benchmark rows
+aligned with the ten-model plan. Qwen3-8B is currently the strongest exported
+row, with 0.717 on MMLU, 0.782 on C-Eval, 0.659 on HumanEval, and a four-task
+average of 0.539. Qwen3-4B obtains 0.668 on MMLU, 0.689 on C-Eval, 0.585 on
+HumanEval, and a four-task average of 0.486. GSM8K is zero in the current
+exports and should be rechecked with the final prompt and answer-extraction
+policy before drawing conclusions about mathematical reasoning.
 
 \input{tables/main_results}
 
+The remaining public rows are placeholders:
+\placeholder{run the ten-model int4 public benchmark sweep and regenerate
+Table~\ref{tab:public-results}}.
+
+\subsection{Railway-Domain Results}
+
+\Cref{tab:domain-results} reports the exported int4 baseline rows for
+Domain-QA and Domain-RegQA. On Domain-QA, Qwen3-8B reaches 0.317
+character-level F1 and 0.158 token-level F1, while Qwen3-4B reaches 0.294
+character-level F1 and 0.168 token-level F1. The length-ratio values show that
+both models often produce answers longer than the reference, especially
+Qwen3-4B on Domain-QA.
+
+Domain-RegQA is substantially harder. Both exported baselines have zero exact
+match and near-zero token-level F1. Qwen3-8B has a higher character-level F1
+than Qwen3-4B (0.133 versus 0.077), but neither model provides reliable
+evidence-grounded regulatory answers in the current baseline setting. This
+supports the need for Domain-RegQA-specific or mixed-data QLoRA adaptation.
+
+\input{tables/domain_results}
+
+The missing domain rows are placeholders:
+\placeholder{evaluate all ten models on Domain-QA and Domain-RegQA under the
+same decoding and normalization settings}.
+
 \subsection{Efficiency Results}
 
-\Cref{tab:efficiency-results} shows that low-bit inference does not
-automatically improve runtime on the tested stack. For the Qwen3 family, int4
-substantially reduces peak allocated VRAM: Qwen3-8B drops from 15.30GB in bf16
-to 5.78GB in int4, and Qwen3-4B drops from 7.54GB to 2.55GB. However, bf16 is
-faster in the current efficiency prompt set. Qwen3-8B produces 39.69 tokens/s
-in bf16 and 22.46 tokens/s in int4; Qwen3-4B produces 38.74 tokens/s in bf16
-and 22.38 tokens/s in int4.
-
-The smallest models are most attractive when memory and speed dominate.
-Qwen3-0.6B uses 1.15GB in bf16 and reaches 54.28 tokens/s, while Qwen3-1.7B
-uses 3.24GB and reaches 52.88 tokens/s. The 7B-class Qwen2.5 and DeepSeek rows
-fit within 24GB, but their int4 memory reductions are modest in the current
-export. This reinforces the need to measure the actual backend rather than
-assuming a fixed theoretical compression ratio.
+\Cref{tab:efficiency-results} reports the current int4 efficiency exports.
+Qwen3-4B and Qwen3-8B have the lowest exported peak allocated memory among the
+formal ten-model rows, at 2.55GB and 5.78GB respectively. Their throughput is
+similar in the current int4 run, around 22 tokens/s. Qwen2.5-7B-Instruct and
+DeepSeek-R1-Distill-Qwen-7B are faster in the exported int4 efficiency rows
+(about 31 tokens/s), but their peak allocated memory is much higher at 13.64GB.
 
 \input{tables/efficiency_results}
 
-\subsection{QLoRA Adaptation Results}
+These measurements confirm that quantization must be evaluated on the actual
+hardware and backend. A smaller memory footprint does not automatically imply
+the best latency, and a fast 7B-class run may still leave less VRAM margin for
+serving, batching, or adapters.
 
-\Cref{tab:qlora-results} reports the current adapter evaluation export. The
-adapter run confirms that QLoRA training and evaluation can be executed in the
-single-GPU workflow, but the exported Domain QA score is still based on one
-test sample and is therefore not a final domain-effectiveness result. For
-Qwen2.5-7B-Instruct, the adapter export preserves public benchmark quality
-reasonably well relative to the bf16 baseline: adapted int4 MMLU is 0.710
-compared with 0.718 in the bf16 baseline, and adapted int4 C-Eval is 0.789
-compared with 0.796. The adapter HumanEval score is also close to the baseline
-value in the raw CSV. These observations are promising for pipeline viability,
-but they must be repeated with full-domain evaluation before claiming railway
-adaptation gains.
+\subsection{QLoRA Training Results}
+
+\Cref{tab:qlora-training-results} reports completed Adapter-A training
+artifacts. Qwen2.5-7B-Instruct trains for three epochs in 17,987 seconds with
+training loss 0.464 and evaluation loss 0.494. Qwen3-8B trains for three
+epochs in 24,052 seconds with training loss 0.488 and evaluation loss 0.507.
+Both runs fit the single RTX 3090 workflow and provide evidence that QLoRA is
+operational for the selected model sizes.
+
+\input{tables/qlora_training_results}
+
+Adapter-B, Adapter-C, and Adapter-D remain planned:
+\placeholder{train Domain-RegQA-only, mixed-data, and completion-only QLoRA
+variants}.
+
+\subsection{Adaptation Evaluation}
+
+\Cref{tab:qlora-results} shows the current before/after comparison state. The
+exported Qwen2.5-7B-Instruct Adapter-A row is evaluated on the full Domain-QA
+test split. It reaches 0.163 character-level F1 and 0.420 reference
+containment, while preserving public benchmark scores of 0.711 on MMLU and
+0.785 on C-Eval. However, exact match remains zero and the output length ratio
+is high in the raw export, indicating that the adapter needs stronger decoding
+or loss-masking control before it can be treated as a domain solution.
 
 \input{tables/qlora_results}
 
-\subsection{Model Selection Analysis}
+The final adaptation claim requires direct baseline-versus-adapter comparisons
+for the same model, precision, prompt template, and decoding settings:
+\placeholder{complete matched baseline, Adapter-A, Adapter-B, Adapter-C, and
+Adapter-D evaluations}.
 
-The current evidence supports three deployment recommendations. First, for
-accuracy-oriented single-GPU experiments, Qwen2.5-7B-Instruct and Qwen3-8B are
-the strongest completed choices. Second, for speed- and memory-oriented local
-services, Qwen3-0.6B and Qwen3-1.7B are the most practical lightweight
-candidates. Third, Qwen3-4B is a useful middle point because it is much cheaper
-than 7B/8B models while retaining competitive C-Eval and HumanEval scores.
+\subsection{Data-Composition Ablation Plan}
 
-The model recommendation may change after the full railway-domain test split is
-exported. In particular, a smaller model that receives a strong QLoRA domain
-gain may be preferable to a larger baseline if it answers railway terminology
-queries with lower latency and memory cost. The next experimental priority is
-therefore not another public benchmark run, but a full 2,770-sample Domain QA
-baseline and adapter evaluation with stable answer normalization.
+\Cref{tab:ablation-plan} preserves the planned ablation matrix. This table is
+included now because it determines the structure of the final paper: the
+central adaptation question is whether railway terminology data, regulatory
+evidence data, mixed data, or completion-only loss masking produces the best
+domain behavior without damaging public benchmark quality.
+
+\input{tables/ablation_plan}
