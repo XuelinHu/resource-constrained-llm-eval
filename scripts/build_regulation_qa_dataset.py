@@ -19,6 +19,7 @@ from zipfile import ZipFile
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CORPUS_DIR = REPO_ROOT / "data" / "corpus" / "railway"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "data" / "domain_regqa"
+MAX_ANSWER_CHARS = 240
 
 SPACE_RE = re.compile(r"\s+")
 HAN_RE = re.compile(r"[\u4e00-\u9fff]")
@@ -28,7 +29,28 @@ RULE_KEYWORD_RE = re.compile(
     r"检查|检测|检修|维修|维护|试验|管理|安全|可靠|定期|周期|组织|执行|制定|落实|确保|适用于)"
 )
 COMPLETE_ENDINGS = ("。", "！", "？", "；", "）", ")")
-TOPIC_STOPWORDS = {"该", "其", "由", "对", "对于", "并", "且", "或", "及", "和", "不", "均", "凡"}
+TOPIC_STOPWORDS = {
+    "该",
+    "其",
+    "由",
+    "对",
+    "对于",
+    "并",
+    "且",
+    "或",
+    "及",
+    "和",
+    "不",
+    "均",
+    "凡",
+    "主要",
+    "本办法",
+    "本规章",
+    "本规定",
+    "本规程",
+    "本细则",
+}
+BRACKET_PAIRS = (("(", ")"), ("（", "）"), ("[", "]"), ("【", "】"), ("《", "》"))
 LIST_ITEM_MARK_RE = re.compile(
     r"^\s*(?:"
     r"[⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇①②③④⑤⑥⑦⑧⑨⑩]"
@@ -41,6 +63,14 @@ LEADING_MARK_RE = re.compile(
     r"[（(][一二三四五六七八九十0-9]+[）)]|[-—]+)\s*"
 )
 SENTENCE_RE = re.compile(r"[^。！？]+[。！？]?")
+CATALOG_NUMBER_RE = re.compile(r"[。；]\s*\d{1,3}[．.、]")
+CONTEXT_DEPENDENT_PREFIX_RE = re.compile(r"^(?:且|并|同时|其中|但|此外|另外|而|则)(?:应|须|必须|不得|均|[，,；：])")
+NOISY_ANSWER_RE = re.compile(
+    r"(主要内容|目录|见附件\s*\d*|按附件\s*\d*|附件\s*\d+|对序号|"
+    r"试验项目、周期和要求|检查项目和标准)"
+)
+NOTE_RE = re.compile(r"^注[：:]")
+NOISY_EVIDENCE_RE = re.compile(r"(主要内容|目录|本办法|本规章|本规定|本规程|本细则|联营公司|基础部|马来西亚)")
 
 
 @dataclass(frozen=True)
@@ -107,16 +137,28 @@ def is_rule_paragraph(text: str) -> bool:
     return alpha_or_han / max(1, len(text)) >= 0.35
 
 
-def answer_only_prompt(question: str) -> str:
+def answer_only_prompt(question: str, evidence: str) -> str:
     return (
-        "根据铁路规章回答问题。\n"
-        "只返回最终答案，不要解释，不要添加前缀、后缀、引号或标签。\n"
-        f"{question}"
+        "回答以下铁路专业知识问题。\n"
+        "只返回最终答案，不要解释，不要添加前缀、后缀、引号或标签。"
+        f"\n{question}"
     )
 
 
 def strip_list_item_marker(text: str) -> str:
     return LIST_ITEM_MARK_RE.sub("", text).strip()
+
+
+def has_balanced_brackets(text: str) -> bool:
+    return all(text.count(left) == text.count(right) for left, right in BRACKET_PAIRS)
+
+
+def clean_topic_candidate(text: str) -> str:
+    topic = strip_list_item_marker(LEADING_MARK_RE.sub("", text))
+    topic = topic.strip(" ，,；;：:。！？（）()“”\"'《》")
+    topic = re.sub(r"^(其中|同时|并|且|或|以及|对|对于|凡|有关|由|均|还|也|但)", "", topic).strip()
+    topic = re.sub(r"(的|和|与|及|或|并|均|还|也)+$", "", topic).strip()
+    return topic
 
 
 def clean_topic(text: str, marker: str | None = None) -> str:
@@ -126,22 +168,34 @@ def clean_topic(text: str, marker: str | None = None) -> str:
             topic = topic.rsplit(marker, 1)[0]
         else:
             topic = topic.split(marker, 1)[0]
-    topic = strip_list_item_marker(LEADING_MARK_RE.sub("", topic))
-    topic = re.split(r"[。！？；，,：:]", topic)[-1]
-    topic = topic.strip(" ，,；;：:。！？（）()“”\"'《》")
-    topic = re.sub(r"^(其中|同时|并|且|或|以及|对|对于|凡|各|有关|由)", "", topic).strip()
-    topic = re.sub(r"(的|和|与|及|或|并)+$", "", topic).strip()
-    if (
-        len(topic) < 2
-        or topic in TOPIC_STOPWORDS
-        or not HAN_RE.search(topic)
-        or topic.count("（") != topic.count("）")
-        or topic.count("(") != topic.count(")")
-    ):
-        return "该条款"
-    if len(topic) > 32:
-        topic = topic[-32:]
-    return topic
+    segments = [clean_topic_candidate(segment) for segment in re.split(r"[。！？；，,：:]", topic)]
+    for candidate in reversed(segments):
+        if (
+            len(candidate) >= 2
+            and candidate not in TOPIC_STOPWORDS
+            and HAN_RE.search(candidate)
+            and has_balanced_brackets(candidate)
+        ):
+            return candidate[-32:] if len(candidate) > 32 else candidate
+    return "该条款"
+
+
+def is_low_quality_answer(answer: str) -> bool:
+    if not has_balanced_brackets(answer):
+        return True
+    if NOTE_RE.search(answer):
+        return True
+    if CONTEXT_DEPENDENT_PREFIX_RE.search(answer):
+        return True
+    if CATALOG_NUMBER_RE.search(answer):
+        return True
+    if NOISY_ANSWER_RE.search(answer):
+        return True
+    return False
+
+
+def is_low_quality_evidence(evidence: str) -> bool:
+    return bool(NOISY_EVIDENCE_RE.search(evidence))
 
 
 def split_sentences(paragraph: str) -> list[str]:
@@ -169,14 +223,18 @@ def make_sample(
     answer_start = evidence.find(answer)
     if answer_start < 0:
         return None
-    if not (8 <= len(answer) <= 650):
+    if is_low_quality_evidence(evidence):
+        return None
+    if is_low_quality_answer(answer):
+        return None
+    if not (8 <= len(answer) <= MAX_ANSWER_CHARS):
         return None
     if not answer.endswith(COMPLETE_ENDINGS):
         return None
     if not (6 <= len(question) <= 180):
         return None
     return RegulationSample(
-        prompt=answer_only_prompt(question),
+        prompt=answer_only_prompt(question, evidence),
         answer=answer,
         category=category,
         source=source,
@@ -188,76 +246,85 @@ def make_sample(
 
 def sentence_questions(sentence: str) -> list[tuple[str, str]]:
     questions: list[tuple[str, str]] = []
+    is_scope_sentence = "适用于" in sentence
 
-    if "适用于" in sentence:
+    if is_scope_sentence:
         topic = clean_topic(sentence, "适用于")
-        questions.append(("regulation_scope_qa", f"本规章中，{topic}适用于什么范围？"))
+        if topic != "该条款":
+            questions.append(("regulation_scope_qa", f"{topic}适用于什么范围？"))
 
     if "坚持" in sentence and "方针" in sentence:
         topic = clean_topic(sentence, "应") if "应" in sentence else clean_topic(sentence, "坚持")
-        questions.append(("regulation_principle_qa", f"规章对{topic}提出了什么方针？"))
+        if topic != "该条款":
+            questions.append(("regulation_principle_qa", f"{topic}应坚持什么方针？"))
 
     if "原则" in sentence and ("按照" in sentence or "遵循" in sentence):
         topic = clean_topic(sentence, "应") if "应" in sentence else clean_topic(sentence, "按照")
-        questions.append(("regulation_principle_qa", f"规章要求{topic}遵循什么原则？"))
+        if topic != "该条款":
+            questions.append(("regulation_principle_qa", f"{topic}应遵循什么原则？"))
 
     for marker in ("不得", "严禁", "禁止", "不应"):
         if marker in sentence:
             topic = clean_topic(sentence, marker)
-            questions.append(("regulation_prohibition_qa", f"根据规章，{topic}有哪些禁止性要求？"))
+            if topic != "该条款":
+                questions.append(("regulation_prohibition_qa", f"{topic}有哪些禁止性要求？"))
             break
 
     if "负责" in sentence or "职责" in sentence:
         marker = "负责" if "负责" in sentence else "职责"
         topic = clean_topic(sentence, marker)
-        if topic == "该条款":
-            questions.append(("regulation_responsibility_qa", "根据规章，相关责任或分工是什么？"))
-        else:
-            questions.append(("regulation_responsibility_qa", f"根据规章，{topic}负责哪些工作或职责？"))
+        if topic != "该条款":
+            questions.append(("regulation_responsibility_qa", f"{topic}负责哪些工作或职责？"))
 
     if "包括" in sentence and "不包括" not in sentence:
         topic = clean_topic(sentence, "包括")
-        if topic == "该条款":
-            questions.append(("regulation_definition_qa", "规章中，该条款说明了哪些内容？"))
-        else:
-            questions.append(("regulation_definition_qa", f"规章中，{topic}包括哪些内容？"))
+        if topic != "该条款":
+            questions.append(("regulation_definition_qa", f"{topic}包括哪些内容？"))
 
     if "分为" in sentence:
         topic = clean_topic(sentence, "分为")
-        questions.append(("regulation_definition_qa", f"规章中，{topic}分为哪些类型？"))
+        if topic != "该条款":
+            questions.append(("regulation_definition_qa", f"{topic}分为哪些类型？"))
 
     if "标准" in sentence or "要求" in sentence:
         topic = clean_topic(sentence, "应") if "应" in sentence else clean_topic(sentence, "要求")
-        questions.append(("regulation_standard_qa", f"根据规章，{topic}的标准或要求是什么？"))
+        if topic != "该条款":
+            questions.append(("regulation_standard_qa", f"{topic}的标准或要求是什么？"))
 
-    if re.search(r"(检查|检测|检修|维修|维护|试验)", sentence):
+    if re.search(r"(检查|检测|检修|维修|维护|试验)", sentence) and not is_scope_sentence:
         topic = clean_topic(sentence, "应") if "应" in sentence else clean_topic(sentence)
-        questions.append(("regulation_inspection_qa", f"根据规章，{topic}的检查、检测或维修要求是什么？"))
+        if topic != "该条款":
+            questions.append(("regulation_inspection_qa", f"{topic}的检查、检测或维修要求是什么？"))
 
     requirement_match = re.search(r"(?<!不)(必须|须|应)|确保|制定|执行|落实", sentence)
     if requirement_match:
         marker = requirement_match.group(0)
         topic = clean_topic(sentence, marker)
-        questions.append(("regulation_requirement_qa", f"根据规章，{topic}应满足什么要求？"))
+        if topic != "该条款":
+            questions.append(("regulation_requirement_qa", f"{topic}应满足什么要求？"))
 
     return questions
 
 
-def generic_questions(paragraph: str) -> list[str]:
-    topic = paragraph
+def generic_topic(paragraph: str) -> str:
     if "：" in paragraph:
         prefix = paragraph.split("：", 1)[0]
         if 2 <= len(prefix) <= 36 and HAN_RE.search(prefix):
-            topic = prefix
-    topic = clean_topic(topic)
+            return clean_topic(prefix)
+    first_sentence = split_sentences(paragraph)[0] if split_sentences(paragraph) else paragraph
+    marker_match = re.search(r"(适用于|必须|须|应|不得|严禁|禁止|负责|职责|包括|分为|要求|标准)", first_sentence)
+    if marker_match:
+        return clean_topic(first_sentence, marker_match.group(0))
+    return clean_topic(first_sentence)
+
+
+def generic_questions(paragraph: str) -> list[str]:
+    topic = generic_topic(paragraph)
     if topic == "该条款":
-        return [
-            "根据规章，该条款的原文规定是什么？",
-            "请给出该规章条款的原文要求。",
-        ]
+        return []
     return [
-        f"根据规章，关于{topic}的规定是什么？",
-        f"请给出规章中关于{topic}的原文要求。",
+        f"铁路领域中，关于{topic}的专业要求是什么？",
+        f"{topic}在铁路领域中的相关要求是什么？",
     ]
 
 
@@ -269,7 +336,7 @@ def build_candidates_for_paragraph(
     max_per_paragraph: int,
 ) -> list[RegulationSample]:
     output: list[RegulationSample] = []
-    seen: set[tuple[str, str]] = set()
+    seen: set[str] = set()
 
     for sentence in split_sentences(paragraph):
         for category, question in sentence_questions(sentence):
@@ -283,7 +350,7 @@ def build_candidates_for_paragraph(
             )
             if sample is None:
                 continue
-            key = (sample.prompt, sample.answer)
+            key = sample.prompt
             if key not in seen:
                 seen.add(key)
                 output.append(sample)
@@ -299,7 +366,8 @@ def build_candidates_for_paragraph(
             paragraph_id=paragraph_id,
             evidence=paragraph,
         )
-        if sample is not None and (sample.prompt, sample.answer) not in seen:
+        if sample is not None and sample.prompt not in seen:
+            seen.add(sample.prompt)
             output.append(sample)
         if len(output) >= max_per_paragraph:
             break
@@ -335,9 +403,9 @@ def build_candidates(corpus_dir: Path, source_glob: str, max_per_paragraph: int)
             )
 
     deduped: list[RegulationSample] = []
-    seen: set[tuple[str, str]] = set()
+    seen: set[str] = set()
     for sample in samples:
-        key = (sample.prompt, sample.answer)
+        key = sample.prompt
         if key in seen:
             continue
         seen.add(key)
@@ -449,8 +517,9 @@ def write_readme(path: Path, train: list[RegulationSample], valid: list[Regulati
     lines = [
         "# Railway Regulation QA Dataset",
         "",
-        "This dataset is generated by deterministic rule-based extraction from local railway regulation documents.",
-        "No LLM is used during generation. Every answer is an exact substring of the stored `evidence` field.",
+        "This dataset is generated by deterministic rule-based extraction from local railway technical and regulatory documents.",
+        "No LLM is used during generation. Prompts are framed as railway professional knowledge questions.",
+        "Every answer is still an exact substring of the stored `evidence` field for traceability and manual review.",
         "",
         "## Splits",
         "",
@@ -461,6 +530,10 @@ def write_readme(path: Path, train: list[RegulationSample], valid: list[Regulati
         f"- unique evidence paragraphs: {paragraph_count}",
         "",
         "Paragraph IDs are split disjointly across train, valid, and test to reduce same-paragraph leakage.",
+        "The source evidence paragraph is retained as metadata but is not embedded in the prompt.",
+        f"Candidate answers longer than {MAX_ANSWER_CHARS} characters are excluded to avoid long table fragments.",
+        "Generation filters out table-of-contents fragments, attachment-only references, row-index notes, table titles,",
+        "document-specific references, project organization names, and context-dependent answer prefixes before writing the final splits.",
         "",
         "## Categories",
         "",

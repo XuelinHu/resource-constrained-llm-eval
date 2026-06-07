@@ -205,6 +205,8 @@ def _local_domain_max_new_tokens(category: str) -> int:
         return 32
     if category.endswith("_translation"):
         return 64
+    if category.startswith("regulation_"):
+        return 192
     return 64
 
 
