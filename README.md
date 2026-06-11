@@ -1,14 +1,13 @@
 # Resource-Constrained LLM Evaluation
 
 <p align="center">
-  <img height="20" src="https://img.shields.io/badge/python-3.10-blue" />
-  <img height="20" src="https://img.shields.io/badge/pytorch-2.3+-ee4c2c" />
-  <img height="20" src="https://img.shields.io/badge/cuda-12.1-76b900" />
-  <img height="20" src="https://img.shields.io/badge/transformers-4.51+-yellow" />
-  <img height="20" src="https://img.shields.io/badge/lm--eval-0.4.7+-purple" />
-  <img height="20" src="https://img.shields.io/badge/QLoRA-4bit-red" />
-  <img height="20" src="https://img.shields.io/badge/GPU-RTX3090%2024GB-0099ff" />
-  <img height="20" src="https://img.shields.io/badge/latex-paper-green" />
+  <img height="20" src="https://img.shields.io/badge/python-3.10-3776AB?logo=python&amp;logoColor=white" />
+  <img height="20" src="https://img.shields.io/badge/pytorch-2.3%2B-EE4C2C?logo=pytorch&amp;logoColor=white" />
+  <img height="20" src="https://img.shields.io/badge/cuda-12.1-76B900?logo=nvidia&amp;logoColor=white" />
+  <img height="20" src="https://img.shields.io/badge/transformers-4.51%2B-FFD21E?logo=huggingface&amp;logoColor=black" />
+  <img height="20" src="https://img.shields.io/badge/lm--eval-0.4.7%2B-8A2BE2" />
+  <img height="20" src="https://img.shields.io/badge/QLoRA-4--bit-CC0000" />
+  <img height="20" src="https://img.shields.io/badge/GPU-RTX%203090%2024GB-0099FF" />
 </p>
 
 This repository is organized for a publishable paper on:
