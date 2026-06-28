@@ -285,3 +285,32 @@ Use `FORMAL_EXPERIMENT_CHECKLIST.md` as the gate before starting the full baseli
 - https://www.overleaf.com/latex/templates/latex-template-for-peerj-journal-and-pre-print-submissions/ptdwfrqxqzbn
 - https://peerj.com/about/policies-and-procedures/#discipline-standards
 - https://peerj.com/about/author-instructions/#reference-format
+
+<!-- codex-runtime-notes:start -->
+
+## Runtime Ports And Database Configuration
+
+### Database
+- Core benchmark pipeline does not require a database.
+- The optional annotation system uses PostgreSQL.
+- Annotation database name: `railway_annotation`.
+- Default PostgreSQL host and port: `localhost:5432`.
+- Default annotation DB user: `deipss`; password must come from local `.env` and must not be committed.
+- Annotation RAG helper uses local Ollama by default at `http://127.0.0.1:11434`.
+
+### Default Ports
+- Annotation backend FastAPI service: `8000`.
+- Annotation frontend local Vite port: `5173`; project frontend mode also uses `4005` for local/FRP exposure.
+- PostgreSQL: `5432`.
+- Ollama: `11434`.
+
+### Notes
+- This repository may contain large local datasets and generated outputs; do not stage unrelated data changes with documentation edits.
+
+### Source Files Checked
+- `annotation_system/backend/.env.example`
+- `annotation_system/backend/app/config.py`
+- `annotation_system/frontend/vite.config.js`
+- `annotation_system/README.md`
+
+<!-- codex-runtime-notes:end -->

@@ -5,13 +5,18 @@ __pycache__/
 venv/
 env/
 .env
+.cache/
 .idea/
 .vscode/
+.serena/
+.playwright-mcp/
 .DS_Store
 Thumbs.db
 
 build/
 dist/
+node_modules/
+**/.vite/
 *.egg-info/
 
 results/
@@ -21,8 +26,25 @@ wandb/
 runs/
 outputs/
 logs/
+models/
 
-data/domain_regqa/human_review.csv
+# Local datasets and database exports are intentionally kept outside Git.
+data/
+local_backups/
+
+# Experiment outputs, snapshots, and heavyweight generated artifacts.
+*.ckpt
+*.safetensors
+*.bin
+*.pt
+*.pth
+adapter_model*/
+checkpoint-*/
+snapshot*/
+snapshots/
+eval_results/
+experiment_outputs/
+translation_outputs/
 
 paper/out/
 paper/*.aux

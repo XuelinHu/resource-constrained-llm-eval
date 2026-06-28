@@ -71,6 +71,17 @@ NOISY_ANSWER_RE = re.compile(
 )
 NOTE_RE = re.compile(r"^注[：:]")
 NOISY_EVIDENCE_RE = re.compile(r"(主要内容|目录|本办法|本规章|本规定|本规程|本细则|联营公司|基础部|马来西亚)")
+BAD_TOPIC_RE = re.compile(
+    r"^(?:"
+    r"如在|否则|其中|同时|此外|另外|并|且|则|对|对于|凡|由|均|其$|该$|"
+    r"[0-9０-９\s.．、]+处|[0-9０-９\s.．、]+项|[0-9０-９\s.．、]+mm|"
+    r"不得|不应|应|须|必须|检查|检测|检修|维修|维护|试验"
+    r")"
+)
+BAD_QUESTION_RE = re.compile(
+    r"(该条款|如在|不在铁路领域|[0-9０-９\s.．、]+处的|"
+    r"哪些内容的标准或要求|的相关要求是什么？$)"
+)
 
 
 @dataclass(frozen=True)
@@ -157,8 +168,24 @@ def clean_topic_candidate(text: str) -> str:
     topic = strip_list_item_marker(LEADING_MARK_RE.sub("", text))
     topic = topic.strip(" ，,；;：:。！？（）()“”\"'《》")
     topic = re.sub(r"^(其中|同时|并|且|或|以及|对|对于|凡|有关|由|均|还|也|但)", "", topic).strip()
-    topic = re.sub(r"(的|和|与|及|或|并|均|还|也)+$", "", topic).strip()
+    topic = re.sub(r"(的|和|与|及|或|并|均|还|也|不)+$", "", topic).strip()
     return topic
+
+
+def is_bad_topic(topic: str) -> bool:
+    if not topic or topic in TOPIC_STOPWORDS:
+        return True
+    if BAD_TOPIC_RE.search(topic):
+        return True
+    if not HAN_RE.search(topic):
+        return True
+    if len(topic) < 2 or len(topic) > 40:
+        return True
+    han_chars = sum("\u4e00" <= ch <= "\u9fff" for ch in topic)
+    digit_chars = sum(ch.isdigit() for ch in topic)
+    if digit_chars > han_chars:
+        return True
+    return False
 
 
 def clean_topic(text: str, marker: str | None = None) -> str:
@@ -172,7 +199,7 @@ def clean_topic(text: str, marker: str | None = None) -> str:
     for candidate in reversed(segments):
         if (
             len(candidate) >= 2
-            and candidate not in TOPIC_STOPWORDS
+            and not is_bad_topic(candidate)
             and HAN_RE.search(candidate)
             and has_balanced_brackets(candidate)
         ):
@@ -196,6 +223,16 @@ def is_low_quality_answer(answer: str) -> bool:
 
 def is_low_quality_evidence(evidence: str) -> bool:
     return bool(NOISY_EVIDENCE_RE.search(evidence))
+
+
+def is_low_quality_question(question: str) -> bool:
+    if BAD_QUESTION_RE.search(question):
+        return True
+    if not has_balanced_brackets(question):
+        return True
+    if re.search(r"^(?:如在|否则|其中|同时|此外|另外|并|且|则)", question):
+        return True
+    return False
 
 
 def split_sentences(paragraph: str) -> list[str]:
@@ -226,6 +263,8 @@ def make_sample(
     if is_low_quality_evidence(evidence):
         return None
     if is_low_quality_answer(answer):
+        return None
+    if is_low_quality_question(question):
         return None
     if not (8 <= len(answer) <= MAX_ANSWER_CHARS):
         return None
