@@ -38,6 +38,54 @@ button { cursor: pointer; }
 }
 .loading-box strong { font-size: 14px; }
 .loading-box svg { color: #237a78; }
+.network-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(17, 30, 38, .46);
+  backdrop-filter: blur(2px);
+}
+.network-dialog {
+  width: min(560px, 92vw);
+  border: 1px solid #c9d4d9;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 22px 52px rgba(13, 26, 35, .28);
+  color: #263238;
+}
+.network-dialog header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border-bottom: 1px solid #e0e6e9;
+}
+.network-dialog header > div { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.network-dialog header svg { color: #b95024; flex: none; }
+.network-dialog header strong { font-size: 16px; }
+.network-dialog p { margin: 0; padding: 16px 18px 8px; line-height: 1.65; color: #38474f; }
+.network-dialog dl { margin: 0; padding: 0 18px 16px; }
+.network-dialog dl div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid #edf1f3;
+}
+.network-dialog dt { color: #718087; font-size: 12px; }
+.network-dialog dd { margin: 0; color: #27343b; font-size: 13px; overflow-wrap: anywhere; }
+.network-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 18px 16px;
+  border-top: 1px solid #e0e6e9;
+  background: #f8fafb;
+}
 .topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; background: #15232b; color: #fff; border-bottom: 1px solid #263943;
@@ -421,6 +469,16 @@ label > span, fieldset legend { display: block; margin-bottom: 5px; color: #5965
 }
 .rag-control-panel { border-right: 1px solid #d8dee2; }
 .rag-status { color: #738088; font-size: 11px; }
+.mini-command {
+  border: 1px solid #cbd5d9;
+  background: #fff;
+  color: #2c3a40;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.mini-command:hover { border-color: #237a78; color: #176865; }
 .rag-controls { flex: 1; overflow: auto; padding: 18px; }
 .rag-controls > label { display: block; margin-bottom: 15px; }
 .rag-controls textarea { min-height: 145px; resize: vertical; }
@@ -445,6 +503,19 @@ label > span, fieldset legend { display: block; margin-bottom: 5px; color: #5965
 .rag-index-meta dd { margin: 0; color: #303b41; }
 .rag-result-scroll { flex: 1; overflow: auto; padding: 28px 34px 60px; }
 .rag-answer { padding-bottom: 26px; border-bottom: 1px solid #dce2e5; }
+.rag-chat-log { display: flex; flex-direction: column; gap: 14px; padding-bottom: 22px; }
+.chat-message {
+  max-width: min(820px, 88%);
+  padding: 13px 15px;
+  border: 1px solid #dce3e6;
+  background: #fff;
+  border-radius: 7px;
+}
+.chat-message[data-role="user"] { align-self: flex-end; background: #eef7f5; border-color: #cbe2dd; }
+.chat-message[data-role="assistant"] { align-self: flex-start; }
+.chat-message header { display: flex; justify-content: space-between; gap: 18px; margin-bottom: 7px; font-size: 11px; color: #68747b; }
+.chat-message header strong { color: #263238; }
+.chat-message p { margin: 0; white-space: pre-wrap; line-height: 1.75; font-size: 14px; color: #2d373d; overflow-wrap: anywhere; }
 .rag-answer h2, .rag-sources h2 { margin: 0 0 12px; font-size: 16px; }
 .rag-answer p {
   margin: 0; white-space: pre-wrap; color: #222b30; font-size: 16px;

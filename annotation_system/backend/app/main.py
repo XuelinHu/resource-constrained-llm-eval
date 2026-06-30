@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session, selectinload
 from .config import settings
 from .asr import ASR_UPLOAD_DIR, transcribe_audio
 from .database import Base, engine, get_db
-from .models import CorpusItem, Document, ReviewEvent
+from .models import CorpusItem, Document, RagMessage, RagSession, ReviewEvent
 from .rag import answer_question, retriever
 from .tts import TTS_CACHE_DIR, synthesize_speech
 from .schemas import (
@@ -29,6 +29,9 @@ from .schemas import (
     ReviewRequest,
     RagAnswer,
     RagAskRequest,
+    RagMessageOut,
+    RagSessionCreate,
+    RagSessionOut,
     StatsOut,
     TtsRequest,
     TtsResponse,
@@ -137,8 +140,79 @@ def rag_rebuild() -> dict:
 
 
 @app.post("/api/rag/ask", response_model=RagAnswer)
-async def rag_ask(payload: RagAskRequest) -> dict:
-    return await answer_question(payload.question.strip(), payload.top_k, payload.generate)
+async def rag_ask(payload: RagAskRequest, db: Session = Depends(get_db)) -> dict:
+    question = payload.question.strip()
+    session = get_or_create_rag_session(db, payload.session_id, question)
+    user_message = RagMessage(
+        session_id=session.id,
+        role="user",
+        content=question,
+        metadata_json={"top_k": payload.top_k, "generate": payload.generate},
+    )
+    db.add(user_message)
+    db.flush()
+
+    result = await answer_question(question, payload.top_k, payload.generate)
+    assistant_message = RagMessage(
+        session_id=session.id,
+        role="assistant",
+        content=result["answer"],
+        sources=result.get("sources") or [],
+        metadata_json={
+            "mode": result.get("mode"),
+            "model": result.get("model"),
+            "retrieval_ms": result.get("retrieval_ms"),
+            "generation_ms": result.get("generation_ms"),
+        },
+    )
+    db.add(assistant_message)
+    session.updated_at = func.now()
+    db.commit()
+    db.refresh(user_message)
+    db.refresh(assistant_message)
+    result.update(
+        {
+            "session_id": session.id,
+            "user_message_id": user_message.id,
+            "assistant_message_id": assistant_message.id,
+        }
+    )
+    return result
+
+
+def get_or_create_rag_session(db: Session, session_id: int | None, question: str) -> RagSession:
+    if session_id:
+        session = db.get(RagSession, session_id)
+        if session:
+            return session
+    title = question[:40] or "新会话"
+    session = RagSession(title=title)
+    db.add(session)
+    db.flush()
+    return session
+
+
+@app.post("/api/rag/sessions", response_model=RagSessionOut)
+def create_rag_session(payload: RagSessionCreate, db: Session = Depends(get_db)) -> RagSession:
+    title = payload.title.strip() or "新会话"
+    session = RagSession(title=title)
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+    return session
+
+
+@app.get("/api/rag/sessions", response_model=list[RagSessionOut])
+def list_rag_sessions(limit: int = Query(default=20, ge=1, le=100), db: Session = Depends(get_db)) -> list[RagSession]:
+    return list(db.scalars(select(RagSession).order_by(RagSession.updated_at.desc()).limit(limit)))
+
+
+@app.get("/api/rag/sessions/{session_id}/messages", response_model=list[RagMessageOut])
+def list_rag_messages(session_id: int, db: Session = Depends(get_db)) -> list[RagMessage]:
+    session = db.get(RagSession, session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="RAG session not found")
+    return list(db.scalars(select(RagMessage).where(RagMessage.session_id == session_id).order_by(RagMessage.id)))
 
 
 @app.get("/api/documents", response_model=list[DocumentOut])

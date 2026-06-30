@@ -134,6 +134,7 @@ class RagAskRequest(BaseModel):
     question: str = Field(min_length=2, max_length=500)
     top_k: int = Field(default=5, ge=1, le=10)
     generate: bool = True
+    session_id: int | None = None
 
 
 class RagSource(BaseModel):
@@ -151,12 +152,40 @@ class RagSource(BaseModel):
 
 
 class RagAnswer(BaseModel):
+    session_id: int | None = None
+    user_message_id: int | None = None
+    assistant_message_id: int | None = None
     answer: str
     mode: str
     model: str | None
     sources: list[RagSource]
     retrieval_ms: float
     generation_ms: float
+
+
+class RagSessionCreate(BaseModel):
+    title: str = Field(default="新会话", max_length=300)
+
+
+class RagSessionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class RagMessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    session_id: int
+    role: str
+    content: str
+    sources: list[dict[str, Any]] = Field(default_factory=list)
+    metadata_json: dict[str, Any] = Field(default_factory=dict)
+    created_at: datetime
 
 
 class TtsRequest(BaseModel):

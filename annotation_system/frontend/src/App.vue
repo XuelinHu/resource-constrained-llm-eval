@@ -27,6 +27,13 @@ const activeView = ref('review')
 const loading = ref(false)
 const saving = ref(false)
 const notice = ref('')
+const networkDialog = reactive({
+  visible: false,
+  title: '',
+  message: '',
+  detail: '',
+  endpoint: '',
+})
 const items = ref([])
 const selectedItemIds = ref(new Set())
 const total = ref(0)
@@ -37,6 +44,8 @@ const documents = ref([])
 const ragLoading = ref(false)
 const ragResult = ref(null)
 const ragStats = ref({ documents: 0, model: '', excludes_test_split: true })
+const ragSessionId = ref(Number(localStorage.getItem('railway-rag-session-id') || 0) || null)
+const ragMessages = ref([])
 const imageZoom = ref(100)
 const contextBooks = ref([])
 const activeContextBook = ref(null)
@@ -93,6 +102,37 @@ const messageText = {
 function resolveApiUrl(path) {
   if (/^(https?:|data:|blob:)/i.test(path)) return path
   return `${apiBase}${path}`
+}
+
+function networkEndpoint(path = '') {
+  return resolveApiUrl(path || '/api/health') || '/api/health'
+}
+
+function showNetworkDialog(error, path = '') {
+  networkDialog.visible = true
+  networkDialog.title = '网络连接异常'
+  networkDialog.message = '前端暂时无法连接后端服务。请检查 FRP 转发、后端进程或当前网络后再重试。'
+  networkDialog.detail = error?.message || String(error || '')
+  networkDialog.endpoint = networkEndpoint(path)
+}
+
+function hideNetworkDialog() {
+  networkDialog.visible = false
+}
+
+function isGatewayError(status) {
+  return [502, 503, 504].includes(Number(status))
+}
+
+async function checkBackendConnection() {
+  try {
+    const response = await fetch(networkEndpoint('/api/health'), { cache: 'no-store' })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    hideNetworkDialog()
+    notice.value = '后端连接已恢复'
+  } catch (error) {
+    showNetworkDialog(error, '/api/health')
+  }
 }
 
 function stopSpeech() {
@@ -162,16 +202,30 @@ function assignRecognizedText(field, text) {
 async function uploadSpeechForRecognition(field, blob) {
   const formData = new FormData()
   formData.append('audio', blob, 'speech.webm')
-  const response = await fetch(`${apiBase}/api/asr?language=zh`, {
-    method: 'POST',
-    body: formData,
-  })
+  const endpoint = '/api/asr?language=zh'
+  let response
+  try {
+    response = await fetch(`${apiBase}${endpoint}`, {
+      method: 'POST',
+      body: formData,
+    })
+  } catch (error) {
+    showNetworkDialog(error, endpoint)
+    throw new Error('语音识别服务连接失败')
+  }
+  if (isGatewayError(response.status)) {
+    showNetworkDialog(new Error(`HTTP ${response.status}`), endpoint)
+    throw new Error('语音识别服务暂时不可用')
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.detail || `${t('recognitionFailed')}：${response.status}`)
   }
   const data = await response.json()
-  if (data.text) assignRecognizedText(field, data.text)
+  if (data.text) {
+    assignRecognizedText(field, data.text)
+    if (field === 'rag_question') await askRag()
+  }
 }
 
 async function startSpeechRecognition(field) {
@@ -381,6 +435,10 @@ const isCurrentPageSelected = computed(() => Boolean(items.value.length) && item
 const statusScopeTotal = computed(() => sumCounts(stats.value.by_status))
 const taskScopeTotal = computed(() => sumCounts(stats.value.by_task_type))
 const domainScopeTotal = computed(() => sumCounts(stats.value.by_domain_category))
+const latestAssistantSources = computed(() => {
+  const assistant = [...ragMessages.value].reverse().find((message) => message.role === 'assistant' && message.sources?.length)
+  return assistant?.sources || ragResult.value?.sources || []
+})
 
 function sumCounts(counts) {
   return Object.values(counts || {}).reduce((sum, value) => sum + Number(value || 0), 0)
@@ -629,10 +687,19 @@ function statsQueryString() {
 }
 
 async function api(path, options = {}) {
-  const response = await fetch(`${apiBase}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
-    ...options,
-  })
+  let response
+  try {
+    response = await fetch(`${apiBase}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      ...options,
+    })
+  } catch (error) {
+    showNetworkDialog(error, path)
+    throw new Error('后端服务连接失败')
+  }
+  if (isGatewayError(response.status)) {
+    showNetworkDialog(new Error(`HTTP ${response.status}`), path)
+  }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.detail || `${t('requestFailed')}：${response.status}`)
@@ -917,16 +984,52 @@ async function loadRagStats() {
   }
 }
 
+async function loadRagMessages() {
+  if (!ragSessionId.value) {
+    ragMessages.value = []
+    return
+  }
+  try {
+    const response = await api(`/api/rag/sessions/${ragSessionId.value}/messages`)
+    ragMessages.value = await response.json()
+  } catch (_error) {
+    ragSessionId.value = null
+    ragMessages.value = []
+    localStorage.removeItem('railway-rag-session-id')
+  }
+}
+
+async function startNewRagSession() {
+  const response = await api('/api/rag/sessions', {
+    method: 'POST',
+    body: JSON.stringify({ title: '新会话' }),
+  })
+  const session = await response.json()
+  ragSessionId.value = session.id
+  localStorage.setItem('railway-rag-session-id', String(session.id))
+  ragMessages.value = []
+  ragResult.value = null
+  ragForm.question = ''
+}
+
 async function askRag() {
   if (!ragForm.question.trim() || ragLoading.value) return
+  const question = ragForm.question.trim()
   ragLoading.value = true
   ragResult.value = null
   try {
+    const payload = { ...ragForm, question, session_id: ragSessionId.value }
     const response = await api('/api/rag/ask', {
       method: 'POST',
-      body: JSON.stringify(ragForm),
+      body: JSON.stringify(payload),
     })
     ragResult.value = await response.json()
+    if (ragResult.value.session_id) {
+      ragSessionId.value = ragResult.value.session_id
+      localStorage.setItem('railway-rag-session-id', String(ragResult.value.session_id))
+    }
+    await loadRagMessages()
+    ragForm.question = ''
   } catch (error) {
     notice.value = error.message
   } finally {
@@ -973,7 +1076,10 @@ async function selectContextBook(book) {
 function switchView(view) {
   stopRecognition()
   activeView.value = view
-  if (view === 'rag' && !ragStats.value.documents) loadRagStats()
+  if (view === 'rag') {
+    if (!ragStats.value.documents) loadRagStats()
+    loadRagMessages()
+  }
   if (view === 'context') loadContextBooks()
 }
 
@@ -1046,6 +1152,36 @@ onBeforeUnmount(() => {
         <RefreshCw class="spin" :size="28" />
       <strong>{{ t('loading') }}</strong>
       </div>
+    </div>
+    <div v-if="networkDialog.visible" class="network-overlay" role="alertdialog" aria-modal="true">
+      <section class="network-dialog">
+        <header>
+          <div>
+            <AlertTriangle :size="22" />
+            <strong>{{ networkDialog.title }}</strong>
+          </div>
+          <button type="button" class="icon-button" @click="hideNetworkDialog" aria-label="关闭">
+            <X :size="18" />
+          </button>
+        </header>
+        <p>{{ networkDialog.message }}</p>
+        <dl>
+          <div>
+            <dt>API</dt>
+            <dd>{{ networkDialog.endpoint }}</dd>
+          </div>
+          <div v-if="networkDialog.detail">
+            <dt>详情</dt>
+            <dd>{{ networkDialog.detail }}</dd>
+          </div>
+        </dl>
+        <footer>
+          <button type="button" class="command" @click="hideNetworkDialog">关闭</button>
+          <button type="button" class="command primary" @click="checkBackendConnection">
+            <RefreshCw :size="16" /> 检测连接
+          </button>
+        </footer>
+      </section>
     </div>
     <header class="topbar">
       <div class="brand">
@@ -1515,7 +1651,7 @@ type="checkbox"
       <aside class="rag-control-panel">
         <div class="panel-heading">
           <div><Bot :size="17" /><strong>{{ t('ragTitle') }}</strong></div>
-          <span class="rag-status">{{ t('index') }} {{ ragStats.documents || '-' }} {{ t('records') }}</span>
+          <button type="button" class="mini-command" @click="startNewRagSession">新会话</button>
         </div>
         <div class="rag-controls">
           <label>
@@ -1574,6 +1710,7 @@ type="checkbox"
           </div>
 
           <dl class="rag-index-meta">
+          <div><dt>会话</dt><dd>{{ ragSessionId || '未创建' }}</dd></div>
           <div><dt>{{ t('model') }}</dt><dd>{{ ragStats.model || t('loading') }}</dd></div>
           <div><dt>{{ t('testIsolation') }}</dt><dd>{{ ragStats.excludes_test_split ? t('enabled') : t('disabled') }}</dd></div>
           </dl>
@@ -1592,14 +1729,27 @@ type="checkbox"
             <strong>{{ t('loadingRag') }}</strong>
             <span>{{ t('modelWarmup') }}</span>
         </div>
-        <div v-else-if="ragResult" class="rag-result-scroll">
-          <section class="rag-answer">
+        <div v-else-if="ragMessages.length || ragResult" class="rag-result-scroll">
+          <section class="rag-chat-log">
+            <article
+              v-for="message in ragMessages"
+              :key="message.id"
+              class="chat-message"
+              :data-role="message.role"
+            >
+              <header>
+                <strong>{{ message.role === 'user' ? '我' : '铁路问答助手' }}</strong>
+                <span>{{ new Date(message.created_at).toLocaleString() }}</span>
+              </header>
+              <p>{{ message.content }}</p>
+            </article>
+          </section>
+
+          <section v-if="ragResult" class="rag-answer">
             <div class="answer-meta">
               <span>{{ ragResult.mode }}</span>
               <span v-if="ragResult.model">{{ ragResult.model }}</span>
             </div>
-            <h2>{{ t('answer') }}</h2>
-            <p>{{ ragResult.answer }}</p>
             <button
               type="button"
               class="speech-button"
@@ -1613,9 +1763,9 @@ type="checkbox"
             </button>
           </section>
 
-          <section class="rag-sources">
+          <section v-if="latestAssistantSources.length" class="rag-sources">
             <h2>{{ t('retrievalEvidence') }}</h2>
-            <article v-for="(source, index) in ragResult.sources" :key="source.item_id + '-' + index">
+            <article v-for="(source, index) in latestAssistantSources" :key="source.item_id + '-' + index">
               <header>
                 <strong>[{{ t('retrievalEvidence') }} {{ index + 1 }}] {{ source.source_document }}</strong>
                 <span>{{ t('relevance') }} {{ source.score }}</span>
