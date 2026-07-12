@@ -27,6 +27,10 @@ token-level F1, reference containment, and length ratio. Efficiency is measured
 with peak allocated VRAM, peak reserved VRAM, latency, and generated-token
 throughput. For QLoRA, the training export records runtime, training loss,
 evaluation loss, evaluation accuracy, and perplexity when available.
+For Domain-QA, corpus BLEU and terminology success rate are additionally
+reported for Chinese-to-English and English-to-Chinese directions separately.
+This follows domain-specific machine-translation evaluation practice while
+avoiding an aggregate score that obscures directional differences.
 
 \subsection{Precision and Adaptation Settings}
 

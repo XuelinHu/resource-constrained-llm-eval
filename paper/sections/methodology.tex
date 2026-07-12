@@ -31,6 +31,15 @@ Character-level F1 and token-level F1 provide softer matching, while reference
 containment and length ratio reveal whether a model returns concise domain
 answers or long off-target responses.
 
+Because Domain-QA contains bidirectional machine-translation examples, we also
+report corpus BLEU separately for Chinese-to-English and English-to-Chinese
+translation~\cite{papineni2002bleu}. English targets use the standard 13a
+tokenizer, whereas Chinese targets use character-aware Chinese tokenization.
+The directional score pools terminology and sentence-translation examples. On
+the terminology subset, terminology success rate measures whether the complete
+reference term occurs in the normalized model output. BLEU is reported on its
+conventional 0--100 scale; the other domain metrics remain on a 0--1 scale.
+
 \subsection{Low-Bit Inference and Efficiency Measurement}
 
 Baseline inference is evaluated under bf16, int8, and int4 where supported by

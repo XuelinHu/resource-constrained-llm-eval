@@ -149,3 +149,29 @@ Near-term RAG TODO:
 3. Add retrieval and generation logs to PostgreSQL.
 4. Add answer feedback labels in the frontend.
 5. Evaluate BM25-only retrieval against a dense or reranked baseline.
+
+## Linux TODO: Bidirectional Machine-Translation Evaluation
+
+The Windows workspace is used for metric design, implementation, manuscript
+editing, and discussion. Run the resource-intensive evaluation work later in
+the Linux experiment environment.
+
+1. Restore or regenerate `data/domain/train.jsonl`, `valid.jsonl`, and
+   `test.jsonl`, then verify the four translation categories and split counts.
+2. Install the project environment, including `peft`, `sacrebleu`, and a
+   compatible `unbabel-comet` version. Record the Python, CUDA, PyTorch,
+   SacreBLEU, COMET, and evaluation-model versions.
+3. Preserve a clean source sentence for every `zh_to_en_translation` and
+   `en_to_zh_translation` record; do not derive COMET sources from the full
+   instruction prompt during scoring.
+4. Run the matched baseline and QLoRA evaluations with identical prompts,
+   decoding settings, model precision, and test splits.
+5. Report `corpus_bleu` and `terminology_success_rate` separately for
+   `zh_to_en` and `en_to_zh`. Record the SacreBLEU signature with each run.
+6. Add reference-based COMET for both directions and save model checkpoint
+   name, score scale, per-sample scores, aggregate mean, and confidence
+   interval. Keep COMET optional so BLEU evaluation still runs offline.
+7. Export directional results into the paper tables and discuss asymmetric
+   performance between Chinese-to-English and English-to-Chinese translation.
+8. Add a manual error sample covering correct terminology, acceptable
+   paraphrase, terminology omission, mistranslation, and unsupported output.

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
+from sacrebleu import corpus_bleu
 
 from ..utils.io import read_json, read_jsonl, write_csv
 from ..utils.modeling import clear_cuda, get_inference_device, load_model_and_tokenizer
@@ -59,6 +60,67 @@ def _domain_sample_metrics(prediction: str, reference: str) -> dict[str, float |
         "reference_contained": bool(normalized_reference and normalized_reference in normalized_prediction),
         "length_ratio": len(prediction_chars) / reference_len,
     }
+
+
+_TRANSLATION_DIRECTIONS = {
+    "zh_to_en": {"terminology_zh_to_en", "zh_to_en_translation"},
+    "en_to_zh": {"terminology_en_to_zh", "en_to_zh_translation"},
+}
+
+
+def _translation_metric_rows(
+    *,
+    model_key: str,
+    precision: str,
+    task_key: str,
+    samples: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Aggregate MT metrics separately for Chinese-English directions."""
+    rows: list[dict[str, Any]] = []
+    for direction, categories in _TRANSLATION_DIRECTIONS.items():
+        direction_samples = [sample for sample in samples if sample.get("category") in categories]
+        if not direction_samples:
+            continue
+
+        predictions = [str(sample["prediction"]) for sample in direction_samples]
+        references = [str(sample["reference"]) for sample in direction_samples]
+        tokenizer = "13a" if direction == "zh_to_en" else "zh"
+        bleu = corpus_bleu(
+            predictions,
+            [references],
+            tokenize=tokenizer,
+            use_effective_order=True,
+        ).score
+        rows.append(
+            {
+                "model": model_key,
+                "precision": precision,
+                "task": f"{task_key}:{direction}",
+                "metric": "corpus_bleu",
+                "score": round(bleu, 6),
+                "num_examples": len(direction_samples),
+            }
+        )
+
+        terminology_category = f"terminology_{direction}"
+        terminology_samples = [
+            sample for sample in direction_samples if sample.get("category") == terminology_category
+        ]
+        if terminology_samples:
+            success_rate = statistics.mean(
+                float(sample["metrics"]["reference_contained"]) for sample in terminology_samples
+            )
+            rows.append(
+                {
+                    "model": model_key,
+                    "precision": precision,
+                    "task": f"{task_key}:{direction}",
+                    "metric": "terminology_success_rate",
+                    "score": round(success_rate, 6),
+                    "num_examples": len(terminology_samples),
+                }
+            )
+    return rows
 
 
 def _build_eval_success_message(
@@ -401,6 +463,15 @@ def run_local_domain_eval(
         }
         for metric_name, values in metric_values.items()
     ]
+    if task_key == "domain_qa":
+        rows.extend(
+            _translation_metric_rows(
+                model_key=model_key,
+                precision=precision,
+                task_key=task_key,
+                samples=generations,
+            )
+        )
     write_json(output_dir / f"{file_stem}_{task_key}.json", {"metrics": rows})
     write_json(output_dir / f"{file_stem}_domain_generations.json", {"samples": generations})
 
