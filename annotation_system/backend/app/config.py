@@ -31,6 +31,8 @@ class Settings:
     ollama_url: str
     rag_model: str
     rag_timeout_seconds: int
+    embedding_model: str
+    embedding_dimension: int
 
     @property
     def database_url(self) -> str:
@@ -55,6 +57,8 @@ def get_settings() -> Settings:
         ollama_url=os.getenv("RAILWAY_OLLAMA_URL", "http://127.0.0.1:11434"),
         rag_model=os.getenv("RAILWAY_RAG_MODEL", "qwen3:14b"),
         rag_timeout_seconds=int(os.getenv("RAILWAY_RAG_TIMEOUT_SECONDS", "180")),
+        embedding_model=os.getenv("RAILWAY_EMBEDDING_MODEL", "BAAI/bge-m3"),
+        embedding_dimension=int(os.getenv("RAILWAY_EMBEDDING_DIMENSION", "1024")),
     )
 
 

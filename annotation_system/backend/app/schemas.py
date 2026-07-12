@@ -135,6 +135,8 @@ class RagAskRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=10)
     generate: bool = True
     session_id: int | None = None
+    retrieval_mode: Literal["bm25", "vector", "hybrid"] = "bm25"
+    approved_only: bool = False
 
 
 class RagSource(BaseModel):
@@ -148,6 +150,9 @@ class RagSource(BaseModel):
     chapter: str
     page_number: int | None
     review_status: str
+    retrieval_mode: str | None = None
+    bm25_score: float | None = None
+    vector_score: float | None = None
     generation_error: str | None = None
 
 
@@ -155,6 +160,7 @@ class RagAnswer(BaseModel):
     session_id: int | None = None
     user_message_id: int | None = None
     assistant_message_id: int | None = None
+    audio_url: str | None = None
     answer: str
     mode: str
     model: str | None

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: railway-annotation-pgvector
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${RAILWAY_DB_NAME:-railway_annotation}
+      POSTGRES_USER: ${RAILWAY_DB_USER:-deipss}
+      POSTGRES_PASSWORD: ${RAILWAY_DB_PASSWORD:-change-me}
+    ports:
+      - "${RAILWAY_DB_PORT:-5432}:5432"
+    volumes:
+      - railway_annotation_pgvector:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${RAILWAY_DB_USER:-deipss} -d ${RAILWAY_DB_NAME:-railway_annotation}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  railway_annotation_pgvector:

@@ -6,7 +6,9 @@ from typing import Any
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
 
+from .config import settings
 from .database import Base
 
 
@@ -134,3 +136,21 @@ class RagMessage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     session: Mapped[RagSession] = relationship(back_populates="messages")
+
+
+class KnowledgeChunkEmbedding(Base):
+    __tablename__ = "knowledge_chunk_embeddings"
+    __table_args__ = (
+        UniqueConstraint("item_id", "chunk_index", "embedding_model", name="uq_chunk_embedding_model"),
+        Index("ix_chunk_embeddings_item_id", "item_id"),
+        Index("ix_chunk_embeddings_model", "embedding_model"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey("corpus_items.id", ondelete="CASCADE"), index=True)
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    chunk_text: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    embedding_model: Mapped[str] = mapped_column(String(120), nullable=False)
+    embedding: Mapped[list[float]] = mapped_column(Vector(settings.embedding_dimension), nullable=False)
+    metadata_json: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

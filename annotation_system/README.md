@@ -10,6 +10,15 @@
 
 ## 初始化
 
+启动 PostgreSQL + pgvector：
+
+```bash
+cd annotation_system
+RAILWAY_DB_PASSWORD=change-me docker compose --env-file backend/.env.example -f docker-compose.pgvector.yml up -d
+```
+
+pgvector 没有独立端口，它是 PostgreSQL 扩展；服务端口仍然使用 PostgreSQL 默认端口 `5432`。生产或正式实验环境应把 `change-me` 替换为本地 `backend/.env` 中的真实密码；不要提交真实密码。
+
 ```bash
 cd annotation_system/backend
 /home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.init_database
@@ -51,11 +60,50 @@ FRONTEND_MODE=frp ./annotation_system/start_frontend.sh        # API: http://47.
 4. 使用本地 Ollama `qwen3:14b` 根据证据生成回答并标注来源编号。
 5. 本地模型不可用时自动返回最相关原始证据。
 
+论文正式路线使用 PostgreSQL + pgvector 作为专业知识库底座：PostgreSQL 保存结构化语料、审核状态、来源证据与会话记录，pgvector 保存知识块向量。当前 BM25 检索保留为关键词基线，后续实验应比较 BM25、pgvector 语义检索和混合检索。
+
+`RAILWAY_EMBEDDING_DIMENSION` 必须与正式实验使用的 embedding 模型输出维度一致；默认值为 1024。若后续改用 768、1536 等维度模型，应在初始化数据库前调整该环境变量。
+
+默认 embedding 模型为 `BAAI/bge-m3`，用于中英双语铁路教育知识检索。构建 pgvector 向量索引：
+
+```bash
+cd annotation_system/backend
+/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.build_embeddings --rebuild
+```
+
+调试时可先限制样本数：
+
+```bash
+/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.build_embeddings --limit 100 --rebuild
+```
+
 RAG API：
 
 - `GET /api/rag/stats`：索引状态
 - `POST /api/rag/rebuild`：重建索引
-- `POST /api/rag/ask`：检索或生成回答
+- `POST /api/rag/ask`：检索或生成回答，`retrieval_mode` 支持 `bm25`、`vector` 和 `hybrid`，`approved_only` 可限制仅检索专家核验通过语料
+
+命令行验证 pgvector 语义检索：
+
+```bash
+cd annotation_system/backend
+/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.search_embeddings "What is contact wire maintenance?" --mode vector --top-k 3
+/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.search_embeddings "接触网检修要求是什么" --mode hybrid --approved-only --top-k 3
+```
+
+运行初始检索评测：
+
+```bash
+cd annotation_system/backend
+/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.evaluate_retrieval --top-k 5
+```
+
+运行初始问答生成评测：
+
+```bash
+cd annotation_system/backend
+/home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.evaluate_qa --limit 10 --top-k 3 --include-no-retrieval
+```
 
 ## PM2
 

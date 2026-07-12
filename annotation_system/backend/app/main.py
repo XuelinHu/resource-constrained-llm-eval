@@ -147,12 +147,31 @@ async def rag_ask(payload: RagAskRequest, db: Session = Depends(get_db)) -> dict
         session_id=session.id,
         role="user",
         content=question,
-        metadata_json={"top_k": payload.top_k, "generate": payload.generate},
+        metadata_json={
+            "top_k": payload.top_k,
+            "generate": payload.generate,
+            "retrieval_mode": payload.retrieval_mode,
+            "approved_only": payload.approved_only,
+        },
     )
     db.add(user_message)
     db.flush()
 
-    result = await answer_question(question, payload.top_k, payload.generate)
+    result = await answer_question(
+        question,
+        payload.top_k,
+        payload.generate,
+        payload.retrieval_mode,
+        payload.approved_only,
+    )
+    audio_url = None
+    tts_error = None
+    try:
+        audio_path = await synthesize_speech(result["answer"])
+        audio_url = f"/api/tts/audio/{audio_path.name}"
+    except Exception as error:
+        tts_error = str(error)
+
     assistant_message = RagMessage(
         session_id=session.id,
         role="assistant",
@@ -163,6 +182,8 @@ async def rag_ask(payload: RagAskRequest, db: Session = Depends(get_db)) -> dict
             "model": result.get("model"),
             "retrieval_ms": result.get("retrieval_ms"),
             "generation_ms": result.get("generation_ms"),
+            "audio_url": audio_url,
+            "tts_error": tts_error,
         },
     )
     db.add(assistant_message)
@@ -175,6 +196,7 @@ async def rag_ask(payload: RagAskRequest, db: Session = Depends(get_db)) -> dict
             "session_id": session.id,
             "user_message_id": user_message.id,
             "assistant_message_id": assistant_message.id,
+            "audio_url": audio_url,
         }
     )
     return result

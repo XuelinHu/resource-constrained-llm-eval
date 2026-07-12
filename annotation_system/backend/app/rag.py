@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from .config import settings
 from .database import SessionLocal
-from .models import CorpusItem
+from .models import CorpusItem, KnowledgeChunkEmbedding
 
 
 SPACE_RE = re.compile(r"\s+")
@@ -130,7 +130,7 @@ class RailwayRetriever:
         if not self.documents:
             self.build()
 
-    def search(self, query: str, top_k: int = 5) -> list[dict]:
+    def search(self, query: str, top_k: int = 5, approved_only: bool = False) -> list[dict]:
         self.ensure_ready()
         query_tokens = Counter(tokenize(query))
         if not query_tokens:
@@ -166,6 +166,8 @@ class RailwayRetriever:
         results = []
         for score, index in sorted(scores, reverse=True)[:top_k]:
             document = self.documents[index]
+            if approved_only and document.review_status != "approved":
+                continue
             results.append(
                 {
                     "item_id": document.item_id,
@@ -178,12 +180,95 @@ class RailwayRetriever:
                     "chapter": document.chapter,
                     "page_number": document.page_number,
                     "review_status": document.review_status,
+                    "retrieval_mode": "bm25",
                 }
             )
         return results
 
 
 retriever = RailwayRetriever()
+
+
+_embedding_model = None
+_embedding_lock = Lock()
+
+
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        with _embedding_lock:
+            if _embedding_model is None:
+                from sentence_transformers import SentenceTransformer
+
+                _embedding_model = SentenceTransformer(settings.embedding_model)
+    return _embedding_model
+
+
+def vector_search(query: str, top_k: int = 5, approved_only: bool = False) -> list[dict]:
+    model = get_embedding_model()
+    query_vector = model.encode([query], normalize_embeddings=True, show_progress_bar=False)[0].tolist()
+    distance = KnowledgeChunkEmbedding.embedding.cosine_distance(query_vector)
+    with SessionLocal() as db:
+        statement = (
+            select(KnowledgeChunkEmbedding, CorpusItem, distance.label("distance"))
+            .join(CorpusItem, CorpusItem.id == KnowledgeChunkEmbedding.item_id)
+            .where(KnowledgeChunkEmbedding.embedding_model == settings.embedding_model)
+            .where(CorpusItem.review_status.notin_(["rejected", "needs_revision", "deleted"]))
+            .order_by(distance)
+            .limit(top_k)
+        )
+        if approved_only:
+            statement = statement.where(CorpusItem.review_status == "approved")
+        rows = db.execute(statement).all()
+
+    results = []
+    for chunk, item, score_distance in rows:
+        evidence = SPACE_RE.sub(" ", item.evidence or item.source_text or item.answer or chunk.chunk_text).strip()
+        similarity = 1.0 - float(score_distance)
+        results.append(
+            {
+                "item_id": item.id,
+                "score": round(similarity, 4),
+                "evidence": evidence[:2400],
+                "source_document": item.source_document,
+                "source_type": item.source_type,
+                "task_type": item.task_type,
+                "domain_category": item.domain_category,
+                "chapter": item.chapter,
+                "page_number": item.page_number,
+                "review_status": item.review_status,
+                "retrieval_mode": "vector",
+            }
+        )
+    return results
+
+
+def hybrid_search(query: str, top_k: int = 5, approved_only: bool = False) -> list[dict]:
+    candidate_k = max(top_k * 5, 20)
+    bm25_results = retriever.search(query, candidate_k, approved_only=approved_only)
+    vector_results = vector_search(query, candidate_k, approved_only=approved_only)
+    rrf_k = 60
+    bm25_scores = {int(result["item_id"]): 1.0 / (rrf_k + rank) for rank, result in enumerate(bm25_results, 1)}
+    vector_scores = {int(result["item_id"]): 1.0 / (rrf_k + rank) for rank, result in enumerate(vector_results, 1)}
+    merged: dict[int, dict] = {}
+
+    for result in bm25_results:
+        item_id = int(result["item_id"])
+        merged[item_id] = {**result, "bm25_score": result["score"], "vector_score": 0.0}
+    for result in vector_results:
+        item_id = int(result["item_id"])
+        if item_id in merged:
+            merged[item_id]["vector_score"] = result["score"]
+        else:
+            merged[item_id] = {**result, "bm25_score": 0.0, "vector_score": result["score"]}
+
+    ranked = []
+    for item_id, result in merged.items():
+        fused = 0.5 * bm25_scores.get(item_id, 0.0) + 0.5 * vector_scores.get(item_id, 0.0)
+        result["score"] = round(fused, 4)
+        result["retrieval_mode"] = "hybrid"
+        ranked.append(result)
+    return sorted(ranked, key=lambda item: item["score"], reverse=True)[:top_k]
 
 
 def generate_with_ollama(question: str, sources: list[dict]) -> str:
@@ -225,9 +310,20 @@ def generate_with_ollama(question: str, sources: list[dict]) -> str:
     return body.get("message", {}).get("content", "").strip()
 
 
-async def answer_question(question: str, top_k: int, generate: bool) -> dict:
+async def answer_question(
+    question: str,
+    top_k: int,
+    generate: bool,
+    retrieval_mode: str = "bm25",
+    approved_only: bool = False,
+) -> dict:
     retrieval_started = time.perf_counter()
-    sources = await asyncio.to_thread(retriever.search, question, top_k)
+    if retrieval_mode == "vector":
+        sources = await asyncio.to_thread(vector_search, question, top_k, approved_only)
+    elif retrieval_mode == "hybrid":
+        sources = await asyncio.to_thread(hybrid_search, question, top_k, approved_only)
+    else:
+        sources = await asyncio.to_thread(retriever.search, question, top_k, approved_only)
     retrieval_ms = round((time.perf_counter() - retrieval_started) * 1000, 1)
     if not sources:
         return {
