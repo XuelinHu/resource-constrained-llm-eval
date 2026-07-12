@@ -147,6 +147,36 @@ function stopSpeech() {
 const zhVoice = 'zh-CN-XiaoxiaoNeural'
 const enVoice = 'en-US-JennyNeural'
 
+async function playAudioUrl(field, audioUrl, options = {}) {
+  if (!audioUrl) return false
+  if (options.toggle && speakingField.value === field) {
+    stopSpeech()
+    return true
+  }
+  stopSpeech()
+  speakingField.value = field
+  try {
+    const audio = new Audio(resolveApiUrl(audioUrl))
+    currentAudio.value = audio
+    audio.onended = () => {
+      if (speakingField.value === field) speakingField.value = ''
+      if (currentAudio.value === audio) currentAudio.value = null
+    }
+    audio.onerror = () => {
+      if (speakingField.value === field) speakingField.value = ''
+      if (currentAudio.value === audio) currentAudio.value = null
+      notice.value = t('playbackFailed')
+    }
+    await audio.play()
+    return true
+  } catch (error) {
+    speakingField.value = ''
+    currentAudio.value = null
+    notice.value = error.message
+    return false
+  }
+}
+
 async function speakText(field, text, voice = zhVoice) {
   const content = String(text || '').trim()
   if (!content) {
@@ -166,18 +196,7 @@ async function speakText(field, text, voice = zhVoice) {
       body: JSON.stringify({ text: content, voice, rate: 1.0 }),
     })
     const data = await response.json()
-    const audio = new Audio(resolveApiUrl(data.audio_url))
-    currentAudio.value = audio
-    audio.onended = () => {
-      if (speakingField.value === field) speakingField.value = ''
-      if (currentAudio.value === audio) currentAudio.value = null
-    }
-    audio.onerror = () => {
-      if (speakingField.value === field) speakingField.value = ''
-      if (currentAudio.value === audio) currentAudio.value = null
-      notice.value = t('playbackFailed')
-    }
-    await audio.play()
+    await playAudioUrl(field, data.audio_url)
   } catch (error) {
     speakingField.value = ''
     currentAudio.value = null
@@ -1029,6 +1048,7 @@ async function askRag() {
       localStorage.setItem('railway-rag-session-id', String(ragResult.value.session_id))
     }
     await loadRagMessages()
+    if (ragResult.value.audio_url) await playAudioUrl('rag_answer', ragResult.value.audio_url)
     ragForm.question = ''
   } catch (error) {
     notice.value = error.message
@@ -1755,7 +1775,7 @@ type="checkbox"
               class="speech-button"
               :class="{ active: speakingField === 'rag_answer' }"
               :disabled="!ragResult.answer"
-              @click="speakText('rag_answer', ragResult.answer)"
+              @click="ragResult.audio_url ? playAudioUrl('rag_answer', ragResult.audio_url, { toggle: true }) : speakText('rag_answer', ragResult.answer)"
             >
               <Square v-if="speakingField === 'rag_answer'" :size="15" />
               <Volume2 v-else :size="16" />
