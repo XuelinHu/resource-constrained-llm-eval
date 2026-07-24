@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 
-from .pipelines.baseline import run_eval, summarize_results
+from .pipelines.baseline import run_efficiency_benchmark, run_eval, run_local_domain_eval, summarize_results
 from .pipelines.qlora import run_qlora
 from .pipelines.reporting import export_paper_tables
 from .utils.config import load_all_configs
@@ -55,6 +55,23 @@ def build_parser() -> argparse.ArgumentParser:
     run_qlora_parser.add_argument("--experiment", required=True, help="Path to experiment config")
     run_qlora_parser.add_argument("--model", required=True, help="Model key from configs/models/models.yaml")
     run_qlora_parser.add_argument("--dataset", required=True, help="Dataset key from configs/datasets/tasks.yaml")
+
+    efficiency_parser = subparsers.add_parser("run-efficiency", help="Run only the fixed efficiency benchmark")
+    efficiency_parser.add_argument("--experiment", required=True)
+    efficiency_parser.add_argument("--model", required=True)
+    efficiency_parser.add_argument("--precision", default="int4", choices=["bf16", "int8", "int4"])
+    efficiency_parser.add_argument("--peft-adapter", default=None)
+    efficiency_parser.add_argument("--output-group", default="efficiency")
+    efficiency_parser.add_argument("--label", default="run")
+
+    local_parser = subparsers.add_parser("run-local-eval", help="Run only configured local JSONL tasks")
+    local_parser.add_argument("--experiment", required=True)
+    local_parser.add_argument("--model", required=True)
+    local_parser.add_argument("--precision", default="int4", choices=["bf16", "int8", "int4"])
+    local_parser.add_argument("--tasks", nargs="+", default=["domain_qa", "bilingual_approved_qa"])
+    local_parser.add_argument("--peft-adapter", default=None)
+    local_parser.add_argument("--output-group", default="baseline")
+    local_parser.add_argument("--label", default="run")
 
     summarize_parser = subparsers.add_parser("summarize-results", help="Aggregate baseline result files")
     summarize_parser.add_argument("--experiment", required=True, help="Path to experiment config")
@@ -103,6 +120,39 @@ def main() -> int:
         )
     if args.command == "run-qlora":
         run_qlora(configs, args.model, args.dataset)
+        return 0
+    if args.command == "run-efficiency":
+        exp_cfg = configs["experiment"]["experiment"]
+        output_dir = configs["root"] / exp_cfg["output_root"] / args.output_group / args.model
+        output_dir.mkdir(parents=True, exist_ok=True)
+        payload = run_efficiency_benchmark(
+            configs,
+            args.model,
+            args.precision,
+            output_dir,
+            file_stem=f"{args.model}_{args.precision}_{args.label}",
+            peft_path=args.peft_adapter,
+        )
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+    if args.command == "run-local-eval":
+        exp_cfg = configs["experiment"]["experiment"]
+        output_dir = configs["root"] / exp_cfg["output_root"] / args.output_group / args.model
+        output_dir.mkdir(parents=True, exist_ok=True)
+        rows = []
+        for task_key in args.tasks:
+            rows.extend(
+                run_local_domain_eval(
+                    configs,
+                    args.model,
+                    args.precision,
+                    output_dir,
+                    file_stem=f"{args.model}_{args.precision}_{args.label}",
+                    peft_path=args.peft_adapter,
+                    task_key=task_key,
+                )
+            )
+        print(json.dumps(rows, ensure_ascii=False, indent=2))
         return 0
     if args.command == "summarize-results":
         summarize_results(configs, output_group=args.output_group)

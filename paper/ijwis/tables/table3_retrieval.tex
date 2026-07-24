@@ -1,0 +1,14 @@
+\begin{tabular}{lrlrrrrrrl}
+\toprule
+mode & approved_only & language & cases & recall_at_1 & recall_at_3 & recall_at_5 & mrr & mean_latency_ms & source_file \\
+\midrule
+bm25 & False & en & 400 & 0.5700 & 0.6700 & 0.6850 & 0.6195 & 59.0302 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+bm25 & False & zh & 400 & 0.5200 & 0.5950 & 0.6200 & 0.5598 & 69.5376 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+vector & False & en & 400 & 0.4625 & 0.5525 & 0.5800 & 0.5090 & 134.3739 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+vector & False & zh & 400 & 0.5175 & 0.6525 & 0.6900 & 0.5878 & 134.3626 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+hybrid & False & en & 400 & 0.5700 & 0.6675 & 0.7075 & 0.6205 & 208.9591 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+hybrid & False & zh & 400 & 0.5700 & 0.6750 & 0.7150 & 0.6278 & 217.5175 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+hybrid & True & en & 400 & 0.5700 & 0.6675 & 0.7075 & 0.6205 & 209.2445 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+hybrid & True & zh & 400 & 0.5700 & 0.6750 & 0.7150 & 0.6278 & 217.5931 & data/exports/retrieval_eval_railway_bilingual_400.json \\
+\bottomrule
+\end{tabular}

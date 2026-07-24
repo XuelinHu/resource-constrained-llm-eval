@@ -58,9 +58,9 @@
 4. 设计面向教育问答的评测方案，比较无检索 LLM、关键词检索、向量检索、混合检索和专家核验过滤后的 RAG 问答效果。
 5. 在受限资源环境下评估本地部署可行性，包括显存占用、响应延迟、吞吐、检索耗时和生成耗时。
 
-## 需要重新开展的实验
+## 正式实验设计与完成情况
 
-由于旧评测数据已清空，正式论文实验应重新跑，并与新论文定位保持一致。
+旧评测清空后，以下正式论文实验已按新定位重新运行。最终证据统一位于 `results/ijwis_single_gpu_3090/`，执行状态见 `paper/ijwis/experiment_todo.md`。
 
 ### 实验一：知识库构建与专家核验统计
 
@@ -78,7 +78,7 @@
 
 - 对比无检索 LLM、retrieval-only、BM25-RAG、pgvector-RAG、hybrid-RAG、hybrid-RAG + 专家核验过滤。
 - 自动指标：答案 F1、reference containment、引用覆盖率、证据命中率、答案长度比。
-- 人工指标：正确性、证据忠实性、引用准确性、教学可用性、幻觉风险。
+- 人工指标原计划包括正确性、证据忠实性、引用准确性和教学可用性；本轮按研究范围跳过新增人工评分，因此不声称自动引用指标代表事实忠实性。
 
 ### 实验四：受限资源部署评测
 
@@ -93,6 +93,8 @@
 
 ## 当前执行计划
 
+本节保留系统从 embedding 到初始 120 条规章子集的实施记录；正式跨来源结果以文末 2026-07 清单和 `paper/ijwis/` 为准。
+
 ### 第一步：双语知识块与 pgvector embedding 入库
 
 - 默认 embedding 模型：`BAAI/bge-m3`。
@@ -101,7 +103,7 @@
 - 知识块文本：合并中文问题、英文问题、中文答案、英文答案、证据、原文、领域类别、知识类别和章节信息。
 - 输出表：`knowledge_chunk_embeddings`。
 - 目标：为后续 pgvector 语义检索、BM25 + vector 混合检索和正式检索评测提供统一底座。
-- 当前状态：已完成。已入库 `BAAI/bge-m3` embedding 37,541 条，全部为 1024 维，未包含 test split。
+- 当前状态：已完成。冻结 `RAG-Railway-Bilingual-400` 后，已入库 `BAAI/bge-m3` embedding 37,261 条，全部为 1024 维；400 个正式 RAG 测试知识点均未入索引。
 
 ### 第二步：pgvector 语义检索接口
 
@@ -135,3 +137,16 @@
 - 当前状态：已完成 120 条 held-out regulation QA test split 全量自动评测，输出文件为 `data/exports/qa_eval_full.json` 和 `data/exports/qa_eval_full_summary.md`。
 - 全量结果：no-retrieval F1 为 0.243，citation coverage 为 0；retrieval-only F1 为 0.652，但它直接返回证据文本且没有生成式引用格式；BM25-RAG、vector-RAG、hybrid-RAG 和 hybrid-RAG + approved-only 的 citation coverage 分别为 0.967、0.967、0.967 和 0.975。vector-RAG 在自动 F1 上略高于 BM25-RAG，hybrid-RAG + approved-only 的引用覆盖和幻觉代理指标最好。
 - 写作注意：retrieval-only 可作为非生成检索证据上限或证据返回基线，不应被解释为问答生成模型优于 RAG。
+
+## 2026-07 新论文执行清单
+
+后续正式实验的完整待办、完成标准和推荐顺序统一维护在 `paper/ijwis/experiment_todo.md`。
+
+1. **双语 Domain-QA 重建与泄漏审计：已完成。** 中英文双向样本共享 `pair_id`，按知识对分组切分，训练、验证和测试之间重叠为 0。
+2. **方向性翻译指标：已完成。** 分别报告 zh-to-en 和 en-to-zh 的 SacreBLEU、chrF++ 与术语成功率；COMET 使用独立可选依赖并记录模型检查点。
+3. **论文结果导出：已完成。** 报告流水线可生成方向性翻译 CSV/LaTeX 表，并固定 QLoRA 对比指标为 `char_f1`。
+4. **正式双语 RAG 检索与多生成器问答已完成。** `RAG-Railway-Bilingual-400` 包含 400 个知识点、800 条双语查询，覆盖术语、规章、教材/概念、4 个来源和 17 类任务。固定 RRF 候选池为 50 后，正式 Hybrid Recall@5 为英文 0.708、中文 0.715；五个生成器均完成 No retrieval、BM25-RAG 与 Approved Hybrid-RAG，旧 120 条结果仅作为规章专项子集。
+5. **经审核双语 QLoRA 数据：已完成 8:1:1 重建。** 训练 12,178 条、验证 1,524 条、测试 1,526 条，中英文各半；三个划分的知识对交集均为 0，训练仅对回答 token 计算损失。原有 120 个未入索引的规章知识点全部保留在 test，并另存为 RAG 专项测试集。
+6. **微调模型矩阵：已完成正式 QLoRA 训练与前后评测。** 核心模型为 Qwen2.5-7B-Instruct 与 GLM-4-9B-Chat-HF；两者均完成 rank-64 NF4 QLoRA、训练证据、双语 QA、方向性翻译、通用能力回归检查和资源测量。GLM 使用融合的 `gate_up_proj` 目标层。Qwen3-4B 已移除，Qwen3-14B 仅作 Ollama 生成参照。
+7. **IJWIS 新稿迁移：已完成结果稿。** 新稿位于 `paper/ijwis/manuscript.md`，已回填结构化摘要、正式结果、Discussion、Practical implications、Limitations 和 Conclusion；旧单卡 benchmark 稿保留为背景材料。
+8. **统计、错误分析和论文资产：已完成。** 核心比较包含 bootstrap 95% CI、配对 Wilcoxon、Cohen's dz 与 Holm 校正；已导出 9 张表、6 类图和成功/失败代表案例。资产与源结果的哈希映射位于 `results/ijwis_single_gpu_3090/analysis/asset_manifest.json`。

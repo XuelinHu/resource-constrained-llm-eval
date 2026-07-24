@@ -42,3 +42,15 @@ tasks:
     prompt_field: prompt
     answer_field: answer
     text_field: text
+
+  bilingual_approved_qa:
+    suite: local_jsonl
+    train_file: data/qlora_bilingual_approved/train.jsonl
+    valid_file: data/qlora_bilingual_approved/valid.jsonl
+    test_file: data/qlora_bilingual_approved/test.jsonl
+    metric: char_f1
+    prompt_field: prompt
+    answer_field: answer
+    prompt_text_field: prompt_text
+    text_field: text
+    training_format: completion_only

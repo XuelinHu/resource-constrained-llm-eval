@@ -1,0 +1,11 @@
+\begin{tabular}{llrrrrrrrrrrl}
+\toprule
+model & condition & num_measurements & mean_first_token_latency_s & mean_latency_s & std_latency_s & mean_tokens_per_second & static_memory_reserved_gb & peak_memory_reserved_gb & static_gpu_memory_gb & peak_gpu_memory_gb & failures & source_file \\
+\midrule
+glm_4_9b_chat_hf & qlora & 270 & 0.0999 & 2.6336 & 2.7892 & 11.8600 & 19.4863 & 19.4863 & NaN & NaN & 0 & results/ijwis_single_gpu_3090/qlora_eval/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_adapted_efficiency.json \\
+qwen2_5_7b_instruct & qlora & 270 & 0.0798 & 6.8299 & 1.1513 & 17.5287 & 15.9570 & 16.1094 & NaN & NaN & 0 & results/ijwis_single_gpu_3090/qlora_eval/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_adapted_efficiency.json \\
+glm_4_9b_chat_hf & original & 270 & 0.0755 & 5.6456 & 0.0507 & 22.6744 & 6.7344 & 6.7559 & NaN & NaN & 0 & results/ijwis_single_gpu_3090/baseline/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_original_efficiency.json \\
+qwen2_5_7b_instruct & original & 270 & 0.0614 & 4.0109 & 0.0582 & 31.9193 & 5.3320 & 5.4883 & NaN & NaN & 0 & results/ijwis_single_gpu_3090/baseline/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_original_efficiency.json \\
+qwen3:14b & reference & 270 & 0.1206 & 1.6288 & 0.0188 & 78.5004 & NaN & 14.2637 & 14.2578 & 14.2637 & 0 & results/ijwis_single_gpu_3090/efficiency/qwen3_14b_ollama.json \\
+\bottomrule
+\end{tabular}

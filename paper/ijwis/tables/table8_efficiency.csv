@@ -1,0 +1,6 @@
+model,condition,num_measurements,mean_first_token_latency_s,mean_latency_s,std_latency_s,mean_tokens_per_second,static_memory_reserved_gb,peak_memory_reserved_gb,static_gpu_memory_gb,peak_gpu_memory_gb,failures,source_file
+glm_4_9b_chat_hf,qlora,270,0.09986,2.633612,2.789163,11.86,19.4863,19.4863,,,0,results/ijwis_single_gpu_3090/qlora_eval/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_adapted_efficiency.json
+qwen2_5_7b_instruct,qlora,270,0.07984,6.829938,1.151316,17.5287,15.957,16.1094,,,0,results/ijwis_single_gpu_3090/qlora_eval/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_adapted_efficiency.json
+glm_4_9b_chat_hf,original,270,0.075517,5.645583,0.050743,22.6744,6.7344,6.7559,,,0,results/ijwis_single_gpu_3090/baseline/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_original_efficiency.json
+qwen2_5_7b_instruct,original,270,0.061391,4.010941,0.058194,31.9193,5.332,5.4883,,,0,results/ijwis_single_gpu_3090/baseline/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_original_efficiency.json
+qwen3:14b,reference,270,0.1206397742298173,1.6287515663777778,0.01877618438874279,78.50039348262646,,14.263671875,14.2578125,14.263671875,0,results/ijwis_single_gpu_3090/efficiency/qwen3_14b_ollama.json

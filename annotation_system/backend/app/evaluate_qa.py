@@ -53,11 +53,12 @@ def containment(prediction: str, reference: str) -> float:
 
 
 def citation_coverage(answer: str) -> float:
-    return 1.0 if re.search(r"\[证据\d+\]", answer or "") else 0.0
+    return 1.0 if re.search(r"\[(?:证据|Evidence)\s*\d+\]", answer or "", re.IGNORECASE) else 0.0
 
 
 def hallucination_proxy(answer: str) -> float:
-    unsupported = "现有语料无法支持" in (answer or "")
+    normalized = (answer or "").lower()
+    unsupported = "现有语料无法支持" in normalized or "no relevant evidence" in normalized
     has_citation = citation_coverage(answer) > 0
     return 0.0 if unsupported or has_citation else 1.0
 
@@ -84,11 +85,17 @@ def call_ollama(messages: list[dict], *, num_predict: int = 360) -> tuple[str, f
 
 
 def generate_no_retrieval(case: RetrievalCase) -> tuple[str, list[dict], float, float]:
+    system_prompt = (
+        "You are a bilingual assistant for international railway vocational education. "
+        "Answer directly in English and state uncertainty when needed."
+        if case.language == "en"
+        else "你是面向国际铁路职业教育的双语问答助手。请直接用中文回答问题；不知道时说明不确定。"
+    )
     answer, generation_ms = call_ollama(
         [
             {
                 "role": "system",
-                "content": "你是面向国际铁路职业教育的双语问答助手。请直接回答问题；不知道时说明不确定。",
+                "content": system_prompt,
             },
             {"role": "user", "content": case.question},
         ]
@@ -101,24 +108,37 @@ def generate_with_retrieval(case: RetrievalCase, *, mode: str, top_k: int, appro
     sources = search(mode, case.question, top_k=top_k, approved_only=approved_only)
     retrieval_ms = (time.perf_counter() - started) * 1000
     if not sources:
-        return "现有语料中未检索到与该问题相关的证据。", [], retrieval_ms, 0.0
+        answer = (
+            "No relevant evidence was found in the available corpus."
+            if case.language == "en"
+            else "现有语料中未检索到与该问题相关的证据。"
+        )
+        return answer, [], retrieval_ms, 0.0
     if not generate:
         return sources[0]["evidence"], sources, retrieval_ms, 0.0
 
+    evidence_label = "Evidence" if case.language == "en" else "证据"
     context = "\n\n".join(
-        f"[证据{index}] 来源：{source['source_document']}\n{source['evidence']}"
+        f"[{evidence_label}{index}] Source: {source['source_document']}\n{source['evidence']}"
         for index, source in enumerate(sources, 1)
+    )
+    system_prompt = (
+        "You are a bilingual assistant for international railway vocational education. "
+        "Answer in English using only the supplied evidence. Do not add unsupported facts. "
+        "Keep the answer concise and cite relevant sentences with labels such as [Evidence1]."
+        if case.language == "en"
+        else (
+            "你是面向国际铁路职业教育的双语问答助手。只能依据提供的证据回答，"
+            "不得补充证据中没有的事实。回答应简洁，并在相关句子后使用[证据1]这样的编号。"
+        )
     )
     answer, generation_ms = call_ollama(
         [
             {
                 "role": "system",
-                "content": (
-                    "你是面向国际铁路职业教育的双语问答助手。只能依据提供的证据回答，"
-                    "不得补充证据中没有的事实。回答应简洁，并在相关句子后使用[证据1]这样的编号。"
-                ),
+                "content": system_prompt,
             },
-            {"role": "user", "content": f"问题：{case.question}\n\n可用证据：\n{context}"},
+            {"role": "user", "content": f"Question: {case.question}\n\nEvidence:\n{context}"},
         ]
     )
     return answer, sources, retrieval_ms, generation_ms
@@ -158,6 +178,7 @@ def evaluate_case(case: RetrievalCase, *, strategy: str, top_k: int) -> dict:
         "answer": answer,
         "task_type": case.task_type,
         "source_document": case.source_document,
+        "language": case.language,
         "answer_f1": f1_score(answer, case.answer),
         "reference_containment": containment(answer, case.answer),
         "citation_coverage": citation_coverage(answer),
@@ -170,8 +191,8 @@ def evaluate_case(case: RetrievalCase, *, strategy: str, top_k: int) -> dict:
     }
 
 
-def summarize(rows: list[dict], strategy: str) -> dict:
-    subset = [row for row in rows if row["strategy"] == strategy]
+def summarize(rows: list[dict], strategy: str, language: str) -> dict:
+    subset = [row for row in rows if row["strategy"] == strategy and row["language"] == language]
     metrics = [
         "answer_f1",
         "reference_containment",
@@ -182,7 +203,7 @@ def summarize(rows: list[dict], strategy: str) -> dict:
         "generation_ms",
         "end_to_end_ms",
     ]
-    summary = {"strategy": strategy, "cases": len(subset)}
+    summary = {"strategy": strategy, "language": language, "cases": len(subset)}
     for metric in metrics:
         summary[metric] = sum(float(row[metric]) for row in subset) / len(subset) if subset else 0.0
     return summary
@@ -192,6 +213,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate RAG answer generation on held-out railway QA cases.")
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--language", choices=["zh", "en", "both"], default="both")
+    parser.add_argument("--test-set", default="railway_bilingual_400")
     parser.add_argument("--strategies", nargs="*", default=["retrieval_only", "bm25_rag", "vector_rag", "hybrid_rag", "hybrid_rag_approved"])
     parser.add_argument("--include-no-retrieval", action="store_true")
     parser.add_argument("--output", type=Path, default=Path("data/exports/qa_eval.json"))
@@ -200,14 +223,15 @@ def main() -> None:
     strategies = list(args.strategies)
     if args.include_no_retrieval and "no_retrieval" not in strategies:
         strategies.insert(0, "no_retrieval")
-    cases = load_cases(args.limit)
+    cases = load_cases(args.limit, args.language, args.test_set)
     rows = []
     for strategy in strategies:
         for index, case in enumerate(cases, 1):
             print(f"evaluating strategy={strategy} case={index}/{len(cases)} item_id={case.item_id}", flush=True)
             rows.append(evaluate_case(case, strategy=strategy, top_k=args.top_k))
 
-    summaries = [summarize(rows, strategy) for strategy in strategies]
+    languages = sorted({case.language for case in cases})
+    summaries = [summarize(rows, strategy, language) for strategy in strategies for language in languages]
     payload = {"summaries": summaries, "rows": rows}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -74,6 +74,37 @@ def export_paper_tables(configs: dict) -> None:
         "tab:generated-main-results",
     )
 
+    translation_metrics = metrics_df[
+        metrics_df["task"].astype(str).str.startswith("domain_qa:")
+        & metrics_df["metric"].isin(["corpus_bleu", "chrf_pp", "terminology_success_rate"])
+    ].copy()
+    if not translation_metrics.empty:
+        translation_metrics["direction"] = translation_metrics["task"].str.rsplit(":", n=1).str[-1]
+        translation_df = (
+            translation_metrics.pivot_table(
+                index=["model", "precision"],
+                columns=["direction", "metric"],
+                values="score",
+                aggfunc="first",
+            )
+            .reset_index()
+        )
+        translation_df.columns = [
+            "_".join(str(part) for part in column if part).strip("_")
+            if isinstance(column, tuple)
+            else str(column)
+            for column in translation_df.columns
+        ]
+        translation_output_csv = results_tables_dir / "translation_results.csv"
+        translation_output_tex = paper_tables_dir / "generated_translation_results.tex"
+        translation_df.to_csv(translation_output_csv, index=False)
+        _write_simple_latex_table(
+            translation_df.fillna("--"),
+            translation_output_tex,
+            "Bidirectional railway translation results with directional BLEU, chrF++, and terminology success rate.",
+            "tab:generated-translation-results",
+        )
+
     efficiency_keep = [
         "model",
         "precision",
@@ -97,10 +128,14 @@ def export_paper_tables(configs: dict) -> None:
     if qlora_metrics_path.exists():
         qlora_metrics_df = pd.read_csv(qlora_metrics_path)
         # 仅对领域问答任务做前后对比，突出微调收益。
-        baseline_domain = metrics_df[metrics_df["task"] == "domain_qa"][["model", "score"]].rename(
+        baseline_domain = metrics_df[
+            (metrics_df["task"] == "domain_qa") & (metrics_df["metric"] == "char_f1")
+        ][["model", "score"]].rename(
             columns={"score": "baseline_domain_qa"}
         )
-        adapted_domain = qlora_metrics_df[qlora_metrics_df["task"] == "domain_qa"][["model", "score"]].rename(
+        adapted_domain = qlora_metrics_df[
+            (qlora_metrics_df["task"] == "domain_qa") & (qlora_metrics_df["metric"] == "char_f1")
+        ][["model", "score"]].rename(
             columns={"score": "adapted_domain_qa"}
         )
         qlora_compare_df = baseline_domain.merge(adapted_domain, on="model", how="inner")

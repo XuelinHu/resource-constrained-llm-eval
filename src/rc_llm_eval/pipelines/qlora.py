@@ -16,6 +16,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     DataCollatorForLanguageModeling,
+    DataCollatorForSeq2Seq,
     Trainer,
     TrainingArguments,
 )
@@ -122,6 +123,29 @@ def _tokenize_dataset(dataset, tokenizer, text_field: str, max_length: int):
     return dataset.map(encode, batched=True, remove_columns=dataset.column_names)
 
 
+def _tokenize_completion_dataset(dataset, tokenizer, prompt_text_field: str, answer_field: str, max_length: int):
+    """Tokenize prompt/answer pairs while masking prompt tokens from the loss."""
+
+    def encode(row: dict) -> dict:
+        prefix = row[prompt_text_field]
+        answer = f" {row[answer_field]}{tokenizer.eos_token or ''}"
+        prefix_ids = tokenizer(prefix, add_special_tokens=True, truncation=True, max_length=max_length)["input_ids"]
+        remaining = max(0, max_length - len(prefix_ids))
+        answer_ids = (
+            tokenizer(answer, add_special_tokens=False, truncation=True, max_length=remaining)["input_ids"]
+            if remaining
+            else []
+        )
+        full_ids = prefix_ids + answer_ids
+        return {
+            "input_ids": full_ids,
+            "attention_mask": [1] * len(full_ids),
+            "labels": [-100] * len(prefix_ids) + answer_ids,
+        }
+
+    return dataset.map(encode, remove_columns=dataset.column_names)
+
+
 def _preprocess_logits_for_metrics(logits, labels):
     """在评估阶段仅保留 argmax 结果，降低指标计算内存开销。"""
     if isinstance(logits, tuple):
@@ -220,9 +244,17 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
         lora_dropout=qlora_cfg["lora_dropout"],
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules=qlora_cfg["target_modules"],
+        target_modules=model_cfg.get("qlora_target_modules", qlora_cfg["target_modules"]),
     )
     model = get_peft_model(model, peft_config)
+    trainable_params = sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+    total_params = sum(parameter.numel() for parameter in model.parameters())
+    parameter_metrics = {
+        "trainable_parameters": trainable_params,
+        "total_parameters_visible": total_params,
+        "trainable_percentage": 100.0 * trainable_params / max(total_params, 1),
+    }
+    write_json(output_dir / "parameter_metrics.json", parameter_metrics)
 
     dataset = load_dataset(
         "json",
@@ -231,18 +263,18 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
             "validation": str(configs["root"] / dataset_cfg["valid_file"]),
         },
     )
-    train_dataset = _tokenize_dataset(
-        dataset["train"],
-        tokenizer,
-        text_field=dataset_cfg["text_field"],
-        max_length=qlora_cfg["max_seq_length"],
-    )
-    eval_dataset = _tokenize_dataset(
-        dataset["validation"],
-        tokenizer,
-        text_field=dataset_cfg["text_field"],
-        max_length=qlora_cfg["max_seq_length"],
-    )
+    if dataset_cfg.get("training_format") == "completion_only":
+        tokenize = lambda split: _tokenize_completion_dataset(
+            dataset[split], tokenizer, dataset_cfg["prompt_text_field"], dataset_cfg["answer_field"], qlora_cfg["max_seq_length"]
+        )
+        data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, padding=True, label_pad_token_id=-100)
+    else:
+        tokenize = lambda split: _tokenize_dataset(
+            dataset[split], tokenizer, dataset_cfg["text_field"], qlora_cfg["max_seq_length"]
+        )
+        data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+    train_dataset = tokenize("train")
+    eval_dataset = tokenize("validation")
 
     training_args = TrainingArguments(
         output_dir=str(output_dir / "checkpoint"),
@@ -283,15 +315,27 @@ def run_qlora(configs: dict, model_key: str, dataset_key: str) -> None:
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
             processing_class=tokenizer,
-            data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
+            data_collator=data_collator,
             compute_metrics=_compute_autoregressive_metrics,
             preprocess_logits_for_metrics=_preprocess_logits_for_metrics,
             callbacks=[TensorBoardLoggerCallback(writer=writer, model=model, hparams=hparams)],
         )
 
         # 先训练再评估，并把关键指标和适配器权重都落盘。
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
         train_result = trainer.train()
-        write_json(output_dir / "train_metrics.json", train_result.metrics)
+        train_metrics = {
+            **train_result.metrics,
+            **parameter_metrics,
+            "peak_memory_allocated_gb": (
+                torch.cuda.max_memory_allocated() / (1024**3) if torch.cuda.is_available() else 0.0
+            ),
+            "peak_memory_reserved_gb": (
+                torch.cuda.max_memory_reserved() / (1024**3) if torch.cuda.is_available() else 0.0
+            ),
+        }
+        write_json(output_dir / "train_metrics.json", train_metrics)
         eval_metrics = trainer.evaluate()
         if "eval_loss" in eval_metrics:
             eval_metrics["perplexity"] = math.exp(eval_metrics["eval_loss"])

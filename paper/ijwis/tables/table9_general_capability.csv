@@ -1,0 +1,9 @@
+model,condition,benchmark,accuracy,standard_error,limit_per_task,source_file
+Qwen2.5-7B,original,ceval-valid,0.788261515601783,0.010723505982125011,200,results/ijwis_single_gpu_3090/baseline/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_original_lm_eval.json
+Qwen2.5-7B,original,mmlu,0.7394097789393445,0.004381008709898675,200,results/ijwis_single_gpu_3090/baseline/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_original_lm_eval.json
+GLM-4-9B,original,ceval-valid,0.674591381872214,0.012235943472682188,200,results/ijwis_single_gpu_3090/baseline/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_original_lm_eval.json
+GLM-4-9B,original,mmlu,0.6732004791462485,0.004630247573695812,200,results/ijwis_single_gpu_3090/baseline/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_original_lm_eval.json
+Qwen2.5-7B,qlora,ceval-valid,0.774888558692422,0.010952120653358353,200,results/ijwis_single_gpu_3090/qlora_eval/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_adapted_lm_eval.json
+Qwen2.5-7B,qlora,mmlu,0.7276489164760971,0.0044385037955358645,200,results/ijwis_single_gpu_3090/qlora_eval/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_adapted_lm_eval.json
+GLM-4-9B,qlora,ceval-valid,0.6827637444279346,0.012052299214535702,200,results/ijwis_single_gpu_3090/qlora_eval/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_adapted_lm_eval.json
+GLM-4-9B,qlora,mmlu,0.6785364260045736,0.004626990821840488,200,results/ijwis_single_gpu_3090/qlora_eval/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_adapted_lm_eval.json

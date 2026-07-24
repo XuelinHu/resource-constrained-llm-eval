@@ -1,0 +1,14 @@
+\begin{tabular}{lllrrrl}
+\toprule
+model & condition & benchmark & accuracy & standard_error & limit_per_task & source_file \\
+\midrule
+Qwen2.5-7B & original & ceval-valid & 0.7883 & 0.0107 & 200 & results/ijwis_single_gpu_3090/baseline/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_original_lm_eval.json \\
+Qwen2.5-7B & original & mmlu & 0.7394 & 0.0044 & 200 & results/ijwis_single_gpu_3090/baseline/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_original_lm_eval.json \\
+GLM-4-9B & original & ceval-valid & 0.6746 & 0.0122 & 200 & results/ijwis_single_gpu_3090/baseline/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_original_lm_eval.json \\
+GLM-4-9B & original & mmlu & 0.6732 & 0.0046 & 200 & results/ijwis_single_gpu_3090/baseline/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_original_lm_eval.json \\
+Qwen2.5-7B & qlora & ceval-valid & 0.7749 & 0.0110 & 200 & results/ijwis_single_gpu_3090/qlora_eval/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_adapted_lm_eval.json \\
+Qwen2.5-7B & qlora & mmlu & 0.7276 & 0.0044 & 200 & results/ijwis_single_gpu_3090/qlora_eval/qwen2_5_7b_instruct/qwen2_5_7b_instruct_int4_adapted_lm_eval.json \\
+GLM-4-9B & qlora & ceval-valid & 0.6828 & 0.0121 & 200 & results/ijwis_single_gpu_3090/qlora_eval/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_adapted_lm_eval.json \\
+GLM-4-9B & qlora & mmlu & 0.6785 & 0.0046 & 200 & results/ijwis_single_gpu_3090/qlora_eval/glm_4_9b_chat_hf/glm_4_9b_chat_hf_int4_adapted_lm_eval.json \\
+\bottomrule
+\end{tabular}

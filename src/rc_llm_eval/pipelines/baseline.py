@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
-from sacrebleu import corpus_bleu
+from sacrebleu.metrics import BLEU, CHRF
 
 from ..utils.io import read_json, read_jsonl, write_csv
 from ..utils.modeling import clear_cuda, get_inference_device, load_model_and_tokenizer
@@ -85,20 +85,30 @@ def _translation_metric_rows(
         predictions = [str(sample["prediction"]) for sample in direction_samples]
         references = [str(sample["reference"]) for sample in direction_samples]
         tokenizer = "13a" if direction == "zh_to_en" else "zh"
-        bleu = corpus_bleu(
-            predictions,
-            [references],
-            tokenize=tokenizer,
-            use_effective_order=True,
-        ).score
+        bleu_metric = BLEU(tokenize=tokenizer, effective_order=True)
+        bleu_result = bleu_metric.corpus_score(predictions, [references])
+        chrf_metric = CHRF(word_order=2)
+        chrf_result = chrf_metric.corpus_score(predictions, [references])
         rows.append(
             {
                 "model": model_key,
                 "precision": precision,
                 "task": f"{task_key}:{direction}",
                 "metric": "corpus_bleu",
-                "score": round(bleu, 6),
+                "score": round(bleu_result.score, 6),
                 "num_examples": len(direction_samples),
+                "signature": str(bleu_metric.get_signature()),
+            }
+        )
+        rows.append(
+            {
+                "model": model_key,
+                "precision": precision,
+                "task": f"{task_key}:{direction}",
+                "metric": "chrf_pp",
+                "score": round(chrf_result.score, 6),
+                "num_examples": len(direction_samples),
+                "signature": str(chrf_metric.get_signature()),
             }
         )
 
@@ -311,10 +321,14 @@ def run_efficiency_benchmark(
         peft_path=peft_path,
     )
     device = get_inference_device(model)
+    static_allocated_gb = torch.cuda.memory_allocated() / (1024**3) if torch.cuda.is_available() else 0.0
+    static_reserved_gb = torch.cuda.memory_reserved() / (1024**3) if torch.cuda.is_available() else 0.0
 
     latencies: list[float] = []
+    first_token_latencies: list[float] = []
     throughputs: list[float] = []
     outputs: list[dict] = []
+    repeats = int(baseline_cfg.get("efficiency_repeats", 1))
 
     generation_kwargs = {
         "max_new_tokens": baseline_cfg["max_new_tokens"],
@@ -339,42 +353,88 @@ def run_efficiency_benchmark(
         torch.cuda.reset_peak_memory_stats()
         torch.cuda.synchronize()
 
-    for record in prompts:
-        encoded = tokenizer(record["prompt"], return_tensors="pt").to(device)
-        prompt_length = int(encoded["input_ids"].shape[1])
-        start = time.perf_counter()
-        with torch.inference_mode():
-            generated = model.generate(**encoded, **generation_kwargs)
-        if torch.cuda.is_available():
-            # 在计时结束前同步，确保 latency 覆盖真实 GPU 执行时间。
-            torch.cuda.synchronize()
-        latency = time.perf_counter() - start
-        answer = _extract_text_from_outputs(tokenizer, generated, prompt_length)
-        new_token_count = max(int(generated.shape[1] - prompt_length), 1)
-        tokens_per_second = new_token_count / max(latency, 1e-6)
+    for repeat in range(repeats):
+        for prompt_index, record in enumerate(prompts):
+            encoded = tokenizer(record["prompt"], return_tensors="pt").to(device)
+            prompt_length = int(encoded["input_ids"].shape[1])
 
-        latencies.append(latency)
-        throughputs.append(tokens_per_second)
-        outputs.append(
-            {
-                "prompt": record["prompt"],
-                "output": answer,
-                "latency_s": round(latency, 6),
-                "new_tokens": new_token_count,
-                "tokens_per_second": round(tokens_per_second, 4),
-            }
-        )
+            first_token_start = time.perf_counter()
+            with torch.inference_mode():
+                _ = model.generate(
+                    **encoded,
+                    max_new_tokens=1,
+                    do_sample=False,
+                    pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
+                )
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+            first_token_latency = time.perf_counter() - first_token_start
+
+            start = time.perf_counter()
+            with torch.inference_mode():
+                generated = model.generate(**encoded, **generation_kwargs)
+            if torch.cuda.is_available():
+                # 在计时结束前同步，确保 latency 覆盖真实 GPU 执行时间。
+                torch.cuda.synchronize()
+            latency = time.perf_counter() - start
+            answer = _extract_text_from_outputs(tokenizer, generated, prompt_length)
+            new_token_count = max(int(generated.shape[1] - prompt_length), 1)
+            tokens_per_second = new_token_count / max(latency, 1e-6)
+
+            latencies.append(latency)
+            first_token_latencies.append(first_token_latency)
+            throughputs.append(tokens_per_second)
+            outputs.append(
+                {
+                    "prompt_id": record.get("id", prompt_index),
+                    "prompt_type": record.get("workload") or record.get("type"),
+                    "repeat": repeat + 1,
+                    "prompt": record["prompt"],
+                    "output": answer,
+                    "first_token_latency_s": round(first_token_latency, 6),
+                    "generation_latency_s": round(latency, 6),
+                    "end_to_end_latency_s": round(first_token_latency + latency, 6),
+                    "new_tokens": new_token_count,
+                    "tokens_per_second": round(tokens_per_second, 4),
+                }
+            )
 
     peak_allocated_gb, peak_reserved_gb = _safe_memory_stats()
+    workload_summaries = []
+    for workload in sorted({str(row.get("prompt_type")) for row in outputs}):
+        selected = [row for row in outputs if str(row.get("prompt_type")) == workload]
+        workload_latencies = [float(row["generation_latency_s"]) for row in selected]
+        workload_throughputs = [float(row["tokens_per_second"]) for row in selected]
+        workload_summaries.append(
+            {
+                "workload": workload,
+                "measurements": len(selected),
+                "mean_latency_s": round(statistics.mean(workload_latencies), 6),
+                "std_latency_s": round(statistics.stdev(workload_latencies), 6) if len(selected) > 1 else 0.0,
+                "mean_tokens_per_second": round(statistics.mean(workload_throughputs), 4),
+                "std_tokens_per_second": round(statistics.stdev(workload_throughputs), 4) if len(selected) > 1 else 0.0,
+            }
+        )
     payload = {
         "model": model_key,
         "precision": precision,
-        "num_prompts": len(outputs),
+        "num_unique_prompts": len(prompts),
+        "repeats": repeats,
+        "num_measurements": len(outputs),
+        "mean_first_token_latency_s": round(statistics.mean(first_token_latencies), 6) if first_token_latencies else 0.0,
         "mean_latency_s": round(statistics.mean(latencies), 6) if latencies else 0.0,
+        "std_latency_s": round(statistics.stdev(latencies), 6) if len(latencies) > 1 else 0.0,
         "median_latency_s": round(statistics.median(latencies), 6) if latencies else 0.0,
         "mean_tokens_per_second": round(statistics.mean(throughputs), 4) if throughputs else 0.0,
+        "std_tokens_per_second": round(statistics.stdev(throughputs), 4) if len(throughputs) > 1 else 0.0,
+        "static_memory_allocated_gb": round(static_allocated_gb, 4),
+        "static_memory_reserved_gb": round(static_reserved_gb, 4),
         "peak_memory_allocated_gb": round(peak_allocated_gb, 4),
         "peak_memory_reserved_gb": round(peak_reserved_gb, 4),
+        "failures": 0,
+        "oom_failures": 0,
+        "workload_summaries": workload_summaries,
     }
     write_json(output_dir / f"{file_stem}_efficiency.json", payload)
     write_json(output_dir / f"{file_stem}_efficiency_generations.json", {"samples": outputs})
@@ -394,6 +454,7 @@ def run_local_domain_eval(
     task_key: str = "domain_qa",
 ) -> list[dict]:
     """在本地域问答集上执行生成式指标评估。"""
+    baseline_cfg = configs["experiment"]["baseline"]
     dataset_cfg = configs["tasks"][task_key]
     model_cfg = configs["models"][model_key]
     records = read_jsonl(configs["root"] / dataset_cfg["test_file"])
@@ -424,33 +485,52 @@ def run_local_domain_eval(
         "eos_token_id": tokenizer.eos_token_id,
     }
 
+    grouped_records: dict[int, list[dict]] = {}
     for row in records:
-        encoded = tokenizer(row[prompt_field], return_tensors="pt").to(device)
-        prompt_length = int(encoded["input_ids"].shape[1])
-        max_new_tokens = _local_domain_max_new_tokens(str(row.get("category", "")))
-        generation_kwargs = {
-            **base_generation_kwargs,
-            "max_new_tokens": max_new_tokens,
-        }
-        with torch.inference_mode():
-            generated = model.generate(**encoded, **generation_kwargs)
-        raw_prediction = _extract_text_from_outputs(tokenizer, generated, prompt_length)
-        prediction = _clean_domain_prediction(raw_prediction)
-        ref = row[answer_field]
-        sample_metrics = _domain_sample_metrics(prediction, ref)
-        for metric_name, metric_value in sample_metrics.items():
-            metric_values[metric_name].append(float(metric_value))
-        generations.append(
-            {
-                "prompt": row[prompt_field],
-                "reference": ref,
-                "raw_prediction": raw_prediction,
-                "prediction": prediction,
-                "max_new_tokens": max_new_tokens,
-                "category": row.get("category"),
-                "metrics": sample_metrics,
-            }
+        category = str(row.get("category") or row.get("task_type") or "")
+        grouped_records.setdefault(_local_domain_max_new_tokens(category), []).append(row)
+
+    for max_new_tokens, task_records in sorted(grouped_records.items()):
+        batch_size = int(
+            baseline_cfg.get("local_batch_size_long", 2)
+            if max_new_tokens > 64
+            else baseline_cfg.get("local_batch_size_short", 8)
         )
+        for offset in range(0, len(task_records), batch_size):
+            batch = task_records[offset : offset + batch_size]
+            encoded = tokenizer([row[prompt_field] for row in batch], return_tensors="pt", padding=True).to(device)
+            input_width = int(encoded["input_ids"].shape[1])
+            with torch.inference_mode():
+                generated = model.generate(
+                    **encoded,
+                    **base_generation_kwargs,
+                    max_new_tokens=max_new_tokens,
+                )
+            for index, row in enumerate(batch):
+                raw_prediction = tokenizer.decode(generated[index, input_width:], skip_special_tokens=True).strip()
+                prediction = _clean_domain_prediction(raw_prediction)
+                ref = row[answer_field]
+                sample_metrics = _domain_sample_metrics(prediction, ref)
+                for metric_name, metric_value in sample_metrics.items():
+                    metric_values[metric_name].append(float(metric_value))
+                category = str(row.get("category") or row.get("task_type") or "")
+                generations.append(
+                    {
+                        "prompt": row[prompt_field],
+                        "reference": ref,
+                        "raw_prediction": raw_prediction,
+                        "prediction": prediction,
+                        "max_new_tokens": max_new_tokens,
+                        "category": category,
+                        "task_type": row.get("task_type"),
+                        "language": row.get("language"),
+                        "source_text": row.get("source_text"),
+                        "pair_id": row.get("pair_id"),
+                        "source_language": row.get("source_language"),
+                        "target_language": row.get("target_language"),
+                        "metrics": sample_metrics,
+                    }
+                )
 
     rows = [
         {
@@ -473,7 +553,7 @@ def run_local_domain_eval(
             )
         )
     write_json(output_dir / f"{file_stem}_{task_key}.json", {"metrics": rows})
-    write_json(output_dir / f"{file_stem}_domain_generations.json", {"samples": generations})
+    write_json(output_dir / f"{file_stem}_{task_key}_generations.json", {"samples": generations})
 
     del model
     clear_cuda()

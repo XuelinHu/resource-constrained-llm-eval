@@ -1,0 +1,38 @@
+\begin{tabular}{lrlrrrrrrrlr}
+\toprule
+mode & approved_only & language & cases & recall_at_1 & recall_at_3 & recall_at_5 & mrr & mean_latency_ms & top_k & source_file & recall_at_8 \\
+\midrule
+bm25 & False & en & 400 & 0.5700 & 0.5700 & 0.5700 & 0.5700 & 64.3629 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+bm25 & False & zh & 400 & 0.5200 & 0.5200 & 0.5200 & 0.5200 & 69.3088 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+vector & False & en & 400 & 0.4625 & 0.4625 & 0.4625 & 0.4625 & 149.8453 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+vector & False & zh & 400 & 0.5175 & 0.5175 & 0.5175 & 0.5175 & 133.7780 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+hybrid & False & en & 400 & 0.5700 & 0.5700 & 0.5700 & 0.5700 & 207.0912 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+hybrid & False & zh & 400 & 0.5700 & 0.5700 & 0.5700 & 0.5700 & 218.0789 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+hybrid & True & en & 400 & 0.5700 & 0.5700 & 0.5700 & 0.5700 & 208.5995 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+hybrid & True & zh & 400 & 0.5700 & 0.5700 & 0.5700 & 0.5700 & 217.6188 & 1 & data/exports/retrieval_eval_top1.json & NaN \\
+bm25 & False & en & 400 & 0.5700 & 0.6700 & 0.6700 & 0.6162 & 58.7449 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+bm25 & False & zh & 400 & 0.5200 & 0.5950 & 0.5950 & 0.5542 & 69.3261 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+vector & False & en & 400 & 0.4625 & 0.5525 & 0.5525 & 0.5029 & 133.9713 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+vector & False & zh & 400 & 0.5175 & 0.6525 & 0.6525 & 0.5792 & 133.9381 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+hybrid & False & en & 400 & 0.5700 & 0.6675 & 0.6675 & 0.6112 & 208.6866 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+hybrid & False & zh & 400 & 0.5700 & 0.6750 & 0.6750 & 0.6183 & 217.6095 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+hybrid & True & en & 400 & 0.5700 & 0.6675 & 0.6675 & 0.6112 & 209.0700 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+hybrid & True & zh & 400 & 0.5700 & 0.6750 & 0.6750 & 0.6183 & 217.9324 & 3 & data/exports/retrieval_eval_top3.json & NaN \\
+bm25 & False & en & 400 & 0.5700 & 0.6700 & 0.6850 & 0.6195 & 59.0302 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+bm25 & False & zh & 400 & 0.5200 & 0.5950 & 0.6200 & 0.5598 & 69.5376 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+vector & False & en & 400 & 0.4625 & 0.5525 & 0.5800 & 0.5090 & 134.3739 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+vector & False & zh & 400 & 0.5175 & 0.6525 & 0.6900 & 0.5878 & 134.3626 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+hybrid & False & en & 400 & 0.5700 & 0.6675 & 0.7075 & 0.6205 & 208.9591 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+hybrid & False & zh & 400 & 0.5700 & 0.6750 & 0.7150 & 0.6278 & 217.5175 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+hybrid & True & en & 400 & 0.5700 & 0.6675 & 0.7075 & 0.6205 & 209.2445 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+hybrid & True & zh & 400 & 0.5700 & 0.6750 & 0.7150 & 0.6278 & 217.5931 & 5 & data/exports/retrieval_eval_top5.json & NaN \\
+bm25 & False & en & 400 & 0.5700 & 0.6700 & 0.6850 & 0.6226 & 59.3354 & 8 & data/exports/retrieval_eval_top8.json & 0.7050 \\
+bm25 & False & zh & 400 & 0.5200 & 0.5950 & 0.6200 & 0.5609 & 69.4820 & 8 & data/exports/retrieval_eval_top8.json & 0.6275 \\
+vector & False & en & 400 & 0.4625 & 0.5525 & 0.5800 & 0.5172 & 135.0160 & 8 & data/exports/retrieval_eval_top8.json & 0.6350 \\
+vector & False & zh & 400 & 0.5175 & 0.6525 & 0.6900 & 0.5925 & 134.9682 & 8 & data/exports/retrieval_eval_top8.json & 0.7225 \\
+hybrid & False & en & 400 & 0.5700 & 0.6675 & 0.7075 & 0.6229 & 208.7262 & 8 & data/exports/retrieval_eval_top8.json & 0.7225 \\
+hybrid & False & zh & 400 & 0.5700 & 0.6750 & 0.7150 & 0.6319 & 217.5111 & 8 & data/exports/retrieval_eval_top8.json & 0.7425 \\
+hybrid & True & en & 400 & 0.5700 & 0.6675 & 0.7075 & 0.6229 & 209.2434 & 8 & data/exports/retrieval_eval_top8.json & 0.7225 \\
+hybrid & True & zh & 400 & 0.5700 & 0.6750 & 0.7150 & 0.6319 & 217.9120 & 8 & data/exports/retrieval_eval_top8.json & 0.7425 \\
+\bottomrule
+\end{tabular}

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import random
 import re
@@ -103,6 +104,11 @@ class Sample:
     domain_category_en: str | None = None
     term_zh: str | None = None
     term_en: str | None = None
+    pair_id: str | None = None
+    source_text: str | None = None
+    target_text: str | None = None
+    source_language: str | None = None
+    target_language: str | None = None
 
     def to_record(self) -> dict[str, str | int]:
         record: dict[str, str | int] = {
@@ -119,6 +125,11 @@ class Sample:
             "domain_category_en",
             "term_zh",
             "term_en",
+            "pair_id",
+            "source_text",
+            "target_text",
+            "source_language",
+            "target_language",
         ):
             value = getattr(self, key)
             if value is not None:
@@ -170,6 +181,11 @@ def normalize_text(text: str) -> str:
     text = text.replace("\u3000", " ").replace("\xa0", " ")
     text = SPACE_RE.sub(" ", text).strip()
     return text
+
+
+def bilingual_pair_id(kind: str, source: str, zh: str, en: str) -> str:
+    payload = "\x1f".join((kind, source, normalize_text(zh), normalize_text(en)))
+    return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:20]
 
 
 def compact_text(text: str) -> str:
@@ -325,6 +341,7 @@ def build_translation_samples(paragraphs: list[str], source: str) -> Iterable[Sa
         if not is_complete_translation_pair(first, second):
             continue
         if is_chinese(first) and is_english(second):
+            pair_id = bilingual_pair_id("translation", source, first, second)
             yield Sample(
                 prompt=answer_only_prompt(
                     "Translate the following railway-domain Chinese text into English.",
@@ -333,6 +350,11 @@ def build_translation_samples(paragraphs: list[str], source: str) -> Iterable[Sa
                 answer=second,
                 category="zh_to_en_translation",
                 source=source,
+                pair_id=pair_id,
+                source_text=first,
+                target_text=second,
+                source_language="zh",
+                target_language="en",
             )
             yield Sample(
                 prompt=answer_only_prompt(
@@ -342,6 +364,11 @@ def build_translation_samples(paragraphs: list[str], source: str) -> Iterable[Sa
                 answer=first,
                 category="en_to_zh_translation",
                 source=source,
+                pair_id=pair_id,
+                source_text=second,
+                target_text=first,
+                source_language="en",
+                target_language="zh",
             )
 
 
@@ -508,6 +535,7 @@ def build_term_pairs_from_docx(path: Path) -> list[TermPair]:
 
 def build_term_samples(term_pairs: Iterable[TermPair]) -> Iterable[Sample]:
     for pair in term_pairs:
+        pair_id = bilingual_pair_id("terminology", pair.source, pair.zh, pair.en)
         yield Sample(
             prompt=answer_only_prompt(
                 f"Provide the English railway technical term for the {pair.domain_category_en} subdomain.",
@@ -522,6 +550,11 @@ def build_term_samples(term_pairs: Iterable[TermPair]) -> Iterable[Sample]:
             domain_category_en=pair.domain_category_en,
             term_zh=pair.zh,
             term_en=pair.en,
+            pair_id=pair_id,
+            source_text=pair.zh,
+            target_text=pair.en,
+            source_language="zh",
+            target_language="en",
         )
         yield Sample(
             prompt=answer_only_prompt(
@@ -537,6 +570,11 @@ def build_term_samples(term_pairs: Iterable[TermPair]) -> Iterable[Sample]:
             domain_category_en=pair.domain_category_en,
             term_zh=pair.zh,
             term_en=pair.en,
+            pair_id=pair_id,
+            source_text=pair.en,
+            target_text=pair.zh,
+            source_language="en",
+            target_language="zh",
         )
 
 
@@ -554,21 +592,31 @@ def deduplicate(samples: Iterable[Sample]) -> list[Sample]:
 
 def split_samples(samples: list[Sample], seed: int) -> tuple[list[Sample], list[Sample], list[Sample]]:
     rng = random.Random(seed)
-    by_category: dict[tuple[str, str], list[Sample]] = {}
+    by_pair: dict[str, list[Sample]] = {}
     for sample in samples:
-        by_category.setdefault((sample.category, sample.domain_category_key or ""), []).append(sample)
+        pair_id = sample.pair_id or bilingual_pair_id("fallback", sample.source, sample.prompt, sample.answer)
+        by_pair.setdefault(pair_id, []).append(sample)
+
+    by_family: dict[tuple[str, str], list[list[Sample]]] = {}
+    for pair_samples in by_pair.values():
+        first = pair_samples[0]
+        family = "terminology" if first.category.startswith("terminology_") else "translation"
+        by_family.setdefault((family, first.domain_category_key or ""), []).append(pair_samples)
 
     train: list[Sample] = []
     valid: list[Sample] = []
     test: list[Sample] = []
-    for category_samples in by_category.values():
-        rng.shuffle(category_samples)
-        total = len(category_samples)
+    for pair_groups in by_family.values():
+        rng.shuffle(pair_groups)
+        total = len(pair_groups)
         valid_count = max(1, round(total * 0.1)) if total >= 10 else max(0, total // 10)
         test_count = max(1, round(total * 0.1)) if total >= 10 else max(0, total // 10)
-        valid.extend(category_samples[:valid_count])
-        test.extend(category_samples[valid_count : valid_count + test_count])
-        train.extend(category_samples[valid_count + test_count :])
+        for pair_samples in pair_groups[:valid_count]:
+            valid.extend(pair_samples)
+        for pair_samples in pair_groups[valid_count : valid_count + test_count]:
+            test.extend(pair_samples)
+        for pair_samples in pair_groups[valid_count + test_count :]:
+            train.extend(pair_samples)
 
     rng.shuffle(train)
     rng.shuffle(valid)

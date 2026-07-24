@@ -45,7 +45,7 @@ def iter_items(*, approved_only: bool, include_test: bool, limit: int | None) ->
             query = query.limit(limit)
         for item in db.scalars(query):
             metadata = item.metadata_json or {}
-            if not include_test and metadata.get("split") == "test":
+            if not include_test and (metadata.get("split") == "test" or metadata.get("rag_test_set")):
                 continue
             yield item
 

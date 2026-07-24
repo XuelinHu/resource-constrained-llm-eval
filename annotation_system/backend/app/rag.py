@@ -70,7 +70,7 @@ class RailwayRetriever:
                 )
                 for item in rows:
                     metadata = item.metadata_json or {}
-                    if metadata.get("split") == "test":
+                    if metadata.get("split") == "test" or metadata.get("rag_test_set"):
                         continue
                     evidence = SPACE_RE.sub(" ", item.evidence or item.source_text or item.answer).strip()
                     if len(evidence) < 4:
@@ -83,7 +83,9 @@ class RailwayRetriever:
                         value
                         for value in [
                             item.question,
+                            item.question_en,
                             item.answer,
+                            item.answer_en,
                             evidence,
                             item.domain_category,
                             item.knowledge_category,
@@ -214,6 +216,7 @@ def vector_search(query: str, top_k: int = 5, approved_only: bool = False) -> li
             .join(CorpusItem, CorpusItem.id == KnowledgeChunkEmbedding.item_id)
             .where(KnowledgeChunkEmbedding.embedding_model == settings.embedding_model)
             .where(CorpusItem.review_status.notin_(["rejected", "needs_revision", "deleted"]))
+            .where(CorpusItem.metadata_json["rag_test_set"].as_string().is_(None))
             .order_by(distance)
             .limit(top_k)
         )
@@ -244,7 +247,8 @@ def vector_search(query: str, top_k: int = 5, approved_only: bool = False) -> li
 
 
 def hybrid_search(query: str, top_k: int = 5, approved_only: bool = False) -> list[dict]:
-    candidate_k = max(top_k * 5, 20)
+    # Keep the fusion pool fixed so top-k sensitivity changes only the final cutoff.
+    candidate_k = max(top_k, 50)
     bm25_results = retriever.search(query, candidate_k, approved_only=approved_only)
     vector_results = vector_search(query, candidate_k, approved_only=approved_only)
     rrf_k = 60
