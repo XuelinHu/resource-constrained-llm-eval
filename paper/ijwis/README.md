@@ -8,6 +8,8 @@ The manuscript follows an Emerald-style structured abstract and a system-oriente
 
 The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix was completed on 2026-07-13; items requiring new human semantic ratings are explicitly recorded as out of scope rather than inferred from automatic metrics.
 
+The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonymous IJWIS template wrapper, and `IJWIS__Copy_/manuscript_body.tex` is regenerated from Markdown. Expert names, panel size, experience, assignment and agreement fields remain explicit pre-submission placeholders until the railway and international-education expert information has been collected.
+
 ## Reproducible evidence
 
 - Formal bilingual retrieval: `data/exports/retrieval_eval_railway_bilingual_400.json`
@@ -42,4 +44,8 @@ HF_ENDPOINT=https://hf-mirror.com conda run -n rc-llm-comet python scripts/evalu
 conda run -n rc-llm-eval python scripts/export_ijwis_design_tables.py
 conda run -n rc-llm-eval python scripts/analyze_ijwis_results.py
 conda run -n rc-llm-eval python scripts/plot_ijwis_architecture.py
+
+conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
+latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
+cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript.pdf
 ```

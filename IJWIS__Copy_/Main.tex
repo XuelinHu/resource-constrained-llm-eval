@@ -2,6 +2,12 @@
 
 % Language
 \usepackage[english]{babel}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setmainfont{TeX Gyre Termes}
+\setsansfont{TeX Gyre Heros}
+\setCJKmainfont{Noto Serif CJK SC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
 % Page size and margins
 \usepackage[
   a4paper,
@@ -32,8 +38,10 @@
 \usepackage{longtable}
 \usepackage{adjustbox}
 \usepackage{array}
+\usepackage{calc}
 \usepackage{subfig}
 \usepackage{multirow}
+\usepackage{graphicx}
 
 % Text and layout
 \usepackage{titlesec}
@@ -48,6 +56,7 @@
 
 % Table numbering style
 \renewcommand{\thetable}{\Roman{table}}
+\newcounter{none}
 
 % Theorem environments
 \newtheorem{definition}{Definition}[section]
@@ -57,6 +66,7 @@
 \titleformat{\subsection}
   {\mdseries\itshape\large}
   {\thesubsection}{1em}{}
+\setlength{\emergencystretch}{2em}
 
 % --------------------------------------------------
 % Harvard citation style (BibTeX + natbib)
@@ -77,48 +87,16 @@
 %Front Matter
 
 \author{}
-\title{Semantic-Aware Influence Maximization via Meta-Path Driven Propagation}
+\title{A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education}
+\date{}
 
 
 \begin{document}
 \maketitle
 
-
-\begin{abstract}
-\textbf{Purpose} - Influence maximization is of practical importance for information dissemination, yet most existing methods are designed for homogeneous, structure-driven networks, limiting their ability to model semantically driven propagation in heterogeneous settings. Moreover, variations in node interests, temporal attenuation effects, and the interpretability of seed selection outcomes are often insufficiently addressed. This study aims to develop a semantic-aware and interpretable influence maximization framework for heterogeneous networks.
-
-\textbf{Design/methodology/approach} - We propose a unified framework that integrates heterogeneous influence propagation modeling, efficient seed selection, and result interpretability. Specifically, we propose a semantic-aware influence propagation model for heterogeneous networks that characterizes propagation along meta-path driven semantic pathways while jointly modeling interest sensitivity and temporal dynamics. We further develop a stratified coverage-guided influence maximization algorithm that aligns seed selection with heterogeneous semantic channels and interest strata, effectively suppressing redundant influence while preserving coverage diversity. Finally, we design an interpretability mechanism that provides traceable reasoning for seed selection decisions.
-
-\textbf{Findings} - Experiments on four heterogeneous network datasets show that the proposed framework consistently outperforms representative baselines in both accuracy and stability. The results further highlight the importance of jointly modeling semantic relations, interest alignment, and temporal decay for effective influence maximization.
-
-\textbf{Originality/Value} - This study proposes a unified influence maximization framework for heterogeneous networks, which introduces meta-path driven semantic awareness and jointly models interest sensitivity and temporal dynamics, thereby overcoming the limitations of traditional influence maximization paradigms; Meanwhile, the proposed framework provides traceable reasoning for seed selection decisions.
-\\
-\\
-%add 6 keywords
-\textbf{Keywords:} Influence maximization; Heterogeneous networks; Influence propagation;
-
-\end{abstract}
-
-\section{Introduction}
-
-\begin{itemize}
-    \item
-    \item 
-    \item 
-\end{itemize}
-\section{Related works}
-\subsection{Influence propagation}
-
-\section{Method}
-
-\section{Experiment}
-\subsection{Dataset}
-
-\section{Conclusion}
-
-
-\bibliographystyle{agsm}
-\bibliography{Bibliography}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\input{manuscript_body}
 
 
 \end{document}

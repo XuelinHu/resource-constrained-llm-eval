@@ -17,30 +17,22 @@ HTML_OUTPUT = ROOT / "tmp/pdfs/ijwis_bilingual_railway_manuscript.html"
 PLAYWRIGHT_CHROMIUM = Path.home() / ".cache/ms-playwright/chromium-1228/chrome-linux64/chrome"
 
 FIGURES = {
-    "## 4. Results": (
-        "system_architecture.png",
-        "Figure 1. System architecture and knowledge-governance workflow.",
-    ),
-    "### 4.4 Regulation-only pilot answer generation": (
-        "top_k_quality_latency.png",
-        "Figure 2. Approved-hybrid retrieval quality and latency across top-k settings.",
-    ),
-    "### 4.6 Multi-generator RAG and interaction effects": (
-        "training_validation_loss.png",
-        "Figure 3. Completion-only QLoRA training and validation loss.",
-    ),
-    "### 4.7 Directional translation": (
-        "quality_latency_pareto.png",
-        "Figure 4. Bilingual QA quality against generation latency and peak GPU memory.",
-    ),
-    "### 4.8 Resource use and automated error analysis": (
-        "translation_before_after.png",
-        "Figure 5. Direction- and task-separated COMET before and after QLoRA.",
-    ),
-    "## 5. Discussion": (
-        "error_type_distribution.png",
-        "Figure 6. Mean prevalence of automatically flagged output errors.",
-    ),
+    "### 3.3 Retrieval and answer generation": [
+        ("system_architecture.png", "Figure 1. System architecture and knowledge-governance workflow."),
+    ],
+    "### 4.4 Regulation-only pilot answer generation": [
+        ("top_k_quality_latency.png", "Figure 2. Approved-hybrid retrieval quality and latency across top-k settings."),
+    ],
+    "### 4.6 Multi-generator RAG and interaction effects": [
+        ("training_validation_loss.png", "Figure 3. Completion-only QLoRA training and validation loss."),
+    ],
+    "### 4.8 Resource use and automated error analysis": [
+        ("translation_before_after.png", "Figure 4. Direction- and task-separated COMET before and after QLoRA."),
+    ],
+    "## 5. Discussion": [
+        ("quality_latency_pareto.png", "Figure 5. Bilingual QA quality against generation latency and peak GPU memory."),
+        ("error_type_distribution.png", "Figure 6. Mean prevalence of automatically flagged output errors."),
+    ],
 }
 
 
@@ -59,8 +51,8 @@ def inject_figures(source: str) -> str:
     output: list[str] = []
     for line in lines:
         if line in FIGURES:
-            filename, caption = FIGURES[line]
-            output.extend(["", figure_markup(filename, caption), ""])
+            for filename, caption in FIGURES[line]:
+                output.extend(["", figure_markup(filename, caption), ""])
         output.append(line)
     return "\n".join(output)
 
@@ -130,6 +122,12 @@ p {{ margin: 0 0 3.2mm; text-align: justify; orphans: 3; widows: 3; }}
 ul, ol {{ margin: 2mm 0 3mm 6mm; padding-left: 5mm; }}
 li {{ margin-bottom: 1.2mm; }}
 strong {{ color: #132f40; }}
+.equation {{
+  margin: 4mm 0;
+  font-family: "Noto Serif", "DejaVu Serif", serif;
+  font-size: 10.5pt;
+  text-align: center;
+}}
 code {{
   padding: 0.2mm 0.7mm;
   border-radius: 1mm;

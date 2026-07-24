@@ -63,3 +63,14 @@ paper/*.out
 paper/*.run.xml
 paper/*.synctex.gz
 paper/*.toc
+
+# LaTeX submission build products; source .tex and .bib files remain tracked.
+IJWIS__Copy_/*.aux
+IJWIS__Copy_/*.bbl
+IJWIS__Copy_/*.blg
+IJWIS__Copy_/*.fdb_latexmk
+IJWIS__Copy_/*.fls
+IJWIS__Copy_/*.log
+IJWIS__Copy_/*.out
+IJWIS__Copy_/*.pdf
+IJWIS__Copy_/*.xdv
