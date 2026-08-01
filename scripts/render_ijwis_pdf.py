@@ -18,7 +18,7 @@ PLAYWRIGHT_CHROMIUM = Path.home() / ".cache/ms-playwright/chromium-1228/chrome-l
 
 FIGURES = {
     "### 3.3 Retrieval and answer generation": [
-        ("system_architecture.png", "Figure 1. System architecture and knowledge-governance workflow."),
+        ("ai_role_system_workflow.png", "Figure 1. Role-specific Web, knowledge-intelligence and governance architecture."),
     ],
     "### 4.4 Regulation-only pilot answer generation": [
         ("top_k_quality_latency.png", "Figure 2. Approved-hybrid retrieval quality and latency across top-k settings."),
@@ -29,9 +29,13 @@ FIGURES = {
     "### 4.8 Resource use and automated error analysis": [
         ("translation_before_after.png", "Figure 4. Direction- and task-separated COMET before and after QLoRA."),
     ],
-    "## 5. Discussion": [
+    "### 4.9 Index, evidence-support, governance and load validation": [
         ("quality_latency_pareto.png", "Figure 5. Bilingual QA quality against generation latency and peak GPU memory."),
         ("error_type_distribution.png", "Figure 6. Mean prevalence of automatically flagged output errors."),
+        ("supplementary_system_validation.png", "Figure 7. Bilingual index, evidence support, governance history and steady-state retrieval load validation."),
+    ],
+    "## 6. Practical implications": [
+        ("system_bilingual_qa_screenshot.png", "Figure 8. Running bilingual question-answering view with generated answer and approved source evidence."),
     ],
 }
 

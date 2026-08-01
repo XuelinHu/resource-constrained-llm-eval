@@ -33,6 +33,7 @@ class Settings:
     rag_timeout_seconds: int
     embedding_model: str
     embedding_dimension: int
+    embedding_local_files_only: bool
 
     @property
     def database_url(self) -> str:
@@ -59,6 +60,9 @@ def get_settings() -> Settings:
         rag_timeout_seconds=int(os.getenv("RAILWAY_RAG_TIMEOUT_SECONDS", "180")),
         embedding_model=os.getenv("RAILWAY_EMBEDDING_MODEL", "BAAI/bge-m3"),
         embedding_dimension=int(os.getenv("RAILWAY_EMBEDDING_DIMENSION", "1024")),
+        embedding_local_files_only=os.getenv(
+            "RAILWAY_EMBEDDING_LOCAL_FILES_ONLY", "true"
+        ).lower() in {"1", "true", "yes", "on"},
     )
 
 

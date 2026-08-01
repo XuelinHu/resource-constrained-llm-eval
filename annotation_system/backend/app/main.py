@@ -152,6 +152,7 @@ async def rag_ask(payload: RagAskRequest, db: Session = Depends(get_db)) -> dict
             "generate": payload.generate,
             "retrieval_mode": payload.retrieval_mode,
             "approved_only": payload.approved_only,
+            "synthesize_audio": payload.synthesize_audio,
         },
     )
     db.add(user_message)
@@ -166,11 +167,12 @@ async def rag_ask(payload: RagAskRequest, db: Session = Depends(get_db)) -> dict
     )
     audio_url = None
     tts_error = None
-    try:
-        audio_path = await synthesize_speech(result["answer"])
-        audio_url = f"/api/tts/audio/{audio_path.name}"
-    except Exception as error:
-        tts_error = str(error)
+    if payload.synthesize_audio:
+        try:
+            audio_path = await synthesize_speech(result["answer"])
+            audio_url = f"/api/tts/audio/{audio_path.name}"
+        except Exception as error:
+            tts_error = str(error)
 
     assistant_message = RagMessage(
         session_id=session.id,

@@ -1,0 +1,30 @@
+\begin{tabular}{llllrrrrrr}
+\toprule
+variant & variant\_label & method & language & cases & recall\_at\_1 & recall\_at\_3 & recall\_at\_5 & mrr & mean\_search\_ms \\
+\midrule
+source\_only & Source evidence & bm25 & zh & 400 & 0.410 & 0.492 & 0.510 & 0.450 & 50.037 \\
+source\_only & Source evidence & vector & zh & 400 & 0.542 & 0.637 & 0.657 & 0.589 & 3.926 \\
+source\_only & Source evidence & hybrid & zh & 400 & 0.492 & 0.588 & 0.637 & 0.548 & 53.963 \\
+source\_only & Source evidence & bm25 & en & 400 & 0.270 & 0.295 & 0.307 & 0.283 & 50.037 \\
+source\_only & Source evidence & vector & en & 400 & 0.362 & 0.460 & 0.482 & 0.411 & 3.926 \\
+source\_only & Source evidence & hybrid & en & 400 & 0.307 & 0.400 & 0.448 & 0.361 & 53.963 \\
+zh\_only & Chinese fields & bm25 & zh & 400 & 0.398 & 0.477 & 0.507 & 0.440 & 53.234 \\
+zh\_only & Chinese fields & vector & zh & 400 & 0.645 & 0.730 & 0.748 & 0.686 & 3.527 \\
+zh\_only & Chinese fields & hybrid & zh & 400 & 0.500 & 0.605 & 0.652 & 0.558 & 56.761 \\
+zh\_only & Chinese fields & bm25 & en & 400 & 0.270 & 0.292 & 0.305 & 0.283 & 53.234 \\
+zh\_only & Chinese fields & vector & en & 400 & 0.465 & 0.560 & 0.600 & 0.515 & 3.527 \\
+zh\_only & Chinese fields & hybrid & en & 400 & 0.312 & 0.477 & 0.530 & 0.403 & 56.761 \\
+en\_only & English fields & bm25 & zh & 400 & 0.228 & 0.237 & 0.268 & 0.239 & 69.853 \\
+en\_only & English fields & vector & zh & 400 & 0.512 & 0.610 & 0.655 & 0.568 & 3.531 \\
+en\_only & English fields & hybrid & zh & 400 & 0.285 & 0.500 & 0.560 & 0.399 & 73.383 \\
+en\_only & English fields & bm25 & en & 400 & 0.590 & 0.677 & 0.688 & 0.631 & 69.853 \\
+en\_only & English fields & vector & en & 400 & 0.560 & 0.652 & 0.698 & 0.614 & 3.531 \\
+en\_only & English fields & hybrid & en & 400 & 0.595 & 0.680 & 0.713 & 0.641 & 73.383 \\
+bilingual & Bilingual fields & bm25 & zh & 400 & 0.395 & 0.475 & 0.517 & 0.440 & 114.879 \\
+bilingual & Bilingual fields & vector & zh & 400 & 0.627 & 0.730 & 0.748 & 0.681 & 3.527 \\
+bilingual & Bilingual fields & hybrid & zh & 400 & 0.515 & 0.652 & 0.718 & 0.593 & 118.406 \\
+bilingual & Bilingual fields & bm25 & en & 400 & 0.495 & 0.580 & 0.608 & 0.540 & 114.879 \\
+bilingual & Bilingual fields & vector & en & 400 & 0.580 & 0.672 & 0.703 & 0.627 & 3.527 \\
+bilingual & Bilingual fields & hybrid & en & 400 & 0.540 & 0.637 & 0.675 & 0.592 & 118.406 \\
+\bottomrule
+\end{tabular}

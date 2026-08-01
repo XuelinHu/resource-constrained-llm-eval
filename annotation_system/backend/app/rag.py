@@ -202,7 +202,10 @@ def get_embedding_model():
             if _embedding_model is None:
                 from sentence_transformers import SentenceTransformer
 
-                _embedding_model = SentenceTransformer(settings.embedding_model)
+                _embedding_model = SentenceTransformer(
+                    settings.embedding_model,
+                    local_files_only=settings.embedding_local_files_only,
+                )
     return _embedding_model
 
 

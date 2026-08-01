@@ -6,7 +6,7 @@ Working title: **A Knowledge-Enhanced Large Language Model Web Information Syste
 
 The manuscript follows an Emerald-style structured abstract and a system-oriented argument. The old single-GPU benchmark paper under `paper/` remains background material; this directory is the authoritative draft for the IJWIS submission.
 
-The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix was completed on 2026-07-13; items requiring new human semantic ratings are explicitly recorded as out of scope rather than inferred from automatic metrics.
+The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix and automated system validation were completed on 2026-08-01; items requiring expert metadata or new human semantic ratings remain explicit pre-submission work rather than being inferred from automatic metrics.
 
 The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonymous IJWIS template wrapper, and `IJWIS__Copy_/manuscript_body.tex` is regenerated from Markdown. Expert names, panel size, experience, assignment and agreement fields remain explicit pre-submission placeholders until the railway and international-education expert information has been collected.
 
@@ -23,6 +23,7 @@ The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonym
 - Multi-generator RAG: `results/ijwis_single_gpu_3090/rag/`
 - Analysis CSV: `results/ijwis_single_gpu_3090/analysis/`
 - Traceable asset hashes: `results/ijwis_single_gpu_3090/analysis/asset_manifest.json`
+- Supplementary validation hashes: `results/ijwis_single_gpu_3090/analysis/supplementary_asset_manifest.json`
 - Paper-ready tables and figures: `paper/ijwis/{tables,figures}/`
 - Translation metrics: direction- and subtask-separated SacreBLEU, chrF++ and COMET using `Unbabel/wmt22-comet-da` revision `2760a223ac957f30acfb18c8aa649b01cf1d75f2`.
 
@@ -44,8 +45,15 @@ HF_ENDPOINT=https://hf-mirror.com conda run -n rc-llm-comet python scripts/evalu
 conda run -n rc-llm-eval python scripts/export_ijwis_design_tables.py
 conda run -n rc-llm-eval python scripts/analyze_ijwis_results.py
 conda run -n rc-llm-eval python scripts/plot_ijwis_architecture.py
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/evaluate_bilingual_index_ablation.py --batch-size 8 --max-seq-length 512
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/evaluate_rag_faithfulness.py --backend embedding --batch-size 8
+conda run -n rc-llm-eval python scripts/analyze_governance_history.py
+conda run -n rc-llm-eval python scripts/load_test_rag_api.py --concurrency 1 5 10 --requests 12
+conda run -n rc-llm-eval python scripts/build_ijwis_validation_figure.py
+conda run -n rc-llm-eval python scripts/capture_annotation_ui.py --session-id SESSION_ID
 
 conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
 latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
-cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript.pdf
+cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf
+conda run -n rc-llm-eval python scripts/render_ijwis_pdf.py
 ```

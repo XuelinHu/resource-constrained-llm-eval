@@ -1,0 +1,12 @@
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+retrieval\_mode & concurrency & requests & successful & failures & throughput\_rps & end\_to\_end\_p50\_ms & end\_to\_end\_p95\_ms & mean\_retrieval\_ms & mean\_generation\_ms & peak\_gpu\_memory\_mib \\
+\midrule
+bm25 & 1 & 12 & 12 & 0 & 22.38 & 39.82 & 61.16 & 39.54 & 0.00 & 1075.00 \\
+bm25 & 5 & 12 & 12 & 0 & 21.65 & 225.31 & 232.44 & 66.07 & 0.00 & 1075.00 \\
+bm25 & 10 & 12 & 12 & 0 & 21.57 & 330.13 & 514.81 & 118.63 & 0.00 & 1075.00 \\
+hybrid & 1 & 12 & 12 & 0 & 5.03 & 195.87 & 215.76 & 192.32 & 0.00 & 3576.00 \\
+hybrid & 5 & 12 & 12 & 0 & 8.38 & 560.75 & 728.23 & 442.68 & 0.00 & 3654.00 \\
+hybrid & 10 & 12 & 12 & 0 & 9.51 & 945.24 & 1124.59 & 694.43 & 0.00 & 3762.00 \\
+\bottomrule
+\end{tabular}

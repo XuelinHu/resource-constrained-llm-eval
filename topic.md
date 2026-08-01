@@ -138,7 +138,7 @@
 - 全量结果：no-retrieval F1 为 0.243，citation coverage 为 0；retrieval-only F1 为 0.652，但它直接返回证据文本且没有生成式引用格式；BM25-RAG、vector-RAG、hybrid-RAG 和 hybrid-RAG + approved-only 的 citation coverage 分别为 0.967、0.967、0.967 和 0.975。vector-RAG 在自动 F1 上略高于 BM25-RAG，hybrid-RAG + approved-only 的引用覆盖和幻觉代理指标最好。
 - 写作注意：retrieval-only 可作为非生成检索证据上限或证据返回基线，不应被解释为问答生成模型优于 RAG。
 
-## 2026-07 新论文执行清单
+## 2026-08 新论文执行清单
 
 后续正式实验的完整待办、完成标准和推荐顺序统一维护在 `paper/ijwis/experiment_todo.md`。
 
@@ -149,4 +149,6 @@
 5. **经审核双语 QLoRA 数据：已完成 8:1:1 重建。** 训练 12,178 条、验证 1,524 条、测试 1,526 条，中英文各半；三个划分的知识对交集均为 0，训练仅对回答 token 计算损失。原有 120 个未入索引的规章知识点全部保留在 test，并另存为 RAG 专项测试集。
 6. **微调模型矩阵：已完成正式 QLoRA 训练与前后评测。** 核心模型为 Qwen2.5-7B-Instruct 与 GLM-4-9B-Chat-HF；两者均完成 rank-64 NF4 QLoRA、训练证据、双语 QA、方向性翻译、通用能力回归检查和资源测量。GLM 使用融合的 `gate_up_proj` 目标层。Qwen3-4B 已移除，Qwen3-14B 仅作 Ollama 生成参照。
 7. **IJWIS 新稿迁移：已完成结果稿。** 新稿位于 `paper/ijwis/manuscript.md`，已回填结构化摘要、正式结果、Discussion、Practical implications、Limitations 和 Conclusion；旧单卡 benchmark 稿保留为背景材料。
-8. **统计、错误分析和论文资产：已完成。** 核心比较包含 bootstrap 95% CI、配对 Wilcoxon、Cohen's dz 与 Holm 校正；已导出 9 张表、6 类图和成功/失败代表案例。资产与源结果的哈希映射位于 `results/ijwis_single_gpu_3090/analysis/asset_manifest.json`。
+8. **统计、错误分析和论文资产：已完成。** 核心比较包含 bootstrap 95% CI、配对 Wilcoxon、Cohen's dz 与 Holm 校正；已导出正式表图和成功/失败代表案例。论文正文控制为 8 图、3 表，按 IJWIS 图表折算规则估算总量约 10,022 词。
+9. **补充信息系统验证：已完成。** 四种索引字段在 800 条查询上完成 BM25/vector/hybrid 消融；8,000 个 RAG 回答拆分为 27,668 个主张并完成 BGE-M3 语义证据支持代理评测；治理审计覆盖 37,664 条记录和 1,337 条 review events；真实 API 在并发 1/5/10 下完成 72/72 个稳态检索请求。人工专家元数据和人工语义评分仍按要求留待后续统一收集。
+10. **系统图与运行证据：已完成。** 通过本地 `imagegen` skill 和已配置的 OpenAI 兼容接口生成角色-组件架构图；通过本机 Chromium 访问运行中的 Vite/FastAPI 服务，采集英文界面的审核台和双语 RAG 问答真实截图。AI 架构图与真实系统截图在正文中明确区分。

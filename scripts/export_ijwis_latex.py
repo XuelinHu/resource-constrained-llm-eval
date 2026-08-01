@@ -13,7 +13,7 @@ OUTPUT = ROOT / "IJWIS__Copy_/manuscript_body.tex"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("system_architecture.pdf", "System architecture and knowledge-governance workflow."),
+        ("ai_role_system_workflow.pdf", "Role-specific Web, knowledge-intelligence and governance architecture."),
     ],
     "### 4.4 Regulation-only pilot answer generation": [
         ("top_k_quality_latency.pdf", "Approved-hybrid retrieval quality and latency across top-k settings."),
@@ -24,9 +24,13 @@ FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 4.8 Resource use and automated error analysis": [
         ("translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA."),
     ],
-    "## 5. Discussion": [
+    "### 4.9 Index, evidence-support, governance and load validation": [
         ("quality_latency_pareto.pdf", "Bilingual QA quality against generation latency and peak GPU memory."),
         ("error_type_distribution.pdf", "Mean prevalence of automatically flagged output errors."),
+        ("supplementary_system_validation.pdf", "Bilingual index, evidence support, governance history and steady-state retrieval load validation."),
+    ],
+    "## 6. Practical implications": [
+        ("system_bilingual_qa_screenshot.png", "Running bilingual question-answering view with generated answer and approved source evidence."),
     ],
 }
 

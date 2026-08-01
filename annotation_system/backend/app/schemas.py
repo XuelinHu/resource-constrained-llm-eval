@@ -137,6 +137,7 @@ class RagAskRequest(BaseModel):
     session_id: int | None = None
     retrieval_mode: Literal["bm25", "vector", "hybrid"] = "bm25"
     approved_only: bool = False
+    synthesize_audio: bool = True
 
 
 class RagSource(BaseModel):

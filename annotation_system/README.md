@@ -66,6 +66,8 @@ FRONTEND_MODE=frp ./annotation_system/start_frontend.sh        # API: http://47.
 
 默认 embedding 模型为 `BAAI/bge-m3`，用于中英双语铁路教育知识检索。构建 pgvector 向量索引：
 
+运行时默认设置 `RAILWAY_EMBEDDING_LOCAL_FILES_ONLY=true`，只读取已缓存模型，避免服务启动或首个向量请求依赖外网。首次准备模型时可临时设置为 `false`，下载完成后恢复本地模式。
+
 ```bash
 cd annotation_system/backend
 /home/xuelin/miniconda3/envs/rc-llm-eval/bin/python -m app.build_embeddings --rebuild
@@ -81,7 +83,7 @@ RAG API：
 
 - `GET /api/rag/stats`：索引状态
 - `POST /api/rag/rebuild`：重建索引
-- `POST /api/rag/ask`：检索或生成回答，`retrieval_mode` 支持 `bm25`、`vector` 和 `hybrid`，`approved_only` 可限制仅检索专家核验通过语料
+- `POST /api/rag/ask`：检索或生成回答，`retrieval_mode` 支持 `bm25`、`vector` 和 `hybrid`，`approved_only` 可限制仅检索专家核验通过语料；`synthesize_audio=false` 可在自动评测时跳过语音合成
 
 命令行验证 pgvector 语义检索：
 

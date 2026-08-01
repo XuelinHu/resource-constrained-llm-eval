@@ -4,9 +4,9 @@
 
 **Purpose.** This study develops a knowledge-enhanced Web information system for Chinese-English railway vocational education, enabling international learners to access terminology, regulations and textbook knowledge with source traceability on limited local hardware.
 
-**Design/methodology/approach.** The system combines an approval-controlled PostgreSQL knowledge base, pgvector, BM25, BGE-M3, reciprocal-rank fusion and local language models. A leakage-controlled set of 400 bilingual knowledge pairs compares retrieval methods. Five generators are tested under no-retrieval, BM25-RAG and approved-hybrid-RAG conditions; QLoRA, directional translation and deployment efficiency are evaluated separately on one 24 GB GPU.
+**Design/methodology/approach.** The system combines an approval-controlled PostgreSQL knowledge base, pgvector, BM25, BGE-M3, reciprocal-rank fusion and local language models. A leakage-controlled set of 400 bilingual knowledge pairs compares retrieval and index-field variants. Five generators are tested under no-retrieval, BM25-RAG and approved-hybrid-RAG conditions; QLoRA, directional translation, automated claim-evidence support, governance history and steady-state retrieval concurrency are evaluated separately on one workstation.
 
-**Findings.** Hybrid Recall@5 reached 0.715 in Chinese and 0.708 in English. Qwen2.5 QLoRA raised held-out Char F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. RAG significantly improved all generators, but adapted models often omitted evidence labels. Translation gains were direction-dependent, and every deployment condition remained below 20 GB peak memory.
+**Findings.** Hybrid Recall@5 reached 0.715 in Chinese and 0.708 in English. A bilingual-field index produced the strongest balanced field-ablation result. Qwen2.5 QLoRA raised held-out Char F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. RAG improved all generators, but adapted models often omitted evidence labels. All 72 steady-state retrieval requests succeeded at up to ten concurrent clients.
 
 **Originality.** The study integrates governed bilingual knowledge, evidence-traceable RAG and resource-constrained deployment in a railway Web information system. It reports language-disaggregated results and implements expert approval as a query-time retrieval condition.
 
@@ -85,7 +85,7 @@ For a candidate document *d*, the fusion score is:
 
 The candidate pool is fixed at 50 per retriever and the conventional rank constant is `k0 = 60`; final top-*k* is varied only after fusion. This separation ensures that a top-*k* ablation changes the amount of evidence delivered to the generator without changing the upstream search pool. Dense ranking uses BGE-M3 query embeddings and pgvector distance, while lexical ranking retains exact matches that are valuable for abbreviations, equipment names and regulation numbers. Every returned evidence object contains record identifier, source document, task type and retrieval score.
 
-The FastAPI service exposes search and conversational endpoints to the Web client. At answer time, the selected evidence is serialised with labels such as `[Evidence1]` or `[证据1]`. The system instruction requires the generator to answer in the query language, remain within the supplied evidence and attach labels to supported statements. If no admissible record is retrieved, the service returns an explicit no-evidence message rather than invoking unconstrained generation. Figure 1 shows the resulting acquisition, governance, retrieval and generation path.
+The FastAPI service exposes search and conversational endpoints to the Web client. At answer time, the selected evidence is serialised with labels such as `[Evidence1]` or `[证据1]`. The system instruction requires the generator to answer in the query language, remain within the supplied evidence and attach labels to supported statements. If no admissible record is retrieved, the service returns an explicit no-evidence message rather than invoking unconstrained generation. Figure 1 maps learner, teacher and administrator workflows to the Web, knowledge-intelligence and governance components.
 
 ### 3.4 Bilingual QLoRA adaptation
 
@@ -102,6 +102,8 @@ Retrieval conditions are BM25, vector, hybrid and approved hybrid. Metrics are R
 Recall@*k* is one when the held-out source record occurs in the first *k* positions and zero otherwise; MRR averages the reciprocal rank of the first relevant record. Character-level F1 is used for Chinese and token-normalised overlap for English. Reference containment records whether the normalised reference appears in the generated answer. Citation coverage records only whether the requested evidence-label syntax appears. The hallucination proxy is zero when a recognised no-evidence response or citation label is present and one otherwise; it is deliberately named a proxy because it does not test claim-evidence entailment. This limitation is retained in every interpretation.
 
 All core comparisons use paired samples. Mean metrics are accompanied by 2,000-resample bootstrap 95 per cent confidence intervals. Original-versus-QLoRA comparisons use two-sided paired Wilcoxon tests, paired standardised effect sizes and Holm correction across the pre-specified comparison family. Exploratory error categories are reported separately and are not treated as confirmatory hypothesis tests. Efficiency measurements use 30 Chinese short questions, 30 English short questions and 30 regulation-oriented long-context questions, with one warm-up and three measured repetitions per model condition.
+
+Four automated system checks extend the primary protocol without introducing new human labels. First, source-only, Chinese-field, English-field and bilingual-field indexes are compared on the same 800 queries with a 512-token BGE-M3 window. Second, each of 8,000 RAG answers is segmented into claims; BGE-M3 cosine similarity estimates semantic support against all retrieved evidence and explicitly cited evidence at a pre-specified 0.45 threshold. This is a support proxy, not textual entailment or expert correctness. Third, immutable review events and before-state snapshots are audited for action and changed-field coverage. Fourth, the deployed API is warmed once per retrieval mode and tested with 12 retrieval-only requests at concurrency 1, 5 and 10. Client P50/P95, throughput, failures and GPU memory are recorded with speech synthesis disabled; generator efficiency remains covered by the separate 270-measurement inference experiment.
 
 ### 3.6 Implementation and reproducibility
 
@@ -121,6 +123,8 @@ The application uses a Vite-based Web client, a FastAPI backend and PostgreSQL 1
 
 The code separates test-set construction, embedding, retrieval evaluation, generator evaluation, adaptation and report export. This prevents an analysis script from silently changing the production index or training split. Cached retrieval contexts are reused across generators in the formal RAG matrix, so model comparisons receive identical evidence. The manifest records the Git state and every input hash at freeze time, supporting result reconstruction even when copyrighted source passages cannot be redistributed.
 
+Production embedding loading is local-files-only by default, preventing an unavailable model registry from becoming a hidden runtime dependency. Audio synthesis remains enabled for normal users but is explicitly disabled in load tests. The real review and question-answering views were rendered through the running Vite and FastAPI services rather than reconstructed as mock-ups.
+
 ## 4. Results
 
 ### 4.1 Knowledge-base composition
@@ -129,22 +133,11 @@ The database contains 37,661 approved records and 37,109 complete bilingual reco
 
 ### 4.2 Regulation-only pilot retrieval
 
-**Table 2. Regulation-only pilot retrieval results.**
-
-| Retrieval | Language | R@1 | R@3 | R@5 | MRR | Mean latency (ms) |
-|---|---:|---:|---:|---:|---:|---:|
-| BM25 | Chinese | 0.625 | 0.708 | 0.742 | 0.672 | 48.7 |
-| Vector | Chinese | 0.575 | 0.717 | 0.742 | 0.648 | 125.4 |
-| Hybrid approved | Chinese | **0.667** | **0.717** | **0.758** | **0.701** | 185.0 |
-| BM25 | English | 0.517 | 0.642 | 0.667 | 0.580 | 70.0 |
-| Vector | English | 0.483 | 0.567 | 0.575 | 0.523 | 361.7 |
-| Hybrid approved | English | **0.525** | **0.667** | **0.708** | **0.595** | 185.7 |
-
-In this regulation-only pilot, hybrid retrieval gives the strongest Recall@5 in both languages. English queries remain consistently harder, which supports reporting language-disaggregated results rather than a pooled bilingual score. These values will not be treated as the final cross-source system results.
+In the 120-pair regulation-only pilot, approved hybrid retrieval produced Recall@5 of 0.758 in Chinese and 0.708 in English, compared with BM25 values of 0.742 and 0.667. English queries remained harder, supporting language-disaggregated reporting. These pilot values are retained as a development check and are not treated as the final cross-source result.
 
 ### 4.3 Formal cross-source bilingual retrieval
 
-**Table 3. Formal cross-source retrieval on 400 knowledge pairs.**
+**Table 2. Formal cross-source retrieval on 400 knowledge pairs.**
 
 | Retrieval | Language | R@1 | R@3 | R@5 | MRR | Mean latency (ms) |
 |---|---:|---:|---:|---:|---:|---:|
@@ -159,20 +152,7 @@ The larger cross-source evaluation changes the interpretation of the pilot. BM25
 
 ### 4.4 Regulation-only pilot answer generation
 
-**Table 4. Regulation-only answer-generation results.**
-
-| Condition | Language | Answer F1 | Citation coverage | Hallucination proxy | End-to-end (ms) |
-|---|---:|---:|---:|---:|---:|
-| No retrieval | Chinese | 0.243 | 0.000 | 1.000 | 3,243.1 |
-| BM25-RAG | Chinese | **0.621** | 0.967 | 0.033 | **1,141.8** |
-| Vector-RAG | Chinese | 0.623 | 0.967 | 0.033 | 1,149.4 |
-| Hybrid-RAG approved | Chinese | 0.604 | **0.975** | **0.025** | 1,413.8 |
-| No retrieval | English | 0.243 | 0.000 | 1.000 | 3,495.5 |
-| BM25-RAG | English | **0.498** | **0.992** | **0.008** | **1,322.5** |
-| Vector-RAG | English | 0.492 | 0.950 | 0.050 | 1,425.4 |
-| Hybrid-RAG approved | English | 0.489 | **0.992** | **0.008** | 1,586.2 |
-
-RAG more than doubled F1 relative to no retrieval in both languages while reducing mean response time because evidence-constrained answers were shorter. Hybrid retrieval obtained the strongest evidence recall, but this did not translate into the highest answer F1; BM25-RAG was the strongest English generation condition and vector-RAG was marginally strongest in Chinese. This distinction supports evaluating retrieval and generation separately. Retrieval-only returned source-language evidence and is therefore excluded from the generative comparison, particularly for English questions.
+In the regulation pilot, no-retrieval F1 was 0.243 in both languages. The best RAG F1 was 0.623 for Chinese vector-RAG and 0.498 for English BM25-RAG; citation-format coverage reached 0.950-0.992 across retrieval conditions. RAG also reduced mean response time because evidence-constrained answers were shorter. Stronger hybrid evidence recall therefore did not automatically maximise answer F1, motivating the larger fixed-context generator experiment.
 
 ### 4.5 QLoRA adaptation and held-out QA
 
@@ -206,19 +186,34 @@ The quality-latency-memory relationship is shown in Figure 5. The plot is interp
 
 Automated failure flags explain several aggregate differences. At top three, approved hybrid retrieval missed the held-out item for 32.5 per cent of Chinese and 33.3 per cent of English queries. Even with a hit, original Qwen produced low-overlap answers in 18.0 per cent of Chinese versus 4.3 per cent of English cases. Qwen QLoRA reduced these rates to 4.0 and 1.5 per cent, but omitted citation labels in 100.0 and 99.8 per cent. Figure 6 compares these automatically flagged categories. The translation analysis additionally exposed empty answers, wrong-language outputs and terminology substitutions. Similar-version retrieval and citation entailment require expert semantic judgement and were not inferred from string-based flags.
 
+### 4.9 Index, evidence-support, governance and load validation
+
+**Table 3. Supplementary information-system validation results.**
+
+| Validation | Chinese | English | Operational result |
+|---|---:|---:|---|
+| Bilingual-field hybrid index, Recall@5 | 0.718 | 0.675 | Highest balanced mean (0.696) |
+| Original Qwen hybrid, supported-claim proxy | 0.878 | 0.836 | Citation precision 0.955/0.970 |
+| Qwen QLoRA hybrid, supported-claim proxy | 0.964 | 0.905 | Citation recall 0.000/0.002 |
+| Governance history | - | - | 1,337 events; 82 edits; two recorded reviewers |
+| BM25 retrieval, concurrency 10 | - | - | P95 0.515 s; 21.57 requests/s; 0/12 failures |
+| Hybrid retrieval, concurrency 10 | - | - | P95 1.125 s; 9.51 requests/s; 0/12 failures |
+
+The field ablation shows why both language fields are retained: English-only hybrid is strongest for English Recall@5 (0.713) but falls to 0.560 in Chinese, whereas the bilingual index gives the highest balanced mean. Across 27,668 segmented claims, hybrid retrieval generally increases automated semantic support, but high support does not repair absent citations: Qwen QLoRA retains strong support scores while almost never attaching a valid label. The governance database contains 37,664 records and 1,337 review events, including before-state snapshots for edits; only three current records are rejected, so no causal approved-versus-rejected quality claim is made. All 72 warmed retrieval requests succeed. BM25 offers the lower tail latency, while Hybrid approximately doubles throughput from concurrency 1 to 10 at the cost of higher P95 and 3.76 GB peak system GPU use. Figure 7 summarises these four checks.
+
 ## 5. Discussion
 
 ### 5.1 Answers to the research questions
 
-**RQ1 concerned bilingual retrieval.** Lexical and semantic retrieval are language-dependent complements. Dense retrieval contributes most to Chinese recall, while exact terminology makes BM25 particularly competitive in English. Approved hybrid fusion reaches the highest Recall@5 in both languages, but its approximately threefold latency relative to BM25 means lexical retrieval remains a credible low-cost configuration. This result is consistent with the broader rationale for combining retrieval signals rather than assuming semantic embeddings dominate exact technical language (Robertson and Zaragoza, 2009; Cormack et al., 2009).
+**RQ1 concerned bilingual retrieval.** Lexical and semantic retrieval are language-dependent complements. Dense retrieval contributes most to Chinese recall, while exact terminology makes BM25 particularly competitive in English. Approved hybrid fusion reaches the highest Recall@5 in both languages, and the field ablation shows that a bilingual index offers the strongest balanced result even though an English-only index is best for English alone. Hybrid's higher latency means lexical retrieval remains a credible low-cost configuration. This result supports combining retrieval signals and language fields rather than assuming semantic embeddings dominate exact technical language (Robertson and Zaragoza, 2009; Cormack et al., 2009).
 
-**RQ2 concerned retrieval strategy, governance and answer behaviour.** RAG improves answer overlap for every generator, but stronger retrieval recall does not always yield the highest F1. QLoRA and RAG are complementary for answer content but not automatically for traceability: adaptation reduces the marginal F1 gain from retrieval and can overwrite citation-format behaviour. This qualifies railway domain systems that report aggregate accuracy gains from fine-tuning or RAG (Li et al., 2024; Luo et al., 2025; Huang et al., 2026). Citation-aware targets, constrained citation insertion or post-generation entailment checking are required before operational use.
+**RQ2 concerned retrieval strategy, governance and answer behaviour.** RAG improves answer overlap for every generator, but stronger retrieval recall does not always yield the highest F1. QLoRA and RAG are complementary for answer content but not automatically for traceability: adaptation reduces the marginal F1 gain from retrieval and can overwrite citation-format behaviour. Automated semantic support remains high for adapted answers while citation recall approaches zero, demonstrating that relevance to retrieved evidence and visible attribution are separate requirements. This qualifies railway domain systems that report aggregate accuracy gains from fine-tuning or RAG (Li et al., 2024; Luo et al., 2025; Huang et al., 2026). Citation-aware targets, constrained citation insertion and human-validated entailment checking are required before operational use.
 
 The approved-only and unfiltered hybrid conditions are identical because every admissible record in the frozen production index was already approved. This confirms enforcement of the governance boundary but does not estimate the causal quality benefit of review. Such an estimate would require a deliberately retained, ethically usable unreviewed comparison corpus. The contribution here is therefore the executable review-state mechanism and its auditability, not a causal claim that approval alone raises F1.
 
 **RQ3 concerned bilingual adaptation and translation.** Completion-only QLoRA substantially improves held-out QA, particularly for Qwen, but adaptation quality is task-specific. QA gains coexist with asymmetric Qwen translation regressions and severe GLM sentence-translation failure. This mirrors concerns that domain-limited fine-tuning can overfit task form or translation direction (Hu et al., 2024; Vieira et al., 2024). The practical implication is that QA, terminology translation, sentence translation and citation compliance need independent acceptance thresholds; no pooled bilingual score can justify deployment.
 
-**RQ4 concerned constrained deployment.** Every tested condition fits a 24 GB workstation, confirming that a governed local service does not require a data-centre accelerator. Nevertheless, an adapter's small file size does not imply lower runtime memory: both QLoRA variants reserve substantially more memory and generate more slowly than their quantised base models. Resource reporting must therefore include measured inference behaviour, not only trainable parameter counts. This finding complements PEFT literature that emphasises training efficiency while showing that deployed cost remains model- and backend-dependent (Ding et al., 2023; Lv et al., 2024).
+**RQ4 concerned constrained deployment.** Every generator condition fits a 24 GB workstation, and the deployed retrieval API completes 72 of 72 steady-state requests at up to ten concurrent clients. BM25 sustains about 21.6 requests/s with 0.515 s P95 at concurrency ten; Hybrid reaches 9.5 requests/s with 1.125 s P95. Nevertheless, an adapter's small file size does not imply lower runtime memory: both QLoRA variants reserve more memory and generate more slowly than their quantised base models. Resource reporting must therefore include measured inference and service behaviour, not only trainable parameter counts (Ding et al., 2023; Lv et al., 2024).
 
 ### 5.2 Implications for Web information-system design
 
@@ -227,6 +222,8 @@ The principal theoretical implication is that domain knowledge enhancement shoul
 The architecture also treats relational and vector data as complementary. PostgreSQL remains the authoritative store for source identity, review state and test exclusion, while pgvector adds semantic access without replacing those controls. This arrangement is suitable for institutional Web information systems whose regulations, teaching materials and language fields evolve over time. It permits a record to be revised or withdrawn through ordinary data governance while preserving reproducible model and embedding versions.
 
 ## 6. Practical implications
+
+Figure 8 shows the running international-learner view rather than a UI mock-up. An English question is answered by the local Qwen3 service while three approved Chinese source passages, document identifiers, page metadata and relevance values remain visible in the same Web view. This makes cross-language evidence access inspectable even when the generated wording contains mixed terminology.
 
 The architecture can support institutions that need local control of teaching resources and cannot rely on an external hosted model. PostgreSQL review status, source metadata and held-out flags make governance rules executable at retrieval time. On a 24 GB workstation, original Qwen is the practical low-cost option, Qwen QLoRA is preferred when answer overlap is the priority, and a citation-compliant original model should remain in the workflow when source display is mandatory. Teachers should inspect evidence and citations rather than treating either F1 or citation presence as correctness. International-student interfaces should retain both source language and translated fields because retrieval and translation errors are direction-specific.
 
@@ -238,15 +235,15 @@ For railway education, the system should be framed as decision and learning supp
 
 ## 7. Limitations
 
-The held-out set covers four source documents and 17 task types, but it remains specific to one railway vocational knowledge base and cannot represent every course, regulation version or learner need. The database approval field is an operational governance control; the present experiment does not establish inter-rater agreement or claim that every approved answer reaches expert consensus. Expert panel composition and review-protocol metadata are intentionally pending collection and must be completed before submission. Because the frozen index contains only approved admissible records, the experiment cannot quantify an approved-versus-unreviewed quality effect. Automatic F1 penalises valid paraphrases, while citation presence and the hallucination proxy do not establish that a citation entails the generated claim. The error analysis is rule-based and no new human scoring was conducted. General-benchmark checks were capped per subtask. The experiment uses one workstation and results should not be generalised to production concurrency without load testing.
+The held-out set covers four source documents and 17 task types, but it remains specific to one railway vocational knowledge base and cannot represent every course, regulation version or learner need. The database approval field is an operational governance control; the present experiment does not establish inter-rater agreement or claim that every approved answer reaches expert consensus. Expert panel composition and review-protocol metadata are intentionally pending collection and must be completed before submission. Because the frozen index contains only approved admissible records, the experiment cannot quantify an approved-versus-unreviewed quality effect. Automatic F1 penalises valid paraphrases, while citation presence and the hallucination proxy do not establish entailment. BGE-M3 claim-evidence similarity is an automated semantic support proxy and its 0.45 threshold has not been calibrated against expert judgements. The error analysis is rule-based and no new human scoring was conducted. General-benchmark checks were capped per subtask.
 
-The study also does not measure learner outcomes, usability, concurrent-user throughput or long-term knowledge-maintenance cost. The five generators do not represent all current multilingual models, and the one-epoch rank-64 setting does not establish an optimal PEFT configuration. Some source passages cannot be redistributed because of third-party rights, limiting full public replication of the corpus even though split hashes, scripts and aggregate results can be released. Finally, cross-backend speed comparisons between Hugging Face and Ollama are descriptive rather than controlled systems benchmarks.
+The study also does not measure learner outcomes, usability, generation throughput under concurrent users or long-term knowledge-maintenance cost. The load test isolates warmed retrieval with speech synthesis disabled and therefore does not represent wide-area networking or simultaneous local generation. The five generators do not represent all current multilingual models, and the one-epoch rank-64 setting does not establish an optimal PEFT configuration. Some source passages cannot be redistributed because of third-party rights, limiting full public replication of the corpus even though split hashes, scripts and aggregate results can be released. Finally, cross-backend speed comparisons between Hugging Face and Ollama are descriptive rather than controlled systems benchmarks.
 
 ## 8. Conclusion
 
-This study demonstrates a bilingual railway education Web information system that combines governed PostgreSQL records, pgvector/BGE-M3 retrieval and local generation. Hybrid retrieval achieved the strongest final recall in both languages, while Qwen2.5 QLoRA produced the strongest held-out QA and RAG answer-overlap scores within a 24 GB GPU limit. The same adaptation weakened citation compliance and did not consistently improve translation; GLM QLoRA failed substantially on sentence translation. The principal design implication is therefore not to choose between adaptation and RAG, but to govern them as separate, testable components with language-, task- and traceability-specific acceptance criteria.
+This study demonstrates a bilingual railway education Web information system that combines governed PostgreSQL records, pgvector/BGE-M3 retrieval and local generation. Hybrid retrieval achieved the strongest final recall in both languages, and bilingual fields produced the strongest balanced index ablation. Qwen2.5 QLoRA produced the strongest held-out QA and RAG answer-overlap scores within a 24 GB GPU limit, while the warmed retrieval service completed all requests through ten-client concurrency. The same adaptation weakened citation compliance and did not consistently improve translation; GLM QLoRA failed substantially on sentence translation. The principal design implication is therefore not to choose between adaptation and RAG, but to govern them as separate, testable components with language-, task-, load- and traceability-specific acceptance criteria.
 
-The contribution to Web information systems lies in making those acceptance boundaries executable: reviewed records, held-out exclusions, embedding revisions and evidence provenance are represented in the data and retrieval layers rather than left to a language-model prompt. Future work should complete the documented expert-panel metadata, add citation-entailment and learner-centred evaluation, and test concurrent service operation across additional railway curricula and language pairs.
+The contribution to Web information systems lies in making those acceptance boundaries executable: reviewed records, held-out exclusions, embedding revisions and evidence provenance are represented in the data and retrieval layers rather than left to a language-model prompt. Future work should complete the documented expert-panel metadata, calibrate citation entailment with human judgements, conduct learner-centred evaluation and test concurrent generation across additional railway curricula and language pairs.
 
 ## Declarations
 
