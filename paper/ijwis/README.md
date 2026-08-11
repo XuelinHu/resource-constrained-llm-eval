@@ -50,8 +50,6 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/
 conda run -n rc-llm-eval python scripts/analyze_governance_history.py
 conda run -n rc-llm-eval python scripts/load_test_rag_api.py --concurrency 1 5 10 --requests 12
 conda run -n rc-llm-eval python scripts/build_ijwis_validation_figure.py
-conda run -n rc-llm-eval python scripts/capture_annotation_ui.py --session-id SESSION_ID
-
 conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
 latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
 cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf

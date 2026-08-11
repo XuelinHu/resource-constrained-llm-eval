@@ -243,9 +243,9 @@ maintain model, embedding and database services and monitor whether a
 response can be generated within local resource limits. These workflows
 produced five design requirements: bilingual access, source
 traceability, review-state enforcement, held-out-data isolation and
-deployability on one workstation. The architecture in Figure 1 maps each
-requirement to a persistent or testable component rather than treating
-them as prompt-level behaviour.
+deployability on one workstation. Figures 1 and 2 map these requirements
+to the online architecture and governed data lifecycle rather than
+treating them as prompt-level behaviour.
 
 \subsection{Expert-governed knowledge
 base}\label{expert-governed-knowledge-base}
@@ -283,11 +283,26 @@ present draft. Accordingly, \texttt{approved} is analysed as an
 operational governance state, not as proof of unanimous expert
 consensus.
 
+Figure 2 distinguishes the authoritative PostgreSQL record from its
+derived BM25 and pgvector indexes. Approval, revision and rejection are
+written back as review state and audit events; a revision returns to
+bilingual editing rather than restarting source acquisition.
+Pair-grouped split metadata isolates the held-out test branch from
+production indexes and QLoRA training.
+
 \begin{figure}
 \centering
-\includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/ai_role_system_workflow.pdf}
-\caption{Role-specific Web, knowledge-intelligence and governance
-architecture.}
+\includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/system_architecture.pdf}
+\caption{Icon-enhanced role-specific Web and online bilingual RAG
+architecture. Solid arrows denote runtime or data flow; dashed arrows
+denote governance or control. Source: Authors' own work.}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/knowledge_governance_lifecycle.pdf}
+\caption{Expert-governed knowledge, production-index and
+leakage-controlled evaluation lifecycle. Source: Authors' own work.}
 \end{figure}
 
 \subsection{Retrieval and answer
@@ -325,8 +340,10 @@ language, remain within the supplied evidence and attach labels to
 supported statements. If no admissible record is retrieved, the service
 returns an explicit no-evidence message rather than invoking
 unconstrained generation. Figure 1 maps learner, teacher and
-administrator workflows to the Web, knowledge-intelligence and
-governance components.
+administrator workflows to the Web applications, online retrieval
+pipeline and local infrastructure. The output node is described as
+evidence-conditioned rather than inherently grounded because citation
+compliance and semantic support are evaluated separately.
 
 \subsection{Bilingual QLoRA
 adaptation}\label{bilingual-qlora-adaptation}
@@ -430,7 +447,7 @@ model revision in the frozen manifest. COMET uses the pinned
 configurations, generated tables and final analysis assets are recorded
 with SHA-256 hashes.
 
-\textbf{Table 1. Formal implementation and experimental environment.}
+\textbf{Table I. Formal implementation and experimental environment.}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -501,7 +518,7 @@ cross-source result.
 \subsection{Formal cross-source bilingual
 retrieval}\label{formal-cross-source-bilingual-retrieval}
 
-\textbf{Table 2. Formal cross-source retrieval on 400 knowledge pairs.}
+\textbf{Table II. Formal cross-source retrieval on 400 knowledge pairs.}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -553,7 +570,7 @@ its latency is approximately three times that of BM25. Increasing the
 final cutoff from three to eight raises approved-hybrid recall from
 0.675 to 0.743 in Chinese and from 0.668 to 0.723 in English, while mean
 retrieval latency remains nearly constant because the candidate pool is
-controlled (Figure 2). Approved-only and unfiltered hybrid results are
+controlled (Figure 3). Approved-only and unfiltered hybrid results are
 identical because all admissible indexed records in this frozen
 experiment satisfy the approval condition.
 
@@ -561,7 +578,7 @@ experiment satisfy the approval condition.
 \centering
 \includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/top_k_quality_latency.pdf}
 \caption{Approved-hybrid retrieval quality and latency across top-k
-settings.}
+settings. Source: Authors' own work.}
 \end{figure}
 
 \subsection{Regulation-only pilot answer
@@ -585,7 +602,7 @@ trained for 4,571 s (76.2 min), with losses of 1.146 and 0.794 and peak
 reserved memory of 15.0 GB. The respective validation perplexities were
 2.05 and 2.21.
 
-Figure 3 presents the training and validation trajectories. Because each
+Figure 4 presents the training and validation trajectories. Because each
 model was trained for one epoch, the curves establish completion and
 optimisation behaviour rather than convergence across repeated
 schedules. The absence of an extended hyperparameter search is
@@ -612,7 +629,8 @@ general benchmark.
 \begin{figure}
 \centering
 \includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/training_validation_loss.pdf}
-\caption{Completion-only QLoRA training and validation loss.}
+\caption{Completion-only QLoRA training and validation loss. Source:
+Authors' own work.}
 \end{figure}
 
 \subsection{Multi-generator RAG and interaction
@@ -650,7 +668,7 @@ English-to-Chinese terminology. Its lexical metrics show the same lack
 of uniform benefit: Chinese-to-English terminology chrF++ increased from
 10.41 to 16.69, whereas sentence chrF++ fell from 47.43 to 31.28.
 
-Figure 4 visualises the before-and-after COMET changes by direction and
+Figure 5 visualises the before-and-after COMET changes by direction and
 task. The opposing slopes demonstrate why the result cannot be
 summarised as a single improvement or regression.
 
@@ -666,7 +684,8 @@ evaluation.
 \begin{figure}
 \centering
 \includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/translation_before_after.pdf}
-\caption{Direction- and task-separated COMET before and after QLoRA.}
+\caption{Direction- and task-separated COMET before and after QLoRA.
+Source: Authors' own work.}
 \end{figure}
 
 \subsection{Resource use and automated error
@@ -684,7 +703,7 @@ an efficiency advantage. All configurations fit the target 24 GB
 workstation, but original Qwen provides the lowest resource cost and
 Qwen QLoRA the strongest QA quality within the limit.
 
-The quality-latency-memory relationship is shown in Figure 5. The plot
+The quality-latency-memory relationship is shown in Figure 6. The plot
 is interpreted as a deployment frontier rather than a universal model
 ranking because Ollama and Hugging Face use different inference
 backends.
@@ -695,7 +714,7 @@ cent of Chinese and 33.3 per cent of English queries. Even with a hit,
 original Qwen produced low-overlap answers in 18.0 per cent of Chinese
 versus 4.3 per cent of English cases. Qwen QLoRA reduced these rates to
 4.0 and 1.5 per cent, but omitted citation labels in 100.0 and 99.8 per
-cent. Figure 6 compares these automatically flagged categories. The
+cent. Figure 7 compares these automatically flagged categories. The
 translation analysis additionally exposed empty answers, wrong-language
 outputs and terminology substitutions. Similar-version retrieval and
 citation entailment require expert semantic judgement and were not
@@ -705,26 +724,27 @@ inferred from string-based flags.
 \centering
 \includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/quality_latency_pareto.pdf}
 \caption{Bilingual QA quality against generation latency and peak GPU
-memory.}
+memory. Source: Authors' own work.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/error_type_distribution.pdf}
-\caption{Mean prevalence of automatically flagged output errors.}
+\caption{Mean prevalence of automatically flagged output errors. Source:
+Authors' own work.}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/supplementary_system_validation.pdf}
 \caption{Bilingual index, evidence support, governance history and
-steady-state retrieval load validation.}
+steady-state retrieval load validation. Source: Authors' own work.}
 \end{figure}
 
 \subsection{Index, evidence-support, governance and load
 validation}\label{index-evidence-support-governance-and-load-validation}
 
-\textbf{Table 3. Supplementary information-system validation results.}
+\textbf{Table III. Supplementary information-system validation results.}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -773,7 +793,7 @@ snapshots for edits; only three current records are rejected, so no
 causal approved-versus-rejected quality claim is made. All 72 warmed
 retrieval requests succeed. BM25 offers the lower tail latency, while
 Hybrid approximately doubles throughput from concurrency 1 to 10 at the
-cost of higher P95 and 3.76 GB peak system GPU use. Figure 7 summarises
+cost of higher P95 and 3.76 GB peak system GPU use. Figure 8 summarises
 these four checks.
 
 \section{Discussion}\label{discussion}
@@ -861,21 +881,7 @@ materials and language fields evolve over time. It permits a record to
 be revised or withdrawn through ordinary data governance while
 preserving reproducible model and embedding versions.
 
-\begin{figure}
-\centering
-\includegraphics[width=0.96\linewidth,height=\textheight,keepaspectratio]{../paper/ijwis/figures/system_bilingual_qa_screenshot.png}
-\caption{Running bilingual question-answering view with generated answer
-and approved source evidence.}
-\end{figure}
-
 \section{Practical implications}\label{practical-implications}
-
-Figure 8 shows the running international-learner view rather than a UI
-mock-up. An English question is answered by the local Qwen3 service
-while three approved Chinese source passages, document identifiers, page
-metadata and relevance values remain visible in the same Web view. This
-makes cross-language evidence access inspectable even when the generated
-wording contains mixed terminology.
 
 The architecture can support institutions that need local control of
 teaching resources and cannot rely on an external hosted model.
@@ -1001,12 +1007,13 @@ allocation are confirmed.{]}
 non-author expert or institutional acknowledgement will be supplied as a
 separate title-page file after contributor consent is confirmed.
 
-\textbf{Use of generative AI:} Generative AI tools were used to assist
-code development, result organisation and language editing. The authors
-designed the study, executed the experiments, checked the source data
-and numerical results, and take responsibility for the final manuscript.
-This statement will be reconciled with Emerald's policy in force at the
-time of submission.
+\textbf{Use of generative AI:} Generative AI tools were used solely to
+copy-edit the authors' pre-existing original manuscript for language,
+grammar and structural clarity. No new scholarly content, research
+design, data, analysis, results, references or conclusions were
+generated by AI. The authors reviewed and approved every change and take
+full responsibility for the accuracy, originality and integrity of the
+manuscript.
 
 \section{References}\label{references}
 

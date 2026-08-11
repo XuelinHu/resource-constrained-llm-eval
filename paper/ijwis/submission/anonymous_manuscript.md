@@ -111,17 +111,8 @@ Four automated system checks extend the primary protocol without introducing new
 
 The application uses a Vite-based Web client, a FastAPI backend and PostgreSQL 16.14 with pgvector 0.8.4. Experiments ran on Linux with an NVIDIA GeForce RTX 3090 (24,576 MiB), 32 GB host memory, Python 3.11.15, PyTorch 2.11.0, Transformers 5.12.1, PEFT 0.18.1 and bitsandbytes 0.49.2. Qwen2.5-7B-Instruct, GLM-4-9B-Chat-HF and BGE-M3 are pinned by model revision in the frozen manifest. COMET uses the pinned `Unbabel/wmt22-comet-da` checkpoint. Input datasets, configurations, generated tables and final analysis assets are recorded with SHA-256 hashes.
 
-**Table I. Formal implementation and experimental environment.**
+**[Insert Table I here]**
 
-| Component | Formal setting |
-|---|---|
-| Database | PostgreSQL 16.14; pgvector 0.8.4 |
-| Embedding | BAAI/bge-m3; 1,024 dimensions |
-| Adapted generators | Qwen2.5-7B-Instruct; GLM-4-9B-Chat-HF |
-| Reference generator | Qwen3-14B through Ollama 0.19.0 |
-| Training | NF4 QLoRA; rank 64; one epoch; seed 42 |
-| Hardware | RTX 3090 24 GB; 32 GB RAM; single workstation |
-| Statistical analysis | 2,000 bootstrap resamples; paired Wilcoxon; Holm correction |
 
 The code separates test-set construction, embedding, retrieval evaluation, generator evaluation, adaptation and report export. This prevents an analysis script from silently changing the production index or training split. Cached retrieval contexts are reused across generators in the formal RAG matrix, so model comparisons receive identical evidence. The manifest records the Git state and every input hash at freeze time, supporting result reconstruction even when copyrighted source passages cannot be redistributed.
 
@@ -139,16 +130,8 @@ In the 120-pair regulation-only pilot, approved hybrid retrieval produced Recall
 
 ### 4.3 Formal cross-source bilingual retrieval
 
-**Table II. Formal cross-source retrieval on 400 knowledge pairs.**
+**[Insert Table II here]**
 
-| Retrieval | Language | R@1 | R@3 | R@5 | MRR | Mean latency (ms) |
-|---|---:|---:|---:|---:|---:|---:|
-| BM25 | Chinese | 0.520 | 0.595 | 0.620 | 0.560 | **69.5** |
-| Vector | Chinese | 0.518 | 0.653 | 0.690 | 0.588 | 134.4 |
-| Hybrid approved | Chinese | **0.570** | **0.675** | **0.715** | **0.628** | 217.6 |
-| BM25 | English | **0.570** | **0.670** | 0.685 | 0.620 | **59.0** |
-| Vector | English | 0.463 | 0.553 | 0.580 | 0.509 | 134.4 |
-| Hybrid approved | English | **0.570** | 0.668 | **0.708** | **0.620** | 209.2 |
 
 The larger cross-source evaluation changes the interpretation of the pilot. BM25 is particularly competitive for English terminology queries, while dense retrieval contributes more strongly to Chinese evidence recall. With the RRF candidate pool fixed at 50 for every final cutoff, hybrid fusion obtains the highest Recall@5 in both languages, although its latency is approximately three times that of BM25. Increasing the final cutoff from three to eight raises approved-hybrid recall from 0.675 to 0.743 in Chinese and from 0.668 to 0.723 in English, while mean retrieval latency remains nearly constant because the candidate pool is controlled (Figure 3). Approved-only and unfiltered hybrid results are identical because all admissible indexed records in this frozen experiment satisfy the approval condition.
 
@@ -190,16 +173,8 @@ Automated failure flags explain several aggregate differences. At top three, app
 
 ### 4.9 Index, evidence-support, governance and load validation
 
-**Table III. Supplementary information-system validation results.**
+**[Insert Table III here]**
 
-| Validation | Chinese | English | Operational result |
-|---|---:|---:|---|
-| Bilingual-field hybrid index, Recall@5 | 0.718 | 0.675 | Highest balanced mean (0.696) |
-| Original Qwen hybrid, supported-claim proxy | 0.878 | 0.836 | Citation precision 0.955/0.970 |
-| Qwen QLoRA hybrid, supported-claim proxy | 0.964 | 0.905 | Citation recall 0.000/0.002 |
-| Governance history | - | - | 1,337 events; 82 edits; two recorded reviewers |
-| BM25 retrieval, concurrency 10 | - | - | P95 0.515 s; 21.57 requests/s; 0/12 failures |
-| Hybrid retrieval, concurrency 10 | - | - | P95 1.125 s; 9.51 requests/s; 0/12 failures |
 
 The field ablation shows why both language fields are retained: English-only hybrid is strongest for English Recall@5 (0.713) but falls to 0.560 in Chinese, whereas the bilingual index gives the highest balanced mean. Across 27,668 segmented claims, hybrid retrieval generally increases automated semantic support, but high support does not repair absent citations: Qwen QLoRA retains strong support scores while almost never attaching a valid label. The governance database contains 37,664 records and 1,337 review events, including before-state snapshots for edits; only three current records are rejected, so no causal approved-versus-rejected quality claim is made. All 72 warmed retrieval requests succeed. BM25 offers the lower tail latency, while Hybrid approximately doubles throughput from concurrency 1 to 10 at the cost of higher P95 and 3.76 GB peak system GPU use. Figure 8 summarises these four checks.
 
