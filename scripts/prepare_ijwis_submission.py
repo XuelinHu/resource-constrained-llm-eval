@@ -84,13 +84,25 @@ def main() -> None:
     title_page_path.write_text(
         "# A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education\n\n"
         "**Article type:** Research Paper\n\n"
-        "**Authors in publication order:** [complete before submission]\n\n"
-        "**Affiliations:** [complete before submission]\n\n"
-        "**Corresponding author:** [name, institutional email and postal address]\n\n"
-        "**ORCID identifiers:** [complete for each author]\n\n"
-        "**Funding:** [funding body, grant number and funder's role, or confirmed no external funding statement]\n\n"
-        "**Author contributions:** [complete using the CRediT taxonomy]\n\n"
-        "**Acknowledgements:** [include non-author contributors only after consent]\n",
+        "**Authors in publication order:** Xiaoqin Fu, Youjing Fu, Xuelin Hu\n\n"
+        "## Author 1: Xiaoqin Fu\n\n"
+        "**Affiliation:** School of Railway Locomotive and Rolling Stock, Liuzhou Railway Vocational Technical College, Liuzhou 545000, China\n\n"
+        "**ORCID:** 0009-0003-5123-8393\n\n"
+        "**Email:** xiaoqin.fu@qq.com; fuxiaoqin@ltzy.edu.cn\n\n"
+        "**Biography:** Lecturer; master's degree in English education. Research interests include international vocational education and railway education.\n\n"
+        "## Author 2: Youjing Fu\n\n"
+        "**Affiliation:** College of Earth and Environmental Sciences, Lanzhou University, Lanzhou 730000, China\n\n"
+        "**ORCID:** 0009-0004-1369-7879\n\n"
+        "**Email:** fuyj2025@lzu.edu.cn\n\n"
+        "## Author 3 and Corresponding Author: Xuelin Hu\n\n"
+        "**Affiliation:** School of Railway Communication and Signaling Engineering, Liuzhou Railway Vocational Technical College, No. 2 Wenyuan Road, Yufeng District, Liuzhou City, Guangxi Zhuang Autonomous Region, 545000, China\n\n"
+        "**ORCID:** 0000-0002-4475-3034\n\n"
+        "**Email:** huxuelinai@gmail.com; huxl@ltzy.edu.cn\n\n"
+        "**Biography:** Master's degree in software engineering; senior engineer. Research interests include graph neural networks, trustworthy software testing and development, computer vision and multimodal foundation models.\n\n"
+        "**Corresponding author:** Xuelin Hu, huxl@ltzy.edu.cn; huxuelinai@gmail.com\n\n"
+        "**Funding:** This research received no external funding.\n\n"
+        "**Author contributions (CRediT):** Xiaoqin Fu: Conceptualization, Methodology, Data curation, Investigation, Validation, Writing - original draft, Writing - review and editing. Youjing Fu: Data curation, Investigation, Formal analysis, Validation, Writing - review and editing. Xuelin Hu: Conceptualization, Methodology, Software, Data curation, Formal analysis, Validation, Resources, Supervision, Project administration, Writing - review and editing. All three authors jointly constructed the training datasets and performed data checking and quality control.\n\n"
+        "**Acknowledgements:** The authors have no acknowledgements to declare.\n",
         encoding="utf-8",
     )
 

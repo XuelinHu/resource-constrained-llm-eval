@@ -1,0 +1,109 @@
+{
+  "seed": 42,
+  "split_method": "pair-grouped, task-and-source-stratified 80/10/10; declared test items forced to test",
+  "max_pairs_per_task": 1500,
+  "source_approved_items": 37661,
+  "eligible_complete_bilingual_pairs": 37109,
+  "selected_pairs": 7614,
+  "excluded": {
+    "incomplete_bilingual_pairs": 552,
+    "task_cap_pairs": 29495
+  },
+  "fixed_rag_regulation_test_pairs": 120,
+  "counts": {
+    "train": {
+      "records": 12178,
+      "record_ratio": 0.7997110585763068,
+      "pairs": 6089,
+      "by_language": {
+        "en": 6089,
+        "zh": 6089
+      },
+      "by_task": {
+        "textbook_operation_qa": 408,
+        "textbook_multiple_choice": 800,
+        "regulation_clause_qa": 734,
+        "regulation_requirement_qa": 732,
+        "terminology_explanation": 2400,
+        "terminology_pair": 2400,
+        "regulation_prohibition_qa": 156,
+        "terminology_translation": 2400,
+        "textbook_extractive_qa": 168,
+        "regulation_extractive_qa": 674,
+        "textbook_judgment": 394,
+        "regulation_inspection_qa": 470,
+        "concept_explanation_qa": 128,
+        "regulation_responsibility_qa": 28,
+        "regulation_standard_qa": 198,
+        "textbook_definition_qa": 44,
+        "regulation_definition_qa": 40,
+        "regulation_principle_qa": 4
+      },
+      "source_documents": 4
+    },
+    "valid": {
+      "records": 1524,
+      "record_ratio": 0.10007880220646179,
+      "pairs": 762,
+      "by_language": {
+        "en": 762,
+        "zh": 762
+      },
+      "by_task": {
+        "regulation_standard_qa": 24,
+        "regulation_inspection_qa": 58,
+        "regulation_clause_qa": 92,
+        "terminology_explanation": 300,
+        "terminology_translation": 300,
+        "regulation_extractive_qa": 84,
+        "terminology_pair": 300,
+        "textbook_multiple_choice": 100,
+        "textbook_judgment": 50,
+        "concept_explanation_qa": 18,
+        "textbook_extractive_qa": 20,
+        "regulation_requirement_qa": 92,
+        "textbook_operation_qa": 52,
+        "textbook_definition_qa": 6,
+        "regulation_prohibition_qa": 20,
+        "regulation_responsibility_qa": 4,
+        "regulation_definition_qa": 4
+      },
+      "source_documents": 4
+    },
+    "test": {
+      "records": 1526,
+      "record_ratio": 0.10021013921723142,
+      "pairs": 763,
+      "by_language": {
+        "en": 763,
+        "zh": 763
+      },
+      "by_task": {
+        "terminology_pair": 300,
+        "regulation_clause_qa": 92,
+        "terminology_translation": 300,
+        "terminology_explanation": 300,
+        "regulation_extractive_qa": 84,
+        "concept_explanation_qa": 18,
+        "textbook_operation_qa": 52,
+        "textbook_multiple_choice": 100,
+        "textbook_judgment": 50,
+        "regulation_requirement_qa": 92,
+        "textbook_extractive_qa": 20,
+        "regulation_standard_qa": 24,
+        "textbook_definition_qa": 6,
+        "regulation_prohibition_qa": 20,
+        "regulation_inspection_qa": 58,
+        "regulation_responsibility_qa": 4,
+        "regulation_definition_qa": 6
+      },
+      "source_documents": 4
+    }
+  },
+  "pair_overlap": {
+    "train_valid": 0,
+    "train_test": 0,
+    "valid_test": 0
+  },
+  "rag_regulation_test_records": 240
+}

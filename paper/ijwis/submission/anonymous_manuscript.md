@@ -228,9 +228,9 @@ The contribution to Web information systems lies in making those acceptance boun
 
 **Conflict of interest:** The authors declare no conflict of interest.
 
-**Funding:** [To be completed before submission: funding body, grant number and funder's role; state "This research received no external funding" only after confirmation by all authors.]
+**Funding:** This research received no external funding.
 
-**Author contributions:** [To be completed before submission using the CRediT taxonomy after the final author list and contribution allocation are confirmed.]
+**Author contributions:** Blinded for anonymous peer review. All authors contributed to training-dataset construction, data curation, data checking, validation and review of the final manuscript.
 
 **Acknowledgements:** Omitted from the anonymous manuscript. Any non-author expert or institutional acknowledgement will be supplied as a separate title-page file after contributor consent is confirmed.
 

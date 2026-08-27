@@ -1,0 +1,71 @@
+{
+  "scope": "IJWIS automated supplementary validation, 2026-08-01",
+  "interpretation_boundary": "Expert metadata and human semantic ratings are not included. BGE-M3 claim support is an automated proxy.",
+  "artifacts": [
+    {
+      "path": "results/ijwis_single_gpu_3090/analysis/bilingual_index_ablation.json",
+      "size_bytes": 2011353,
+      "sha256": "fc88c443459c636a23795369857f862409149dc12c196e1264b1392af078a9e6"
+    },
+    {
+      "path": "results/ijwis_single_gpu_3090/analysis/governance_history_audit.json",
+      "size_bytes": 13662,
+      "sha256": "ea4dd4c71d3c2fd990ac7bbdd88b8b3746684b093409e6a2514beeb8bec94e1a"
+    },
+    {
+      "path": "results/ijwis_single_gpu_3090/analysis/rag_evidence_support.json",
+      "size_bytes": 6316617,
+      "sha256": "535aec051183a2328d8083c911ebd67c43c48e3218a6b3953596f7e88dcdb1b8"
+    },
+    {
+      "path": "results/ijwis_single_gpu_3090/analysis/web_load_test.json",
+      "size_bytes": 18812,
+      "sha256": "141e4800d47d941d36a37bf6ca69af3614cde1468bc007fe116f310488ab025f"
+    },
+    {
+      "path": "paper/ijwis/figures/ai_role_system_workflow.prompt.txt",
+      "size_bytes": 1894,
+      "sha256": "e345fb5902540d52439cf49e89417006a1b855457a4d0768f10b1ece734f575f"
+    },
+    {
+      "path": "paper/ijwis/figures/ai_role_system_workflow.png",
+      "size_bytes": 1146890,
+      "sha256": "bd8c5f0eb10808d0f5c4badb1761f7aefab980abdd29a6b927572322125de0cc"
+    },
+    {
+      "path": "paper/ijwis/figures/supplementary_system_validation.png",
+      "size_bytes": 522820,
+      "sha256": "a4048314e7621119e6e38d73404d7fb22eecb52ffa98d8f419843464bdd3d592"
+    },
+    {
+      "path": "paper/ijwis/figures/system_bilingual_qa_screenshot.png",
+      "size_bytes": 202501,
+      "sha256": "59588eacfaa4ed2e92df3e87b20de24592209243ec37a2d6e64a36024d995cb3"
+    },
+    {
+      "path": "paper/ijwis/figures/system_review_console_screenshot.png",
+      "size_bytes": 428317,
+      "sha256": "e2601a1b3a39583fb133e809b40640e3e68057dd37e81d085c35d21f36252ca3"
+    },
+    {
+      "path": "paper/ijwis/tables/table10_bilingual_index_ablation.csv",
+      "size_bytes": 2320,
+      "sha256": "35f386ba30e4466048a2ca38c96a37632d864073a09e66d6c276de31026cd00f"
+    },
+    {
+      "path": "paper/ijwis/tables/table11_governance_audit.csv",
+      "size_bytes": 419,
+      "sha256": "d4e4d9a3d3385bf3413829e42ba8dd798e3f42b9d01290fb7313ad9eb6fe068e"
+    },
+    {
+      "path": "paper/ijwis/tables/table12_rag_faithfulness.csv",
+      "size_bytes": 4391,
+      "sha256": "c3d61fd8358355a0804de643777d8bd8a203f5571ec2845f7176c75c18386d28"
+    },
+    {
+      "path": "paper/ijwis/tables/table13_web_load_test.csv",
+      "size_bytes": 770,
+      "sha256": "ec51f774642e523d263f5232466835151673af4e42975ae2aee384d3c14d4ab0"
+    }
+  ]
+}

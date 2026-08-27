@@ -1,0 +1,53 @@
+{
+  "test_set": "railway_bilingual_400",
+  "seed": 42,
+  "pairs": 400,
+  "records": 800,
+  "requested_category_targets": {
+    "terminology": 100,
+    "regulation": 150,
+    "textbook": 150
+  },
+  "effective_category_targets": {
+    "textbook": 123,
+    "regulation": 150,
+    "terminology": 127
+  },
+  "available_test_pairs": {
+    "textbook": 123,
+    "regulation": 190,
+    "terminology": 450
+  },
+  "fixed_regulation_pairs": 120,
+  "by_category": {
+    "textbook": 123,
+    "regulation": 150,
+    "terminology": 127
+  },
+  "by_task": {
+    "textbook_extractive_qa": 10,
+    "regulation_extractive_qa": 7,
+    "regulation_inspection_qa": 29,
+    "regulation_responsibility_qa": 2,
+    "regulation_requirement_qa": 42,
+    "regulation_standard_qa": 12,
+    "regulation_definition_qa": 3,
+    "regulation_clause_qa": 45,
+    "regulation_prohibition_qa": 10,
+    "textbook_definition_qa": 3,
+    "textbook_operation_qa": 26,
+    "textbook_multiple_choice": 50,
+    "concept_explanation_qa": 9,
+    "textbook_judgment": 25,
+    "terminology_pair": 42,
+    "terminology_translation": 42,
+    "terminology_explanation": 43
+  },
+  "by_source": {
+    "牵引供电接触网运行与检修_14183109": 99,
+    "规章43：ECRL牵引供电设备运行维护管理办法（修订）_zh2en_transResult.docx": 150,
+    "高速铁路供电": 24,
+    "铁路中英文专业词汇": 127
+  },
+  "deleted_embeddings": 280
+}

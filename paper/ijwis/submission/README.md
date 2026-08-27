@@ -15,12 +15,6 @@ The `.md` files are editable sources for the generated Word documents.
 
 ## Items still requiring author input
 
-- Expert-panel and review-protocol metadata retained in the manuscript.
-- Author names, publication order, affiliations, institutional emails and ORCID identifiers.
-- Corresponding-author details.
-- Funding statement.
-- CRediT author-contribution statement.
-- Acknowledgements and contributor consent, where applicable.
 - Final ethics or exemption wording after institutional confirmation.
 
 Regenerate the package with:

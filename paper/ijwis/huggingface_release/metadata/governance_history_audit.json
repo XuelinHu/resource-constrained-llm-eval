@@ -1,0 +1,632 @@
+{
+  "status_counts": {
+    "approved": 37661,
+    "rejected": 3
+  },
+  "action_counts": {
+    "approved": 564,
+    "evidence_context_enrich": 552,
+    "clean_markdown_fields": 14,
+    "batch_rejected": 7,
+    "batch_approved": 118,
+    "edit": 82
+  },
+  "distinct_recorded_reviewers": 2,
+  "changed_field_counts": {
+    "answer": 12,
+    "question": 4
+  },
+  "mean_before_current_similarity": {
+    "question": 0.9880108866253243,
+    "answer": 0.9334476181144323,
+    "evidence": 1.0
+  },
+  "edit_events": [
+    {
+      "event_id": 21217,
+      "item_id": 40587,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21225,
+      "item_id": 40591,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21227,
+      "item_id": 40592,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21229,
+      "item_id": 40593,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21233,
+      "item_id": 40595,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21235,
+      "item_id": 40596,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21237,
+      "item_id": 40597,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21241,
+      "item_id": 40599,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21243,
+      "item_id": 40600,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21245,
+      "item_id": 40601,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21249,
+      "item_id": 40603,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21253,
+      "item_id": 40605,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21255,
+      "item_id": 40606,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21257,
+      "item_id": 40607,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21259,
+      "item_id": 40608,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21261,
+      "item_id": 40609,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21263,
+      "item_id": 40610,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21265,
+      "item_id": 40611,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21267,
+      "item_id": 40612,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21269,
+      "item_id": 40613,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21271,
+      "item_id": 40614,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21275,
+      "item_id": 40616,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21277,
+      "item_id": 40617,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21279,
+      "item_id": 40618,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21285,
+      "item_id": 40621,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21287,
+      "item_id": 40622,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21289,
+      "item_id": 40623,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21291,
+      "item_id": 40624,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21293,
+      "item_id": 40625,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21295,
+      "item_id": 40626,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21297,
+      "item_id": 40627,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21299,
+      "item_id": 40628,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21301,
+      "item_id": 40629,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21303,
+      "item_id": 40630,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21305,
+      "item_id": 40631,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21307,
+      "item_id": 40632,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21309,
+      "item_id": 40633,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21311,
+      "item_id": 40634,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21313,
+      "item_id": 40635,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21315,
+      "item_id": 40636,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21317,
+      "item_id": 40637,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21319,
+      "item_id": 40638,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21321,
+      "item_id": 40639,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21323,
+      "item_id": 40640,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21325,
+      "item_id": 40641,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21327,
+      "item_id": 40642,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21329,
+      "item_id": 40643,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21331,
+      "item_id": 40644,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21337,
+      "item_id": 39793,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21339,
+      "item_id": 39794,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21341,
+      "item_id": 39795,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21343,
+      "item_id": 39796,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21347,
+      "item_id": 39798,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21351,
+      "item_id": 39800,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21353,
+      "item_id": 39801,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21355,
+      "item_id": 39802,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21357,
+      "item_id": 40645,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21359,
+      "item_id": 40646,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21363,
+      "item_id": 40648,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21407,
+      "item_id": 42094,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21409,
+      "item_id": 42098,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21411,
+      "item_id": 42116,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21416,
+      "item_id": 42164,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 21417,
+      "item_id": 42164,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": []
+    },
+    {
+      "event_id": 21945,
+      "item_id": 94385,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "question"
+      ]
+    },
+    {
+      "event_id": 21946,
+      "item_id": 94389,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": [
+        "question"
+      ]
+    },
+    {
+      "event_id": 21947,
+      "item_id": 94389,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": []
+    },
+    {
+      "event_id": 22005,
+      "item_id": 93051,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22006,
+      "item_id": 93053,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22007,
+      "item_id": 93052,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22011,
+      "item_id": 94625,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22013,
+      "item_id": 94666,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "question",
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22014,
+      "item_id": 94664,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22015,
+      "item_id": 94660,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": [
+        "question"
+      ]
+    },
+    {
+      "event_id": 22016,
+      "item_id": 94660,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": []
+    },
+    {
+      "event_id": 22017,
+      "item_id": 94656,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22018,
+      "item_id": 94655,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22019,
+      "item_id": 94649,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22020,
+      "item_id": 94649,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": []
+    },
+    {
+      "event_id": 22021,
+      "item_id": 94641,
+      "current_status": "approved",
+      "current_version": 3,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22022,
+      "item_id": 89730,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": [
+        "answer"
+      ]
+    },
+    {
+      "event_id": 22023,
+      "item_id": 89730,
+      "current_status": "approved",
+      "current_version": 4,
+      "changed_fields": []
+    }
+  ],
+  "interpretation_boundary": "This audit demonstrates executable provenance and revision activity. It does not estimate a causal quality benefit from expert approval because only three current records are rejected."
+}

@@ -1,0 +1,145 @@
+{
+  "frozen_at": "2026-07-14T14:53:22.982509+08:00",
+  "git": {
+    "commit": "78e007819c9451ac6d73cb4cfede01fe9c129f82",
+    "branch": "master",
+    "status": "M annotation_system/backend/app/build_embeddings.py\n M annotation_system/backend/app/evaluate_qa.py\n M annotation_system/backend/app/evaluate_retrieval.py\n M annotation_system/backend/app/rag.py\n M configs/datasets/tasks.yaml\n M configs/experiments/single_gpu_3090.yaml\n M configs/models/models.yaml\n M scripts/build_railway_domain_dataset.py\n M src/rc_llm_eval/cli.py\n M src/rc_llm_eval/pipelines/baseline.py\n M src/rc_llm_eval/pipelines/qlora.py\n M src/rc_llm_eval/pipelines/reporting.py\n M topic.md\n?? configs/experiments/ijwis_single_gpu_3090.yaml\n?? paper/ijwis/\n?? requirements-comet.txt\n?? scripts/analyze_ijwis_results.py\n?? scripts/benchmark_ollama.py\n?? scripts/build_approved_bilingual_qlora_dataset.py\n?? scripts/build_efficiency_prompts.py\n?? scripts/build_rag_test_set.py\n?? scripts/check_qlora_model_compatibility.py\n?? scripts/evaluate_comet.py\n?? scripts/evaluate_rag_generators.py\n?? scripts/export_ijwis_design_tables.py\n?? scripts/freeze_experiment_manifest.py\n?? scripts/merge_bilingual_qa_results.py\n?? scripts/plot_ijwis_architecture.py\n?? scripts/run_retrieval_ablation.py\n?? tests/",
+    "tracked_diff_sha256": "15ea08d3052099d114263cecbec6962d9fe489eb8739f15dd5a0026efe37183d"
+  },
+  "system": {
+    "platform": "Linux-6.17.0-19-generic-x86_64-with-glibc2.39",
+    "python": "3.11.15",
+    "gpu": "NVIDIA GeForce RTX 3090, 24576 MiB, 580.126.09",
+    "cuda_runtime": "13.0"
+  },
+  "versions": {
+    "torch": "2.11.0+cu130",
+    "transformers": "5.12.1",
+    "peft": "0.18.1",
+    "bitsandbytes": "0.49.2",
+    "psycopg": "3.3.4",
+    "ollama": "ollama version is 0.19.0"
+  },
+  "models": {
+    "qwen2_5_7b_instruct": "Qwen/Qwen2.5-7B-Instruct",
+    "qwen2_5_revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+    "glm_4_9b_chat_hf": "THUDM/glm-4-9b-chat-hf",
+    "glm_4_revision": "8599336fc6c125203efb2360bfaf4c80eef1d1bf",
+    "rag_reference": "qwen3:14b",
+    "rag_reference_inventory": "NAME         ID              SIZE      MODIFIED     \nqwen3:14b    bdbd181c33f2    9.3 GB    3 months ago",
+    "embedding": "BAAI/bge-m3",
+    "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "comet": "Unbabel/wmt22-comet-da",
+    "comet_revision": "2760a223ac957f30acfb18c8aa649b01cf1d75f2"
+  },
+  "experiment": {
+    "experiment": {
+      "name": "ijwis_single_gpu_3090",
+      "device": "cuda:0",
+      "gpu_name": "RTX_3090",
+      "vram_gb": 24,
+      "seed": 42,
+      "output_root": "results/ijwis_single_gpu_3090"
+    },
+    "baseline": {
+      "models": [
+        "qwen2_5_7b_instruct",
+        "glm_4_9b_chat_hf"
+      ],
+      "tasks": [
+        "mmlu",
+        "ceval",
+        "domain_qa",
+        "bilingual_approved_qa"
+      ],
+      "lm_eval_limit": 200,
+      "num_fewshot": 0,
+      "batch_size": 1,
+      "precision": "int4",
+      "max_new_tokens": 128,
+      "temperature": 0.0,
+      "top_p": 1.0,
+      "do_sample": false,
+      "efficiency_prompt_file": "data/efficiency/prompts.jsonl",
+      "efficiency_num_samples": 90,
+      "efficiency_repeats": 3,
+      "warmup_prompts": 1,
+      "local_batch_size_short": 8,
+      "local_batch_size_long": 2
+    },
+    "quantization": {
+      "modes": [
+        "int4"
+      ]
+    },
+    "qlora": {
+      "candidate_models": [
+        "qwen2_5_7b_instruct",
+        "glm_4_9b_chat_hf"
+      ],
+      "target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "up_proj",
+        "down_proj",
+        "gate_proj"
+      ],
+      "lora_r": 64,
+      "lora_alpha": 16,
+      "lora_dropout": 0.05,
+      "learning_rate": 0.0002,
+      "num_train_epochs": 1,
+      "per_device_train_batch_size": 1,
+      "gradient_accumulation_steps": 16,
+      "max_seq_length": 1024,
+      "warmup_ratio": 0.03,
+      "logging_steps": 10,
+      "save_strategy": "epoch",
+      "evaluation_strategy": "epoch"
+    }
+  },
+  "database": {
+    "postgresql_version": "PostgreSQL 16.14 (Debian 16.14-1.pgdg11+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 10.2.1-6) 10.2.1 20210110, 64-bit",
+    "pgvector_version": "0.8.4",
+    "approved_items": 37661,
+    "bilingual_approved_items": 37109,
+    "embeddings": 37261,
+    "rag_test_pairs": 400
+  },
+  "inputs": {
+    "configs/experiments/ijwis_single_gpu_3090.yaml": {
+      "bytes": 1095,
+      "sha256": "012d4ca3d7957e9b7c688b487796b4fa9756294aa43bca46496b7be28d3a2e0b"
+    },
+    "configs/models/models.yaml": {
+      "bytes": 2172,
+      "sha256": "70f84fa83c4b97653b8ad87f886da80b207014eecdea610269f7ba642c746dcf"
+    },
+    "configs/datasets/tasks.yaml": {
+      "bytes": 1271,
+      "sha256": "e4636233096d69bb1ff8b65f5a8b0c5e8260a9b983b9ca96e74c4b4e23d8ef3a"
+    },
+    "data/qlora_bilingual_approved/train.jsonl": {
+      "bytes": 12109431,
+      "sha256": "bd4e2e91757cb6cca0fe172238eae054e6805188f81e66408d842dfa844d5caf"
+    },
+    "data/qlora_bilingual_approved/valid.jsonl": {
+      "bytes": 1523135,
+      "sha256": "b484eeaa8812864f10521710da99db7c6bcf7b18da94ef358d07fa0b8ac738cf"
+    },
+    "data/qlora_bilingual_approved/test.jsonl": {
+      "bytes": 1531230,
+      "sha256": "4dbdcab3136164ba80b544d42afc795107f91b6afac51bd7c6ccaa3f01b3d51a"
+    },
+    "data/domain/test.jsonl": {
+      "bytes": 2496190,
+      "sha256": "80f5e751250b5ba0f40eeccf9f888f415882eae3fdf9496a244d058068581417"
+    },
+    "data/rag_eval/railway_bilingual_400.jsonl": {
+      "bytes": 794247,
+      "sha256": "8556775a7a7cf8e062ebd46b02ff4c6ac7657260a64f79e47c5ddcc36c03e628"
+    }
+  }
+}

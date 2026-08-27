@@ -1,0 +1,722 @@
+{
+  "base_url": "http://127.0.0.1:8000",
+  "run_tag": "c61b40da9f",
+  "generate": false,
+  "approved_only": true,
+  "top_k": 3,
+  "questions": [
+    "What is the purpose of railway interlocking equipment?",
+    "How should a railway worker respond when a signal aspect is unclear?",
+    "Explain the function of a track circuit in Chinese and English.",
+    "铁路线路设备检查时应重点关注哪些安全风险？",
+    "什么是铁路信号联锁，为什么它对行车安全重要？",
+    "请用中英双语解释轨道电路的基本作用。"
+  ],
+  "warmups": [
+    {
+      "retrieval_mode": "bm25",
+      "ok": true,
+      "elapsed_ms": 2810.8813860453665,
+      "retrieval_ms": 2784.6,
+      "generation_ms": 0.0,
+      "sources": 3
+    },
+    {
+      "retrieval_mode": "hybrid",
+      "ok": true,
+      "elapsed_ms": 5239.8681761696935,
+      "retrieval_ms": 5230.9,
+      "generation_ms": 0.0,
+      "sources": 3
+    }
+  ],
+  "summaries": [
+    {
+      "retrieval_mode": "bm25",
+      "concurrency": 1,
+      "requests": 12,
+      "successful": 12,
+      "failures": 0,
+      "throughput_rps": 22.37969224340991,
+      "end_to_end_p50_ms": 39.818925433792174,
+      "end_to_end_p95_ms": 61.164365138392895,
+      "mean_retrieval_ms": 39.541666666666664,
+      "mean_generation_ms": 0.0,
+      "peak_gpu_memory_mib": 1075.0
+    },
+    {
+      "retrieval_mode": "bm25",
+      "concurrency": 5,
+      "requests": 12,
+      "successful": 12,
+      "failures": 0,
+      "throughput_rps": 21.64824486562086,
+      "end_to_end_p50_ms": 225.30676855240017,
+      "end_to_end_p95_ms": 232.44220366468653,
+      "mean_retrieval_ms": 66.06666666666668,
+      "mean_generation_ms": 0.0,
+      "peak_gpu_memory_mib": 1075.0
+    },
+    {
+      "retrieval_mode": "bm25",
+      "concurrency": 10,
+      "requests": 12,
+      "successful": 12,
+      "failures": 0,
+      "throughput_rps": 21.567253987566957,
+      "end_to_end_p50_ms": 330.12643456459045,
+      "end_to_end_p95_ms": 514.8060276638716,
+      "mean_retrieval_ms": 118.63333333333334,
+      "mean_generation_ms": 0.0,
+      "peak_gpu_memory_mib": 1075.0
+    },
+    {
+      "retrieval_mode": "hybrid",
+      "concurrency": 1,
+      "requests": 12,
+      "successful": 12,
+      "failures": 0,
+      "throughput_rps": 5.0276878435679615,
+      "end_to_end_p50_ms": 195.8731134654954,
+      "end_to_end_p95_ms": 215.76259502908215,
+      "mean_retrieval_ms": 192.3166666666667,
+      "mean_generation_ms": 0.0,
+      "peak_gpu_memory_mib": 3576.0
+    },
+    {
+      "retrieval_mode": "hybrid",
+      "concurrency": 5,
+      "requests": 12,
+      "successful": 12,
+      "failures": 0,
+      "throughput_rps": 8.376792814597529,
+      "end_to_end_p50_ms": 560.7512309215963,
+      "end_to_end_p95_ms": 728.227499348577,
+      "mean_retrieval_ms": 442.6833333333334,
+      "mean_generation_ms": 0.0,
+      "peak_gpu_memory_mib": 3654.0
+    },
+    {
+      "retrieval_mode": "hybrid",
+      "concurrency": 10,
+      "requests": 12,
+      "successful": 12,
+      "failures": 0,
+      "throughput_rps": 9.514349111647181,
+      "end_to_end_p50_ms": 945.2377373818308,
+      "end_to_end_p95_ms": 1124.5940605411306,
+      "mean_retrieval_ms": 694.4333333333334,
+      "mean_generation_ms": 0.0,
+      "peak_gpu_memory_mib": 3762.0
+    }
+  ],
+  "details": [
+    {
+      "setting": {
+        "retrieval_mode": "bm25",
+        "concurrency": 1,
+        "requests": 12,
+        "successful": 12,
+        "failures": 0,
+        "throughput_rps": 22.37969224340991,
+        "end_to_end_p50_ms": 39.818925433792174,
+        "end_to_end_p95_ms": 61.164365138392895,
+        "mean_retrieval_ms": 39.541666666666664,
+        "mean_generation_ms": 0.0,
+        "peak_gpu_memory_mib": 1075.0
+      },
+      "requests": [
+        {
+          "ok": true,
+          "elapsed_ms": 52.16314014978707,
+          "retrieval_ms": 46.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 39.51554582454264,
+          "retrieval_ms": 34.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 35.82522505894303,
+          "retrieval_ms": 31.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 38.07103307917714,
+          "retrieval_ms": 32.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 40.122305043041706,
+          "retrieval_ms": 35.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 62.68946989439428,
+          "retrieval_ms": 57.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 52.142341155558825,
+          "retrieval_ms": 46.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 40.71329580619931,
+          "retrieval_ms": 35.4,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 36.829762160778046,
+          "retrieval_ms": 32.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 37.92846598662436,
+          "retrieval_ms": 33.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 39.3476109020412,
+          "retrieval_ms": 34.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 59.916552156209946,
+          "retrieval_ms": 55.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        }
+      ]
+    },
+    {
+      "setting": {
+        "retrieval_mode": "bm25",
+        "concurrency": 5,
+        "requests": 12,
+        "successful": 12,
+        "failures": 0,
+        "throughput_rps": 21.64824486562086,
+        "end_to_end_p50_ms": 225.30676855240017,
+        "end_to_end_p95_ms": 232.44220366468653,
+        "mean_retrieval_ms": 66.06666666666668,
+        "mean_generation_ms": 0.0,
+        "peak_gpu_memory_mib": 1075.0
+      },
+      "requests": [
+        {
+          "ok": true,
+          "elapsed_ms": 100.94917681999505,
+          "retrieval_ms": 51.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 182.83028178848326,
+          "retrieval_ms": 84.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 224.23665900714695,
+          "retrieval_ms": 97.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 224.69921805895865,
+          "retrieval_ms": 82.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 227.60122804902494,
+          "retrieval_ms": 41.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 237.80257790349424,
+          "retrieval_ms": 68.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 228.05644292384386,
+          "retrieval_ms": 84.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 226.3604470063001,
+          "retrieval_ms": 75.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 226.07487998902798,
+          "retrieval_ms": 72.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 225.9143190458417,
+          "retrieval_ms": 38.6,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 212.6317210495472,
+          "retrieval_ms": 37.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 142.98725803382695,
+          "retrieval_ms": 58.6,
+          "generation_ms": 0.0,
+          "sources": 3
+        }
+      ]
+    },
+    {
+      "setting": {
+        "retrieval_mode": "bm25",
+        "concurrency": 10,
+        "requests": 12,
+        "successful": 12,
+        "failures": 0,
+        "throughput_rps": 21.567253987566957,
+        "end_to_end_p50_ms": 330.12643456459045,
+        "end_to_end_p95_ms": 514.8060276638716,
+        "mean_retrieval_ms": 118.63333333333334,
+        "mean_generation_ms": 0.0,
+        "peak_gpu_memory_mib": 1075.0
+      },
+      "requests": [
+        {
+          "ok": true,
+          "elapsed_ms": 278.87723688036203,
+          "retrieval_ms": 163.4,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 330.28730214573443,
+          "retrieval_ms": 165.4,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 413.97953615523875,
+          "retrieval_ms": 78.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 330.2926819305867,
+          "retrieval_ms": 155.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 276.64857101626694,
+          "retrieval_ms": 154.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 329.9655669834465,
+          "retrieval_ms": 113.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 487.7869850024581,
+          "retrieval_ms": 83.4,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 276.82182705029845,
+          "retrieval_ms": 179.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 547.8293020278215,
+          "retrieval_ms": 80.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 446.4862870518118,
+          "retrieval_ms": 89.5,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 274.77911999449134,
+          "retrieval_ms": 97.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 277.28062798269093,
+          "retrieval_ms": 63.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        }
+      ]
+    },
+    {
+      "setting": {
+        "retrieval_mode": "hybrid",
+        "concurrency": 1,
+        "requests": 12,
+        "successful": 12,
+        "failures": 0,
+        "throughput_rps": 5.0276878435679615,
+        "end_to_end_p50_ms": 195.8731134654954,
+        "end_to_end_p95_ms": 215.76259502908215,
+        "mean_retrieval_ms": 192.3166666666667,
+        "mean_generation_ms": 0.0,
+        "peak_gpu_memory_mib": 3576.0
+      },
+      "requests": [
+        {
+          "ok": true,
+          "elapsed_ms": 222.08824288100004,
+          "retrieval_ms": 215.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 200.80444193445146,
+          "retrieval_ms": 194.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 195.30565501190722,
+          "retrieval_ms": 188.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 187.71861703135073,
+          "retrieval_ms": 181.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 191.8863719329238,
+          "retrieval_ms": 185.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 208.84717185981572,
+          "retrieval_ms": 202.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 207.06926309503615,
+          "retrieval_ms": 200.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 189.8281150497496,
+          "retrieval_ms": 184.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 187.71929503418505,
+          "retrieval_ms": 181.6,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 196.4405719190836,
+          "retrieval_ms": 189.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 187.76719109155238,
+          "retrieval_ms": 181.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 210.58706496842206,
+          "retrieval_ms": 204.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        }
+      ]
+    },
+    {
+      "setting": {
+        "retrieval_mode": "hybrid",
+        "concurrency": 5,
+        "requests": 12,
+        "successful": 12,
+        "failures": 0,
+        "throughput_rps": 8.376792814597529,
+        "end_to_end_p50_ms": 560.7512309215963,
+        "end_to_end_p95_ms": 728.227499348577,
+        "mean_retrieval_ms": 442.6833333333334,
+        "mean_generation_ms": 0.0,
+        "peak_gpu_memory_mib": 3654.0
+      },
+      "requests": [
+        {
+          "ok": true,
+          "elapsed_ms": 565.6608901917934,
+          "retrieval_ms": 552.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 568.1978149805218,
+          "retrieval_ms": 372.4,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 782.6179750263691,
+          "retrieval_ms": 672.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 564.5324918441474,
+          "retrieval_ms": 412.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 554.6677759848535,
+          "retrieval_ms": 474.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 566.8193460442126,
+          "retrieval_ms": 541.7,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 556.9699699990451,
+          "retrieval_ms": 481.1,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 545.4578299541026,
+          "retrieval_ms": 399.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 683.7262010667473,
+          "retrieval_ms": 518.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 338.4597999975085,
+          "retrieval_ms": 330.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 321.14805909805,
+          "retrieval_ms": 303.9,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 306.373372906819,
+          "retrieval_ms": 254.6,
+          "generation_ms": 0.0,
+          "sources": 3
+        }
+      ]
+    },
+    {
+      "setting": {
+        "retrieval_mode": "hybrid",
+        "concurrency": 10,
+        "requests": 12,
+        "successful": 12,
+        "failures": 0,
+        "throughput_rps": 9.514349111647181,
+        "end_to_end_p50_ms": 945.2377373818308,
+        "end_to_end_p95_ms": 1124.5940605411306,
+        "mean_retrieval_ms": 694.4333333333334,
+        "mean_generation_ms": 0.0,
+        "peak_gpu_memory_mib": 3762.0
+      },
+      "requests": [
+        {
+          "ok": true,
+          "elapsed_ms": 834.0542230289429,
+          "retrieval_ms": 822.4,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 838.5824568103999,
+          "retrieval_ms": 697.0,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 1051.8930179532617,
+          "retrieval_ms": 728.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 1089.0496850479394,
+          "retrieval_ms": 910.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 831.9719030987471,
+          "retrieval_ms": 745.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 1079.0268429555,
+          "retrieval_ms": 851.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 1087.8443110268563,
+          "retrieval_ms": 693.3,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 803.2482019625604,
+          "retrieval_ms": 689.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 1168.0371861439198,
+          "retrieval_ms": 712.8,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 1077.4836449418217,
+          "retrieval_ms": 719.6,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 455.8825599960983,
+          "retrieval_ms": 351.5,
+          "generation_ms": 0.0,
+          "sources": 3
+        },
+        {
+          "ok": true,
+          "elapsed_ms": 424.1453988943249,
+          "retrieval_ms": 410.2,
+          "generation_ms": 0.0,
+          "sources": 3
+        }
+      ]
+    }
+  ],
+  "measurement_note": "Client latency covers the non-streaming API path with TTS disabled. The formal concurrency run isolates retrieval unless --generate is supplied."
+}

@@ -6,9 +6,9 @@ Working title: **A Knowledge-Enhanced Large Language Model Web Information Syste
 
 The manuscript follows an Emerald-style structured abstract and a system-oriented argument. The old single-GPU benchmark paper under `paper/` remains background material; this directory is the authoritative draft for the IJWIS submission.
 
-The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix and automated system validation were completed on 2026-08-01; items requiring expert metadata or new human semantic ratings remain explicit pre-submission work rather than being inferred from automatic metrics.
+The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix and automated system validation were completed on 2026-08-01. Knowledge review was performed jointly by the three authors; no independent inter-rater statistic or new human semantic rating is claimed.
 
-The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonymous IJWIS template wrapper, and `IJWIS__Copy_/manuscript_body.tex` is regenerated from Markdown. Expert names, panel size, experience, assignment and agreement fields remain explicit pre-submission placeholders until the railway and international-education expert information has been collected.
+The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonymous IJWIS template wrapper, and `IJWIS__Copy_/manuscript_body.tex` is regenerated from Markdown. The three authors jointly checked the training and evaluation data and reviewed domain correctness, educational suitability, bilingual expression and source consistency. The manuscript does not claim independent external-expert agreement.
 
 ## Reproducible evidence
 
@@ -27,7 +27,7 @@ The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonym
 - Paper-ready tables and figures: `paper/ijwis/{tables,figures}/`
 - Translation metrics: direction- and subtask-separated SacreBLEU, chrF++ and COMET using `Unbabel/wmt22-comet-da` revision `2760a223ac957f30acfb18c8aa649b01cf1d75f2`.
 
-All numerical claims in `manuscript.md` are regenerated from these artifacts. Human expert evaluation remains explicitly out of scope until it is conducted and documented. In particular, citation-format coverage is not treated as citation entailment or factual correctness.
+All numerical claims in `manuscript.md` are regenerated from these artifacts. Independent human semantic evaluation remains outside the current protocol. In particular, citation-format coverage is not treated as citation entailment or factual correctness. A public release should contain only non-copyrighted derived metrics and identifiers; restricted source passages can be requested from the first author.
 
 ## Core commands
 
