@@ -25,6 +25,7 @@ The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonym
 - Traceable asset hashes: `results/ijwis_single_gpu_3090/analysis/asset_manifest.json`
 - Supplementary validation hashes: `results/ijwis_single_gpu_3090/analysis/supplementary_asset_manifest.json`
 - Paper-ready tables and figures: `paper/ijwis/{tables,figures}/`
+- Editable architecture sources: `paper/ijwis/figures/{system_architecture,knowledge_governance_lifecycle}.drawio`
 - Translation metrics: direction- and subtask-separated SacreBLEU, chrF++ and COMET using `Unbabel/wmt22-comet-da` revision `2760a223ac957f30acfb18c8aa649b01cf1d75f2`.
 
 All numerical claims in `manuscript.md` are regenerated from these artifacts. Independent human semantic evaluation remains outside the current protocol. In particular, citation-format coverage is not treated as citation entailment or factual correctness. A public release should contain only non-copyrighted derived metrics and identifiers; restricted source passages can be requested from the first author.
