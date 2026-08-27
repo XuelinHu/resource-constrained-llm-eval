@@ -61,7 +61,7 @@ def add_layer(root: Element, ident: str, title: str, x: int, y: int, w: int, h: 
 
 
 def add_edge(root: Element, ident: str, source: str, target: str, color: str = "#4d4d4d",
-             dashed: bool = False, label: str = "") -> None:
+             dashed: bool = False, label: str = "", points: list[tuple[int, int]] | None = None) -> None:
     style = ";".join([
         "edgeStyle=orthogonalEdgeStyle", "rounded=0", "orthogonalLoop=1", "jettySize=auto",
         "html=1", "endArrow=block", f"strokeColor={color}", "strokeWidth=2",
@@ -71,7 +71,11 @@ def add_edge(root: Element, ident: str, source: str, target: str, color: str = "
         "id": ident, "value": label, "style": style, "edge": "1", "parent": "1",
         "source": source, "target": target,
     })
-    SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+    geometry = SubElement(cell, "mxGeometry", {"relative": "1", "as": "geometry"})
+    if points:
+        point_array = SubElement(geometry, "Array", {"as": "points"})
+        for x, y in points:
+            SubElement(point_array, "mxPoint", {"x": str(x), "y": str(y)})
 
 
 def write(mxfile: Element, path: Path) -> None:
@@ -110,10 +114,12 @@ def architecture() -> None:
         ("e4", "portal", "fastapi", "#009E73", False, "question"), ("e5", "fastapi", "router"),
         ("e6", "router", "bm25"), ("e7", "router", "dense"), ("e8", "bm25", "rrf"), ("e9", "dense", "rrf"),
         ("e10", "rrf", "evidence"), ("e11", "evidence", "llm"), ("e12", "llm", "response"),
-        ("e13", "response", "portal", "#009E73", False, "answer + evidence"),
+        # Keep the user-facing return path on the outer left edge.
+        ("e13", "response", "portal", "#009E73", False, "answer + evidence", [(1510, 628), (1510, 680), (35, 680), (35, 280)]),
         ("e14", "postgres", "bm25", "#D55E00", False, "approved text"), ("e15", "embeddings", "dense", "#D55E00", False, "approved vectors"),
-        ("e16", "runtime", "llm", "#7A5195", False, "model service"), ("e17", "review", "postgres", "#D55E00", True, "review records"),
-        ("e18", "ops", "fastapi", "#0072B2", True, "service control"),
+        ("e16", "runtime", "llm", "#7A5195", False, "model service"),
+        ("e17", "review", "postgres", "#D55E00", True, "review records", [(940, 360), (940, 720), (40, 720), (40, 780)]),
+        ("e18", "ops", "fastapi", "#0072B2", True, "service control", [(1480, 360), (1480, 400), (25, 400), (25, 520)]),
     ]
     for args in edges: add_edge(root, *args)
     write(mxfile, OUTPUT / "system_architecture.drawio")
@@ -135,20 +141,23 @@ def governance() -> None:
         ("encoder", "BGE-M3 encoder\n1,024-dimensional vectors", 830, 395, 280, 95, "#4C7A34", "#ffffff", "layer_indexing"),
         ("pgvector", "pgvector index\nVectors linked to record IDs", 1190, 395, 300, 95, "#4C7A34", "#ffffff", "layer_indexing"),
         ("split", "Pair-grouped split\nTrain / validation / test", 60, 720, 280, 100, "#0072B2", "#ffffff", "layer_eval"),
-        ("train", "Train + validation\nApproved pairs only", 410, 680, 280, 100, "#0072B2", "#ffffff", "layer_eval"),
+        ("train", "Train + validation\nApproved pairs only", 400, 680, 250, 100, "#0072B2", "#ffffff", "layer_eval"),
         ("test", "Held-out test\nNever indexed or trained", 410, 810, 280, 90, "#D55E00", "#ffffff", "layer_eval"),
-        ("qlora", "QLoRA training\nCompletion-only adapter", 760, 680, 280, 100, "#7A5195", "#ffffff", "layer_eval"),
-        ("adapter", "Adapter\nLocal model revision", 1110, 680, 240, 100, "#7A5195", "#ffffff", "layer_eval"),
-        ("evaluation", "Evaluation\nQA, RAG, translation and resources", 1400, 750, 120, 140, "#0072B2", "#ffffff", "layer_eval"),
+        ("qlora", "QLoRA training\nCompletion-only adapter", 700, 680, 250, 100, "#7A5195", "#ffffff", "layer_eval"),
+        ("adapter", "Adapter\nLocal model revision", 1000, 680, 250, 100, "#7A5195", "#ffffff", "layer_eval"),
+        ("evaluation", "Evaluation\nQA, RAG, translation\nand resource use", 1300, 720, 220, 150, "#0072B2", "#ffffff", "layer_eval"),
     ]
     for args in boxes: add_box(root, *args)
     edges = [
         ("g1", "sources", "ingestion"), ("g2", "ingestion", "records"), ("g3", "records", "gate"), ("g4", "gate", "approved"),
-        ("g5", "gate", "records", "#D55E00", True, "status + audit event"), ("g6", "gate", "ingestion", "#D55E00", True, "revision request"),
+        ("g5", "gate", "records", "#D55E00", True, "status + audit event", [(925, 210), (925, 235), (765, 235)]),
+        ("g6", "gate", "ingestion", "#D55E00", True, "revision request", [(925, 250), (925, 275), (455, 275), (455, 210)]),
         ("g7", "approved", "text", "#4C7A34", False, "approved-only view"), ("g8", "text", "bm25i"), ("g9", "text", "encoder"), ("g10", "encoder", "pgvector"),
-        ("g11", "text", "split", "#0072B2", True, "pair-grouped export"), ("g12", "split", "train"), ("g13", "split", "test"),
-        ("g14", "train", "qlora"), ("g15", "qlora", "adapter"), ("g16", "adapter", "evaluation"),
-        ("g17", "test", "evaluation", "#0072B2", False, "evaluation only"), ("g18", "pgvector", "evaluation", "#4C7A34", False, "retrieval snapshot"),
+        ("g11", "text", "split", "#0072B2", True, "pair-grouped export", [(240, 520), (240, 600), (200, 600), (200, 710)]), ("g12", "split", "train"), ("g13", "split", "test"),
+        ("g14", "train", "qlora"), ("g15", "qlora", "adapter"),
+        ("g16", "adapter", "evaluation", "#4d4d4d", False, "", [(1270, 730), (1300, 730)]),
+        ("g17", "test", "evaluation", "#0072B2", False, "evaluation only", [(700, 855), (700, 920), (1260, 920), (1260, 795)]),
+        ("g18", "pgvector", "evaluation", "#4C7A34", False, "retrieval snapshot", [(1340, 520), (1340, 640), (1410, 640), (1410, 720)]),
     ]
     for args in edges: add_edge(root, *args)
     write(mxfile, OUTPUT / "knowledge_governance_lifecycle.drawio")
