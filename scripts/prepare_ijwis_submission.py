@@ -109,6 +109,9 @@ def main() -> None:
     for index, (filename, _) in enumerate(FIGURES, start=1):
         shutil.copy2(ROOT / "paper/ijwis/figures" / filename, figure_output / f"Figure_{index}.pdf")
 
+    for index, filename in enumerate(("system_architecture.drawio", "knowledge_governance_lifecycle.drawio"), start=1):
+        shutil.copy2(ROOT / "paper/ijwis/figures" / filename, figure_output / f"Figure_{index}.drawio")
+
     for source, target in (
         (manuscript_path, OUTPUT / "anonymous_manuscript.docx"),
         (tables_path, OUTPUT / "tables.docx"),
