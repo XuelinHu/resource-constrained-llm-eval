@@ -93,7 +93,7 @@ The FastAPI service exposes search and conversational endpoints to the Web clien
 
 The adaptation dataset is generated only from approved records and split by knowledge-pair identifier, task type and source document. Chinese and English variants of the same knowledge item are assigned to the same partition. The current frozen 80/10/10 corpus contains 12,178 training, 1,524 validation and 1,526 test examples, balanced equally by language, with zero pair overlap among all partitions. The 120 regulation items reserved for RAG evaluation are forced into the test partition and never used for training. Loss is computed only on answer tokens; all prompt labels are masked with `-100`.
 
-Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF form the adaptation matrix. Both were loaded with NF4 quantisation and PEFT adapters on the target GPU. Qwen exposes separate `gate_proj` and `up_proj` modules, whereas GLM uses a fused `gate_up_proj`; model-specific target lists are therefore required. The formal rank-64 configuration trained 161,480,704 Qwen parameters and 190,382,080 GLM parameters, representing 3.58 and 3.45 per cent of the parameters visible to the quantised training process, respectively.
+Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF form the adaptation matrix; their architectures and post-training lineage are documented in the corresponding official technical reports (Qwen Team, 2024; GLM Team et al., 2024). Both were loaded with NF4 quantisation and PEFT adapters on the target GPU. Qwen exposes separate `gate_proj` and `up_proj` modules, whereas GLM uses a fused `gate_up_proj`; model-specific target lists are therefore required. The formal rank-64 configuration trained 161,480,704 Qwen parameters and 190,382,080 GLM parameters, representing 3.58 and 3.45 per cent of the parameters visible to the quantised training process, respectively. Qwen3-14B is retained only as an unadapted reference generator and is associated with the Qwen3 technical report (Qwen Team, 2025).
 
 Both runs use LoRA rank 64, alpha 16, dropout 0.05, learning rate `2e-4`, maximum sequence length 1,024 and one epoch. The per-device batch size is one with 16 gradient-accumulation steps and a 0.03 warm-up ratio. Random seed 42 is fixed in the experiment configuration. Generation uses greedy decoding (`temperature = 0`, `top_p = 1`) with a task-dependent output limit. Completion-only supervision masks every prompt token with `-100`; therefore, training optimises the answer sequence rather than teaching the model to reproduce instructions. This choice is tested rather than assumed to improve every downstream behaviour.
 
@@ -250,6 +250,8 @@ Dettmers, T., Pagnoni, A., Holtzman, A. and Zettlemoyer, L. (2023), “QLoRA: Ef
 
 Ding, N., Qin, Y., Yang, G., Wei, F., Yang, Z., Su, Y., Hu, S., Chen, Y., Chan, C.-M. and Chen, W. (2023), “Parameter-efficient fine-tuning of large-scale pre-trained language models”, *Nature Machine Intelligence*, Vol. 5 No. 3, pp. 220-235, doi: 10.1038/s42256-023-00626-4.
 
+GLM Team, Zeng, A., Xu, B., Wang, B., Zhang, C., Yin, D., Rojas, D., Feng, G., Zhao, H., Lai, H., Yu, H. and others (2024), “ChatGLM: a family of large language models from GLM-130B to GLM-4 all tools”, arXiv:2406.12793, doi: 10.48550/arXiv.2406.12793.
+
 Hu, T., Zhang, P., Yang, B., Xie, J., Wong, D.F. and Wang, R. (2024), “Large language model for multi-domain translation: benchmarking and domain CoT fine-tuning”, *Findings of the Association for Computational Linguistics: EMNLP 2024*, pp. 5726-5746, doi: 10.18653/v1/2024.findings-emnlp.328.
 
 Huang, L., Liu, Z., Yu, C., Zhu, T. and Yan, B. (2026), “Emergency operation scheme generation for urban rail transit train door systems using retrieval-augmented large language models”, *Sensors*, Vol. 26 No. 6, 2006, doi: 10.3390/s26062006.
@@ -265,6 +267,10 @@ Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttle
 Luo, Y.C., Xun, J., Wang, W., Zhang, R.Z. and Zhao, Z.C. (2025), “A driver advisory system based on large language model for high-speed train”, arXiv:2501.07837, doi: 10.48550/arXiv.2501.07837.
 
 Lv, K., Yang, Y., Liu, T., Guo, Q. and Qiu, X. (2024), “Full parameter fine-tuning for large language models with limited resources”, *Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics*, pp. 8187-8198, doi: 10.18653/v1/2024.acl-long.445.
+
+Qwen Team (2024), “Qwen2.5 technical report”, arXiv:2412.15115, doi: 10.48550/arXiv.2412.15115.
+
+Qwen Team (2025), “Qwen3 technical report”, arXiv:2505.09388, doi: 10.48550/arXiv.2505.09388.
 
 Robertson, S. and Zaragoza, H. (2009), “The probabilistic relevance framework: BM25 and beyond”, *Foundations and Trends in Information Retrieval*, Vol. 3 No. 4, pp. 333-389.
 

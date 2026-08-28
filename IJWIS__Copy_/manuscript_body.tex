@@ -268,20 +268,18 @@ the frozen RAG test is excluded before ranking. This database-level
 decision prevents held-out evidence from leaking through either BM25 or
 vector retrieval.
 
-Knowledge review is conducted by experts drawn from front-line railway
-education and international education. Their role is to assess domain
-correctness, educational suitability, bilingual expression and
-consistency with the cited source before a record becomes eligible for
-approved-only retrieval. Expert names, exact panel size, experience
-distribution, assignment procedure and agreement statistics will be
-completed together after the expert-information collection is closed.
-\textbf{{[}Expert metadata to complete before submission: panel size;
-railway specialisms; years of teaching; international-education roles;
-number of reviewers per record; disagreement-resolution rule; agreement
-statistic where available.{]}} No uncollected value is inferred in the
-present draft. Accordingly, \texttt{approved} is analysed as an
-operational governance state, not as proof of unanimous expert
-consensus.
+Knowledge review was conducted by the three authors, whose combined
+expertise covers railway vocational education, international vocational
+education, environmental and data analysis, and software and multimodal
+language-model engineering. Each author reviewed the domain correctness,
+educational suitability, bilingual expression and consistency with the
+cited source before a record became eligible for approved-only
+retrieval. The three authors jointly constructed, checked and
+quality-controlled the training and evaluation datasets. Because the
+review was an author-led knowledge-governance procedure rather than an
+independent inter-rater study, no inter-rater agreement statistic is
+claimed. Accordingly, \texttt{approved} is analysed as an operational
+governance state, not as proof of unanimous external expert consensus.
 
 Figure 2 distinguishes the authoritative PostgreSQL record from its
 derived BM25 and pgvector indexes. Approval, revision and rejection are
@@ -358,14 +356,19 @@ reserved for RAG evaluation are forced into the test partition and never
 used for training. Loss is computed only on answer tokens; all prompt
 labels are masked with \texttt{-100}.
 
-Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF form the adaptation matrix.
-Both were loaded with NF4 quantisation and PEFT adapters on the target
-GPU. Qwen exposes separate \texttt{gate\_proj} and \texttt{up\_proj}
-modules, whereas GLM uses a fused \texttt{gate\_up\_proj};
-model-specific target lists are therefore required. The formal rank-64
-configuration trained 161,480,704 Qwen parameters and 190,382,080 GLM
-parameters, representing 3.58 and 3.45 per cent of the parameters
-visible to the quantised training process, respectively.
+Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF form the adaptation matrix;
+their architectures and post-training lineage are documented in the
+corresponding official technical reports (Qwen Team, 2024; GLM Team et
+al., 2024). Both were loaded with NF4 quantisation and PEFT adapters on
+the target GPU. Qwen exposes separate \texttt{gate\_proj} and
+\texttt{up\_proj} modules, whereas GLM uses a fused
+\texttt{gate\_up\_proj}; model-specific target lists are therefore
+required. The formal rank-64 configuration trained 161,480,704 Qwen
+parameters and 190,382,080 GLM parameters, representing 3.58 and 3.45
+per cent of the parameters visible to the quantised training process,
+respectively. Qwen3-14B is retained only as an unadapted reference
+generator and is associated with the Qwen3 technical report (Qwen Team,
+2025).
 
 Both runs use LoRA rank 64, alpha 16, dropout 0.05, learning rate
 \texttt{2e-4}, maximum sequence length 1,024 and one epoch. The
@@ -929,18 +932,16 @@ The held-out set covers four source documents and 17 task types, but it
 remains specific to one railway vocational knowledge base and cannot
 represent every course, regulation version or learner need. The database
 approval field is an operational governance control; the present
-experiment does not establish inter-rater agreement or claim that every
-approved answer reaches expert consensus. Expert panel composition and
-review-protocol metadata are intentionally pending collection and must
-be completed before submission. Because the frozen index contains only
-approved admissible records, the experiment cannot quantify an
-approved-versus-unreviewed quality effect. Automatic F1 penalises valid
-paraphrases, while citation presence and the hallucination proxy do not
-establish entailment. BGE-M3 claim-evidence similarity is an automated
-semantic support proxy and its 0.45 threshold has not been calibrated
-against expert judgements. The error analysis is rule-based and no new
-human scoring was conducted. General-benchmark checks were capped per
-subtask.
+author-led review does not establish independent inter-rater agreement
+or claim that every approved answer reaches external expert consensus.
+Because the frozen index contains only approved admissible records, the
+experiment cannot quantify an approved-versus-unreviewed quality effect.
+Automatic F1 penalises valid paraphrases, while citation presence and
+the hallucination proxy do not establish entailment. BGE-M3
+claim-evidence similarity is an automated semantic support proxy and its
+0.45 threshold has not been calibrated against expert judgements. The
+error analysis is rule-based and no new independent human scoring was
+conducted. General-benchmark checks were capped per subtask.
 
 The study also does not measure learner outcomes, usability, generation
 throughput under concurrent users or long-term knowledge-maintenance
@@ -984,10 +985,12 @@ curricula and language pairs.
 
 \textbf{Data availability:} Evaluation scripts, experiment
 configurations, aggregate metrics and non-copyrighted derived test
-identifiers will be made available with the article. Full source
-passages from textbooks and regulations cannot be redistributed where
-third-party copyright or licensing restrictions apply; access to those
-materials is subject to the original rights holders.
+identifiers will be made available through the associated Hugging Face
+dataset repository. Full source passages from textbooks and regulations
+cannot be redistributed where third-party copyright or licensing
+restrictions apply. Researchers seeking the restricted evaluation
+materials or additional reproducibility information may contact the
+first author, Xiaoqin Fu, at xiaoqin.fu@qq.com or fuxiaoqin@ltzy.edu.cn.
 
 \textbf{Ethics and consent:} No learner personal data are used in the
 current experiments.
@@ -998,8 +1001,10 @@ interest.
 \textbf{Funding:} This research received no external funding.
 
 \textbf{Author contributions:} Blinded for anonymous peer review. All
-authors contributed to training-dataset construction, data curation,
-data checking, validation and review of the final manuscript.
+authors jointly contributed to knowledge-base construction,
+training-dataset construction, data curation, data checking, quality
+control and validation. All authors contributed to review of the final
+manuscript.
 
 \textbf{Acknowledgements:} Omitted from the anonymous manuscript. Any
 non-author expert or institutional acknowledgement will be supplied as a
@@ -1045,6 +1050,11 @@ of large-scale pre-trained language models'', \emph{Nature Machine
 Intelligence}, Vol. 5 No.~3, pp.~220-235, doi:
 10.1038/s42256-023-00626-4.
 
+GLM Team, Zeng, A., Xu, B., Wang, B., Zhang, C., Yin, D., Rojas, D.,
+Feng, G., Zhao, H., Lai, H., Yu, H. and others (2024), ``ChatGLM: a
+family of large language models from GLM-130B to GLM-4 all tools'',
+arXiv:2406.12793, doi: 10.48550/arXiv.2406.12793.
+
 Hu, T., Zhang, P., Yang, B., Xie, J., Wong, D.F. and Wang, R. (2024),
 ``Large language model for multi-domain translation: benchmarking and
 domain CoT fine-tuning'', \emph{Findings of the Association for
@@ -1088,6 +1098,12 @@ fine-tuning for large language models with limited resources'',
 \emph{Proceedings of the 62nd Annual Meeting of the Association for
 Computational Linguistics}, pp.~8187-8198, doi:
 10.18653/v1/2024.acl-long.445.
+
+Qwen Team (2024), ``Qwen2.5 technical report'', arXiv:2412.15115, doi:
+10.48550/arXiv.2412.15115.
+
+Qwen Team (2025), ``Qwen3 technical report'', arXiv:2505.09388, doi:
+10.48550/arXiv.2505.09388.
 
 Robertson, S. and Zaragoza, H. (2009), ``The probabilistic relevance
 framework: BM25 and beyond'', \emph{Foundations and Trends in
