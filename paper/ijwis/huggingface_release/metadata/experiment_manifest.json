@@ -1,10 +1,10 @@
 {
-  "frozen_at": "2026-07-14T14:53:22.982509+08:00",
+  "frozen_at": "2026-08-28T15:36:44.203672+08:00",
   "git": {
-    "commit": "78e007819c9451ac6d73cb4cfede01fe9c129f82",
+    "commit": "72ec1e15c82e891ac0616a40fbfd021c747687be",
     "branch": "master",
-    "status": "M annotation_system/backend/app/build_embeddings.py\n M annotation_system/backend/app/evaluate_qa.py\n M annotation_system/backend/app/evaluate_retrieval.py\n M annotation_system/backend/app/rag.py\n M configs/datasets/tasks.yaml\n M configs/experiments/single_gpu_3090.yaml\n M configs/models/models.yaml\n M scripts/build_railway_domain_dataset.py\n M src/rc_llm_eval/cli.py\n M src/rc_llm_eval/pipelines/baseline.py\n M src/rc_llm_eval/pipelines/qlora.py\n M src/rc_llm_eval/pipelines/reporting.py\n M topic.md\n?? configs/experiments/ijwis_single_gpu_3090.yaml\n?? paper/ijwis/\n?? requirements-comet.txt\n?? scripts/analyze_ijwis_results.py\n?? scripts/benchmark_ollama.py\n?? scripts/build_approved_bilingual_qlora_dataset.py\n?? scripts/build_efficiency_prompts.py\n?? scripts/build_rag_test_set.py\n?? scripts/check_qlora_model_compatibility.py\n?? scripts/evaluate_comet.py\n?? scripts/evaluate_rag_generators.py\n?? scripts/export_ijwis_design_tables.py\n?? scripts/freeze_experiment_manifest.py\n?? scripts/merge_bilingual_qa_results.py\n?? scripts/plot_ijwis_architecture.py\n?? scripts/run_retrieval_ablation.py\n?? tests/",
-    "tracked_diff_sha256": "15ea08d3052099d114263cecbec6962d9fe489eb8739f15dd5a0026efe37183d"
+    "status": "?? docs/",
+    "tracked_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "system": {
     "platform": "Linux-6.17.0-19-generic-x86_64-with-glibc2.39",
@@ -26,7 +26,7 @@
     "glm_4_9b_chat_hf": "THUDM/glm-4-9b-chat-hf",
     "glm_4_revision": "8599336fc6c125203efb2360bfaf4c80eef1d1bf",
     "rag_reference": "qwen3:14b",
-    "rag_reference_inventory": "NAME         ID              SIZE      MODIFIED     \nqwen3:14b    bdbd181c33f2    9.3 GB    3 months ago",
+    "rag_reference_inventory": "NAME         ID              SIZE      MODIFIED     \nqwen3:14b    bdbd181c33f2    9.3 GB    4 months ago",
     "embedding": "BAAI/bge-m3",
     "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
     "comet": "Unbabel/wmt22-comet-da",
@@ -114,8 +114,8 @@
       "sha256": "012d4ca3d7957e9b7c688b487796b4fa9756294aa43bca46496b7be28d3a2e0b"
     },
     "configs/models/models.yaml": {
-      "bytes": 2172,
-      "sha256": "70f84fa83c4b97653b8ad87f886da80b207014eecdea610269f7ba642c746dcf"
+      "bytes": 2641,
+      "sha256": "f8d595110b441203294a43aebfccd7bcc3444d2d95a5b503f2716e149169f73d"
     },
     "configs/datasets/tasks.yaml": {
       "bytes": 1271,
