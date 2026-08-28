@@ -21,7 +21,7 @@ This dataset repository contains the non-copyrighted derived artifacts supportin
 - `metadata/`: dataset statistics, experiment manifest and supplementary validation metadata.
 - `configs/`: the frozen experiment and model configuration files.
 
-The release intentionally excludes source passages, textbook or regulation text, raw prompts and answers, model checkpoints, adapters, tokens, `.env` files and runtime logs. Some underlying materials are subject to third-party copyright and can be requested from the first author, Xiaoqin Fu (`xiaoqin.fu@qq.com`; `fuxiaoqin@ltzy.edu.cn`), subject to the applicable rights and access conditions.
+The release intentionally excludes source passages, textbook or regulation text, raw prompts and answers, model checkpoints, adapters, tokens, `.env` files and runtime logs. Restricted source passages and additional reproducibility materials can be requested from the authors through the journal submission system, subject to the applicable rights and access conditions.
 
 ## Experimental scope
 
@@ -36,4 +36,4 @@ The release intentionally excludes source passages, textbook or regulation text,
 
 The three authors jointly reviewed the knowledge records and checked the training and evaluation data. This was an author-led governance procedure, not an independent inter-rater study. Automated citation and evidence-support values are proxies and must not be interpreted as factual entailment or expert consensus.
 
-The source Git commit and checksums are recorded in `metadata/experiment_manifest.json`. Results are released for research reproducibility and should not be used as authority for live safety-critical railway operation.
+The source Git commit and checksums are recorded in `metadata/experiment_manifest.json`. This repository is intended to remain private until the authors decide how to share the derived artifacts. Results are released for research reproducibility and should not be used as authority for live safety-critical railway operation.

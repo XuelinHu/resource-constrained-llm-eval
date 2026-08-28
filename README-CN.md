@@ -1,4 +1,4 @@
-# 资源受限大模型评测项目
+# 双语铁路 RAG 与受限资源大模型评测项目
 
 <p align="center">
   <img height="20" src="https://img.shields.io/badge/python-3.10-blue" />
@@ -11,24 +11,21 @@
   <img height="20" src="https://img.shields.io/badge/latex-paper-green" />
 </p>
 
-本仓库面向如下论文实验主题：
+本仓库面向 IJWIS 论文及其可复现实验：
 
-`在单卡资源约束下，对 8B 以内开源大模型进行评测与基于 QLoRA 的适配`
+`面向双语铁路职业教育的知识增强大语言模型 Web 信息系统`
 
 目标硬件：
 
 - 1 张 RTX 3090 24 GB
 - 支持 CUDA 的 Linux，或 Windows + WSL
 
-目标模型池：
+最终论文使用的模型矩阵：
 
-- `Qwen3-0.6B`
-- `Qwen3-1.7B`
-- `Qwen3-4B`
-- `Qwen3-8B`
 - `Qwen2.5-7B-Instruct`
-- `DeepSeek-R1-Distill-Qwen-7B`
-- `Gemma-3-4B`
+- `GLM-4-9B-Chat-HF`
+- `Qwen3-14B`（通过 Ollama 作为未适配参照生成器）
+- `BAAI/bge-m3`（与 PostgreSQL + pgvector 配合完成双语检索）
 
 计划覆盖的实验范围：
 
@@ -36,7 +33,7 @@
 - 4-bit 部署对比
 - 选定模型的 QLoRA 领域适配
 - 微调后再评测
-- 性能与效率权衡分析
+- 性能与效率权衡分析、自动化系统验证
 
 ## 仓库结构
 
@@ -44,7 +41,8 @@
 configs/         实验、模型、任务配置
 scripts/         Bash 与 PowerShell 脚本入口
 src/             Python 编排代码
-paper/           独立论文 LaTeX 工作区
+paper/ijwis/     IJWIS 权威论文、证据与投稿包
+IJWIS__Copy_/    IJWIS 匿名 LaTeX 模板封装
 results/         生成的结果、指标与表格
 ```
 
@@ -85,7 +83,7 @@ results/         生成的结果、指标与表格
 
 ### 配置文件路径
 
-- 主实验配置：`configs/experiments/single_gpu_3090.yaml`
+- 主实验配置：`configs/experiments/ijwis_single_gpu_3090.yaml`
 - Pilot 实验配置：`configs/experiments/pilot_single_gpu_3090.yaml`
 - 数据集注册表：`configs/datasets/tasks.yaml`
 - 模型注册表：`configs/models/models.yaml`
@@ -100,21 +98,23 @@ results/         生成的结果、指标与表格
 
 ### 论文与项目说明路径
 
-- 论文主文件：`paper/main.tex`
-- 论文待办：`paper/todo.md`
-- 论文说明：`paper/README.md`
-- 参考文献：`paper/bib/references.bib`
-- 正式实验检查清单：`FORMAL_EXPERIMENT_CHECKLIST.md`
-- 工作计划：`WORKPLAN.md`
+- 权威论文正文：`paper/ijwis/manuscript.md`
+- IJWIS 项目说明：`paper/ijwis/README.md`
+- 匿名投稿包：`paper/ijwis/submission/`
+- LaTeX 模板封装：`IJWIS__Copy_/Main.tex`
+- 论文证据表和图：`paper/ijwis/{tables,figures}/`
+- 最终本地 PDF：`output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf`
+- Hugging Face 私有派生结果包：`paper/ijwis/huggingface_release/`
+- 正式实验清单：`paper/ijwis/experiment_todo.md`
 
 ## 输出与快照路径
 
 实验输出根目录由配置文件定义：
 
-- 主实验输出根目录：`results/single_gpu_3090`
+- 主实验输出根目录：`results/ijwis_single_gpu_3090`
 - Pilot 实验输出根目录：`results/pilot_single_gpu_3090`
 
-`results/single_gpu_3090/baseline/<model_key>/` 下常见输出：
+`results/ijwis_single_gpu_3090/baseline/<model_key>/` 下常见输出：
 
 - 运行计划快照：`<model_key>_<precision>_plan.json`
 - lm-eval 原始结果快照：`<model_key>_<precision>_lm_eval.json`
@@ -125,14 +125,14 @@ results/         生成的结果、指标与表格
 - 汇总结果快照：`<model_key>_<precision>_summary.json`
 - 汇总结果 CSV：`<model_key>_<precision>_summary.csv`
 
-`results/single_gpu_3090/qlora_eval/<model_key>/` 下常见输出：
+`results/ijwis_single_gpu_3090/qlora_eval/<model_key>/` 下常见输出：
 
 - 适配后运行计划快照：`<model_key>_int4_<label>_plan.json`
 - 适配后 lm-eval 快照：`<model_key>_int4_<label>_lm_eval.json`
 - 适配后汇总快照：`<model_key>_int4_<label>_summary.json`
 - 适配后汇总 CSV：`<model_key>_int4_<label>_summary.csv`
 
-`results/single_gpu_3090/qlora/<model_key>/` 下常见输出：
+`results/ijwis_single_gpu_3090/qlora/<model_key>/` 下常见输出：
 
 - 训练运行配置快照：`run_config.json`
 - Trainer 检查点目录：`checkpoint/`
@@ -142,14 +142,13 @@ results/         生成的结果、指标与表格
 
 聚合结果与论文导出路径：
 
-- Baseline 聚合指标：`results/single_gpu_3090/baseline/all_metrics.csv`
-- Baseline 聚合效率：`results/single_gpu_3090/baseline/all_efficiency.csv`
-- QLoRA 评测聚合指标：`results/single_gpu_3090/qlora_eval/all_metrics.csv`
-- QLoRA 评测聚合效率：`results/single_gpu_3090/qlora_eval/all_efficiency.csv`
-- 结果表中间文件目录：`results/single_gpu_3090/baseline/tables/`
-- 论文主结果表：`paper/tables/generated_main_results.tex`
-- 论文效率表：`paper/tables/generated_efficiency_results.tex`
-- 论文 QLoRA 对比表：`paper/tables/generated_qlora_results.tex`
+- Baseline 聚合指标：`results/ijwis_single_gpu_3090/baseline/all_metrics.csv`
+- Baseline 聚合效率：`results/ijwis_single_gpu_3090/baseline/all_efficiency.csv`
+- QLoRA 评测聚合指标：`results/ijwis_single_gpu_3090/qlora_eval/all_metrics.csv`
+- QLoRA 评测聚合效率：`results/ijwis_single_gpu_3090/qlora_eval/all_efficiency.csv`
+- 结果表中间文件目录：`results/ijwis_single_gpu_3090/baseline/tables/`
+- IJWIS 论文表格：`paper/ijwis/tables/*.csv`
+- IJWIS 论文图片：`paper/ijwis/figures/*.pdf`
 
 ## 脚本说明
 
@@ -165,15 +164,9 @@ results/         生成的结果、指标与表格
 - `scripts/export_paper_tables.sh` 与 `scripts/export_paper_tables.ps1`：导出论文用 LaTeX 表格。
 - `scripts/run_formal_pipeline.sh`：串联完整正式实验流程，并带失败日志与显存预算检查。
 
-## 当前优先工作
+## 当前定稿状态
 
-1. 安装依赖并验证 `lm-evaluation-harness`。
-2. 下载并缓存所有基础模型。
-3. 在相同任务集上运行 baseline 评测。
-4. 记录时延、吞吐与峰值显存。
-5. 选择 2 到 3 个模型做 QLoRA。
-6. 构建小规模领域基准集。
-7. 微调后重新评测并导出论文表格。
+正式实验矩阵、论文正文、图表和匿名投稿文件均已生成。剩余工作主要是投稿系统中的作者信息、期刊字段和按要求上传补充材料。
 
 ## 环境准备
 
@@ -209,8 +202,8 @@ python -m src.rc_llm_eval.cli print-plan
 
 ```bash
 python -m src.rc_llm_eval.cli run-eval \
-  --experiment configs/experiments/single_gpu_3090.yaml \
-  --model qwen3_4b
+  --experiment configs/experiments/ijwis_single_gpu_3090.yaml \
+  --model qwen2_5_7b_instruct
 ```
 
 运行完整 baseline：
@@ -222,11 +215,11 @@ bash scripts/run_baseline_all.sh
 或者使用 `Makefile`：
 
 ```bash
-make baseline MODEL=qwen3_4b
+make baseline MODEL=qwen2_5_7b_instruct
 make baseline-all
 make summarize
 make export-paper-tables
-make qlora MODEL=qwen3_4b DATASET=domain_qa
+make qlora MODEL=qwen2_5_7b_instruct DATASET=bilingual_approved_qa
 make paper
 ```
 
@@ -234,9 +227,9 @@ make paper
 
 ```bash
 python -m src.rc_llm_eval.cli run-qlora \
-  --experiment configs/experiments/single_gpu_3090.yaml \
-  --model qwen3_4b \
-  --dataset domain_qa
+  --experiment configs/experiments/ijwis_single_gpu_3090.yaml \
+  --model qwen2_5_7b_instruct \
+  --dataset bilingual_approved_qa
 ```
 
 ## 推荐运行顺序
@@ -255,7 +248,7 @@ conda activate rc-llm-eval
 bash scripts/run_baseline_pilot.sh
 ```
 
-开始完整 baseline 与 QLoRA 之前，先对照 `FORMAL_EXPERIMENT_CHECKLIST.md` 检查一遍。
+正式实验记录和完成状态统一以 `paper/ijwis/experiment_todo.md` 为准。
 
 ## 注释规范
 
@@ -270,6 +263,6 @@ bash scripts/run_baseline_pilot.sh
 
 ## 备注
 
-- 当前代码库重点是实验编排和论文产出流程。
-- 基准实际执行仍然依赖本地模型访问、数据集准备以及最终提示词和评测策略。
+- 大型本地数据集、模型缓存、生成结果和比赛材料有意不进入 Git 提交面。
+- Hugging Face 私有仓库只包含派生指标和元数据，不包含受版权保护的原始语料和模型权重。
 - 建议将生成输出统一保存在 `results/` 下，方便后续导入 LaTeX 表格。

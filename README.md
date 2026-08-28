@@ -1,4 +1,4 @@
-# Resource-Constrained LLM Evaluation
+# Bilingual Railway RAG and Resource-Constrained LLM Evaluation
 
 <p align="center">
   <img height="20" src="https://img.shields.io/badge/python-3.10-3776AB?logo=python&amp;logoColor=white" />
@@ -10,30 +10,21 @@
   <img height="20" src="https://img.shields.io/badge/GPU-RTX%203090%2024GB-0099FF" />
 </p>
 
-This repository is organized for a publishable paper on:
+This repository contains the experiments and manuscript assets for the IJWIS paper:
 
-`Evaluation and QLoRA-based Adaptation of Open LLMs up to 8B Parameters under Single-GPU Resource Constraints`
+`A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education`
 
 Target hardware:
 
 - 1 x RTX 3090 24 GB
 - CUDA-enabled Linux or Windows + WSL
 
-Target model pool:
+Final evaluated model matrix:
 
-- `Qwen3-0.6B`
-- `Qwen3-1.7B`
-- `Qwen3-4B`
-- `Qwen3-8B`
 - `Qwen2.5-7B-Instruct`
-- `DeepSeek-R1-Distill-Qwen-7B`
-- `Gemma-3-4B`
-- `Phi-3-mini-4k-instruct`
-- `Yi-6B-Chat`
-- `Mistral-7B-Instruct-v0.3`
-- `Meta-Llama-3.1-8B-Instruct`
 - `GLM-4-9B-Chat-HF`
-- `Gemma-2-9B-IT`
+- `Qwen3-14B` through Ollama as the unadapted reference generator
+- `BAAI/bge-m3` with PostgreSQL + pgvector for bilingual retrieval
 
 Planned paper scope:
 
@@ -41,7 +32,7 @@ Planned paper scope:
 - 4-bit deployment comparison
 - QLoRA domain adaptation on selected models
 - Post-adaptation re-evaluation
-- Performance-efficiency tradeoff analysis
+- Performance-efficiency trade-off analysis and automated system validation
 
 ## Repository Layout
 
@@ -49,7 +40,8 @@ Planned paper scope:
 configs/         Experiment, model, and task configuration
 scripts/         Bash and PowerShell entry scripts
 src/             Python package for orchestration
-paper/           Standalone LaTeX manuscript workspace
+paper/ijwis/     Authoritative IJWIS manuscript, evidence and submission package
+IJWIS__Copy_/    Anonymous IJWIS LaTeX template wrapper
 results/         Generated outputs, metrics, and tables
 ```
 
@@ -90,7 +82,7 @@ results/         Generated outputs, metrics, and tables
 
 ### Configuration Paths
 
-- Main experiment config: `configs/experiments/single_gpu_3090.yaml`
+- Main experiment config: `configs/experiments/ijwis_single_gpu_3090.yaml`
 - Pilot experiment config: `configs/experiments/pilot_single_gpu_3090.yaml`
 - Dataset registry: `configs/datasets/tasks.yaml`
 - Model registry: `configs/models/models.yaml`
@@ -105,21 +97,23 @@ results/         Generated outputs, metrics, and tables
 
 ### Paper And Project Notes
 
-- Main paper workspace: `paper/main.tex`
-- Paper notes: `paper/todo.md`
-- Paper README: `paper/README.md`
-- Bibliography: `paper/bib/references.bib`
-- Formal run checklist: `FORMAL_EXPERIMENT_CHECKLIST.md`
-- Work plan: `WORKPLAN.md`
+- Authoritative manuscript: `paper/ijwis/manuscript.md`
+- IJWIS project README: `paper/ijwis/README.md`
+- Anonymous submission package: `paper/ijwis/submission/`
+- LaTeX template wrapper: `IJWIS__Copy_/Main.tex`
+- Final evidence tables and figures: `paper/ijwis/{tables,figures}/`
+- Canonical local PDF: `output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf`
+- Private derived-artifact release: `paper/ijwis/huggingface_release/`
+- Formal experiment checklist: `paper/ijwis/experiment_todo.md`
 
 ## Output And Snapshot Paths
 
 The experiment output roots are defined in config files:
 
-- Main experiment output root: `results/single_gpu_3090`
+- Main experiment output root: `results/ijwis_single_gpu_3090`
 - Pilot experiment output root: `results/pilot_single_gpu_3090`
 
-Typical baseline output paths under `results/single_gpu_3090/baseline/<model_key>/`:
+Typical baseline output paths under `results/ijwis_single_gpu_3090/baseline/<model_key>/`:
 
 - Run plan snapshot: `<model_key>_<precision>_plan.json`
 - lm-eval raw snapshot: `<model_key>_<precision>_lm_eval.json`
@@ -130,14 +124,14 @@ Typical baseline output paths under `results/single_gpu_3090/baseline/<model_key
 - Combined summary snapshot: `<model_key>_<precision>_summary.json`
 - Combined summary CSV: `<model_key>_<precision>_summary.csv`
 
-Typical adapted evaluation paths under `results/single_gpu_3090/qlora_eval/<model_key>/`:
+Typical adapted evaluation paths under `results/ijwis_single_gpu_3090/qlora_eval/<model_key>/`:
 
 - Adapted run plan snapshot: `<model_key>_int4_<label>_plan.json`
 - Adapted lm-eval snapshot: `<model_key>_int4_<label>_lm_eval.json`
 - Adapted summary snapshot: `<model_key>_int4_<label>_summary.json`
 - Adapted summary CSV: `<model_key>_int4_<label>_summary.csv`
 
-Typical QLoRA training paths under `results/single_gpu_3090/qlora/<model_key>/`:
+Typical QLoRA training paths under `results/ijwis_single_gpu_3090/qlora/<model_key>/`:
 
 - Run configuration snapshot: `run_config.json`
 - Trainer checkpoints: `checkpoint/`
@@ -147,14 +141,13 @@ Typical QLoRA training paths under `results/single_gpu_3090/qlora/<model_key>/`:
 
 Aggregated result and export paths:
 
-- Baseline aggregated metrics: `results/single_gpu_3090/baseline/all_metrics.csv`
-- Baseline aggregated efficiency: `results/single_gpu_3090/baseline/all_efficiency.csv`
-- Adapted aggregated metrics: `results/single_gpu_3090/qlora_eval/all_metrics.csv`
-- Adapted aggregated efficiency: `results/single_gpu_3090/qlora_eval/all_efficiency.csv`
-- Generated result tables: `results/single_gpu_3090/baseline/tables/`
-- Generated paper tables: `paper/tables/generated_main_results.tex`
-- Generated paper efficiency table: `paper/tables/generated_efficiency_results.tex`
-- Generated paper QLoRA table: `paper/tables/generated_qlora_results.tex`
+- Baseline aggregated metrics: `results/ijwis_single_gpu_3090/baseline/all_metrics.csv`
+- Baseline aggregated efficiency: `results/ijwis_single_gpu_3090/baseline/all_efficiency.csv`
+- Adapted aggregated metrics: `results/ijwis_single_gpu_3090/qlora_eval/all_metrics.csv`
+- Adapted aggregated efficiency: `results/ijwis_single_gpu_3090/qlora_eval/all_efficiency.csv`
+- Generated result tables: `results/ijwis_single_gpu_3090/baseline/tables/`
+- IJWIS paper tables: `paper/ijwis/tables/*.csv`
+- IJWIS paper figures: `paper/ijwis/figures/*.pdf`
 
 ## Script Guide
 
@@ -181,15 +174,9 @@ The repository keeps experiment orchestration split by responsibility so single-
 - English README: `README.md`
 - Chinese README: `README-CN.md`
 
-## Immediate Work Items
+## Finalization Status
 
-1. Install dependencies and verify `lm-evaluation-harness`.
-2. Download and cache all selected base models.
-3. Run baseline evaluation for all models on the same task set.
-4. Measure latency, throughput, and peak VRAM.
-5. Choose 2-3 models for QLoRA.
-6. Build a small domain benchmark set.
-7. Re-run evaluation after QLoRA and prepare paper tables/figures.
+The formal experiment matrix, manuscript, figures, tables and anonymous submission files have been generated. Remaining journal-side work is limited to final author metadata, journal submission fields and any requested supplementary-material upload.
 
 ## Environment Setup
 
@@ -225,8 +212,8 @@ Run an lm-eval job from config:
 
 ```bash
 python -m src.rc_llm_eval.cli run-eval \
-  --experiment configs/experiments/single_gpu_3090.yaml \
-  --model qwen3_4b
+  --experiment configs/experiments/ijwis_single_gpu_3090.yaml \
+  --model qwen2_5_7b_instruct
 ```
 
 Run the full baseline sweep:
@@ -238,11 +225,11 @@ bash scripts/run_baseline_all.sh
 Or use Make:
 
 ```bash
-make baseline MODEL=qwen3_4b
+make baseline MODEL=qwen2_5_7b_instruct
 make baseline-all
 make summarize
 make export-paper-tables
-make qlora MODEL=qwen3_4b DATASET=domain_qa
+make qlora MODEL=qwen2_5_7b_instruct DATASET=bilingual_approved_qa
 make paper
 ```
 
@@ -250,9 +237,9 @@ Launch a QLoRA experiment:
 
 ```bash
 python -m src.rc_llm_eval.cli run-qlora \
-  --experiment configs/experiments/single_gpu_3090.yaml \
-  --model qwen3_4b \
-  --dataset domain_qa
+  --experiment configs/experiments/ijwis_single_gpu_3090.yaml \
+  --model qwen2_5_7b_instruct \
+  --dataset bilingual_approved_qa
 ```
 
 ## Recommended Run Order
@@ -271,12 +258,12 @@ conda activate rc-llm-eval
 bash scripts/run_baseline_pilot.sh
 ```
 
-Use `FORMAL_EXPERIMENT_CHECKLIST.md` as the gate before starting the full baseline and QLoRA runs.
+Use `paper/ijwis/experiment_todo.md` as the authoritative record of the completed formal experiments.
 
 ## Notes
 
-- The current codebase is a scaffold focused on experiment orchestration and paper production.
-- Benchmark execution still depends on local model access, datasets, and your final prompt/evaluation policy.
+- Large local datasets, model caches, generated results and competition materials are intentionally kept outside the Git submission surface.
+- The private Hugging Face repository contains derived metrics and metadata only; raw copyrighted source passages and model weights are excluded.
 - Keep all generated outputs under `results/` so tables can be imported into LaTeX cleanly.
 
 ## format

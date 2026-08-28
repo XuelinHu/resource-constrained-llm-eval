@@ -23,29 +23,44 @@
       "sha256": "141e4800d47d941d36a37bf6ca69af3614cde1468bc007fe116f310488ab025f"
     },
     {
-      "path": "paper/ijwis/figures/ai_role_system_workflow.prompt.txt",
-      "size_bytes": 1894,
-      "sha256": "e345fb5902540d52439cf49e89417006a1b855457a4d0768f10b1ece734f575f"
+      "path": "paper/ijwis/figures/system_architecture.pdf",
+      "size_bytes": 129201,
+      "sha256": "d4a45427c0cd0f04143ee2a8bec9584fede368c9f438fc4e7720fe5d6822fcdc"
     },
     {
-      "path": "paper/ijwis/figures/ai_role_system_workflow.png",
-      "size_bytes": 1146890,
-      "sha256": "bd8c5f0eb10808d0f5c4badb1761f7aefab980abdd29a6b927572322125de0cc"
+      "path": "paper/ijwis/figures/knowledge_governance_lifecycle.pdf",
+      "size_bytes": 105344,
+      "sha256": "51c6024b654319ed7b971156a9bd68d722510c5a6947cddb30065ecac9636880"
     },
     {
-      "path": "paper/ijwis/figures/supplementary_system_validation.png",
-      "size_bytes": 522820,
-      "sha256": "a4048314e7621119e6e38d73404d7fb22eecb52ffa98d8f419843464bdd3d592"
+      "path": "paper/ijwis/figures/top_k_quality_latency.pdf",
+      "size_bytes": 17046,
+      "sha256": "e8322d3bb7d0bee9fd4ab10ffdc776ae514d73972500bb91bd481a1a14851d59"
     },
     {
-      "path": "paper/ijwis/figures/system_bilingual_qa_screenshot.png",
-      "size_bytes": 202501,
-      "sha256": "59588eacfaa4ed2e92df3e87b20de24592209243ec37a2d6e64a36024d995cb3"
+      "path": "paper/ijwis/figures/training_validation_loss.pdf",
+      "size_bytes": 16110,
+      "sha256": "b454d29e0cc61b869c863dd4fceb986b90421fda5877705036442eb779e4e084"
     },
     {
-      "path": "paper/ijwis/figures/system_review_console_screenshot.png",
-      "size_bytes": 428317,
-      "sha256": "e2601a1b3a39583fb133e809b40640e3e68057dd37e81d085c35d21f36252ca3"
+      "path": "paper/ijwis/figures/translation_before_after.pdf",
+      "size_bytes": 16099,
+      "sha256": "45c105c55b06db6dc0aa7dbc6cf4a74a7226e824f447b790ca70ef6cc25f324a"
+    },
+    {
+      "path": "paper/ijwis/figures/quality_latency_pareto.pdf",
+      "size_bytes": 19046,
+      "sha256": "6070fec1d96188e4dabe906430ffe3840a7b7bfeb3c7026ad4cbec614e1ef90e"
+    },
+    {
+      "path": "paper/ijwis/figures/error_type_distribution.pdf",
+      "size_bytes": 13658,
+      "sha256": "bfb9bd76aa8c7fbab68d4f43221240d0b34e27437650c174a85a8626e01459e4"
+    },
+    {
+      "path": "paper/ijwis/figures/supplementary_system_validation.pdf",
+      "size_bytes": 119367,
+      "sha256": "54ca004afb5136cb01d3c5c56c3baae6808c133305aaa587023d76589cee801b"
     },
     {
       "path": "paper/ijwis/tables/table10_bilingual_index_ablation.csv",

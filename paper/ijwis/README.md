@@ -4,7 +4,7 @@ Target journal: *International Journal of Web Information Systems* (Emerald).
 
 Working title: **A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education**
 
-The manuscript follows an Emerald-style structured abstract and a system-oriented argument. The old single-GPU benchmark paper under `paper/` remains background material; this directory is the authoritative draft for the IJWIS submission.
+The manuscript follows an Emerald-style structured abstract and a system-oriented argument. The former generic single-GPU benchmark draft has been removed; this directory is the authoritative draft for the IJWIS submission.
 
 The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix and automated system validation were completed on 2026-08-01. Knowledge review was performed jointly by the three authors; no independent inter-rater statistic or new human semantic rating is claimed.
 
@@ -54,5 +54,4 @@ conda run -n rc-llm-eval python scripts/build_ijwis_validation_figure.py
 conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
 latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
 cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf
-conda run -n rc-llm-eval python scripts/render_ijwis_pdf.py
 ```

@@ -5,43 +5,11 @@ tasks:
     metric: acc
     split: test
 
-  gsm8k:
-    suite: lm_eval
-    task_name: gsm8k
-    metric: exact_match
-    split: test
-
-  humaneval:
-    suite: lm_eval
-    task_name: humaneval
-    metric: pass_at_1
-    split: test
-
   ceval:
     suite: lm_eval
     task_name: ceval-valid
     metric: acc
     split: validation
-
-  domain_qa:
-    suite: local_jsonl
-    train_file: data/domain/train.jsonl
-    valid_file: data/domain/valid.jsonl
-    test_file: data/domain/test.jsonl
-    metric: exact_match
-    prompt_field: prompt
-    answer_field: answer
-    text_field: text
-
-  domain_regqa:
-    suite: local_jsonl
-    train_file: data/domain_regqa/train.jsonl
-    valid_file: data/domain_regqa/valid.jsonl
-    test_file: data/domain_regqa/test.jsonl
-    metric: exact_match
-    prompt_field: prompt
-    answer_field: answer
-    text_field: text
 
   bilingual_approved_qa:
     suite: local_jsonl
@@ -54,3 +22,26 @@ tasks:
     prompt_text_field: prompt_text
     text_field: text
     training_format: completion_only
+
+  rag_answer_generation:
+    suite: cached_jsonl
+    test_file: data/rag_eval/railway_bilingual_400.jsonl
+    pairs: 400
+    language_specific_queries: 800
+    metrics: [answer_f1, reference_containment, citation_format_coverage, latency]
+
+  directional_translation:
+    suite: generated_jsonl
+    directions: [zh_to_en, en_to_zh]
+    subtasks: [terminology, sentence]
+    metrics: [sacrebleu, chrf++, comet]
+
+  retrieval:
+    suite: cached_jsonl
+    test_file: data/exports/retrieval_eval_railway_bilingual_400.json
+    metrics: [recall_at_1, recall_at_3, recall_at_5, mrr, latency]
+
+  retrieval_load:
+    suite: api_load_test
+    concurrency: [1, 5, 10]
+    requests_per_level: 12

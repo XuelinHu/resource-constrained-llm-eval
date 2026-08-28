@@ -1,8 +1,0 @@
-\begin{tabular}{llrlrrrlrrrrr}
-\toprule
-model & checkpoint & parameters_b & inference_quantization & lora_rank & lora_alpha & lora_dropout & target_modules & trainable_parameters & epochs & learning_rate & effective_batch_size & max_sequence_length \\
-\midrule
-qwen2_5_7b_instruct & Qwen/Qwen2.5-7B-Instruct & 7.000000 & NF4 4-bit & 64 & 16 & 0.050000 & q_proj, k_proj, v_proj, o_proj, up_proj, down_proj, gate_proj & 161480704 & 1 & 0.000200 & 16 & 1024 \\
-glm_4_9b_chat_hf & THUDM/glm-4-9b-chat-hf & 9.000000 & NF4 4-bit & 64 & 16 & 0.050000 & q_proj, k_proj, v_proj, o_proj, gate_up_proj, down_proj & 190382080 & 1 & 0.000200 & 16 & 1024 \\
-\bottomrule
-\end{tabular}
