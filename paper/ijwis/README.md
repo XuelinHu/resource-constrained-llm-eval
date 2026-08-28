@@ -28,7 +28,7 @@ The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonym
 - Editable architecture sources: `paper/ijwis/figures/{system_architecture,knowledge_governance_lifecycle}.drawio`
 - Translation metrics: direction- and subtask-separated SacreBLEU, chrF++ and COMET using `Unbabel/wmt22-comet-da` revision `2760a223ac957f30acfb18c8aa649b01cf1d75f2`.
 
-All numerical claims in `manuscript.md` are regenerated from these artifacts. Independent human semantic evaluation remains outside the current protocol. In particular, citation-format coverage is not treated as citation entailment or factual correctness. A public release should contain only non-copyrighted derived metrics and identifiers; restricted source passages can be requested from the first author.
+All numerical claims in `manuscript.md` are regenerated from these artifacts. Independent human semantic evaluation remains outside the current protocol. In particular, citation-format coverage is not treated as citation entailment or factual correctness. A public release should contain only non-copyrighted derived metrics and identifiers; restricted source passages and reproducibility materials can be requested from the authors through the journal submission system.
 
 ## Core commands
 

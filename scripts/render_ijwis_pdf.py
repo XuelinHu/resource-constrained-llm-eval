@@ -24,22 +24,22 @@ DEFAULT_CHROMIUM = (
 
 FIGURES = {
     "### 3.3 Retrieval and answer generation": [
-        ("system_architecture.png", "Figure 1. Icon-enhanced role-specific Web and online bilingual RAG architecture. Solid arrows denote runtime or data flow; dashed arrows denote governance or control. Source: Authors' own work."),
+        ("system_architecture.png", "Figure 1. Web-based bilingual RAG system architecture for learner, teacher and administrator workflows. Solid arrows denote runtime or data flow; dashed arrows denote governance or control. Source: Authors' own work."),
         ("knowledge_governance_lifecycle.png", "Figure 2. Expert-governed knowledge, production-index and leakage-controlled evaluation lifecycle. Source: Authors' own work."),
     ],
     "### 4.4 Regulation-only pilot answer generation": [
-        ("top_k_quality_latency.png", "Figure 3. Approved-hybrid retrieval quality and latency across top-k settings. Source: Authors' own work."),
+        ("top_k_quality_latency.png", "Figure 3. Approved-hybrid retrieval quality and latency across top-k settings. Left: Recall@k; right: mean retrieval latency. Source: Authors' own work."),
     ],
     "### 4.6 Multi-generator RAG and interaction effects": [
-        ("training_validation_loss.png", "Figure 4. Completion-only QLoRA training and validation loss. Source: Authors' own work."),
+        ("training_validation_loss.png", "Figure 4. Completion-only QLoRA training and validation loss for Qwen2.5-7B and GLM-4-9B. Source: Authors' own work."),
     ],
     "### 4.8 Resource use and automated error analysis": [
-        ("translation_before_after.png", "Figure 5. Direction- and task-separated COMET before and after QLoRA. Source: Authors' own work."),
+        ("translation_before_after.png", "Figure 5. Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
     ],
     "### 4.9 Index, evidence-support, governance and load validation": [
-        ("quality_latency_pareto.png", "Figure 6. Bilingual QA quality against generation latency and peak GPU memory. Source: Authors' own work."),
-        ("error_type_distribution.png", "Figure 7. Mean prevalence of automatically flagged output errors. Source: Authors' own work."),
-        ("supplementary_system_validation.png", "Figure 8. Bilingual index, evidence support, governance history and steady-state retrieval load validation. Source: Authors' own work."),
+        ("quality_latency_pareto.png", "Figure 6. Bilingual QA quality against generation latency and peak GPU memory. Left: mean generation latency; right: peak reserved GPU memory. Source: Authors' own work."),
+        ("error_type_distribution.png", "Figure 7. Mean prevalence of automatically flagged output errors across the evaluated generator and retrieval conditions. Source: Authors' own work."),
+        ("supplementary_system_validation.png", "Figure 8. Bilingual index, evidence support, governance history and steady-state retrieval load validation. Panels A-D report field ablation, evidence support, governance history and load results, respectively. Source: Authors' own work."),
     ],
 }
 

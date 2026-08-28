@@ -13,14 +13,14 @@ SOURCE = ROOT / "paper/ijwis/manuscript.md"
 OUTPUT = ROOT / "paper/ijwis/submission"
 
 FIGURES = [
-    ("system_architecture.pdf", "Icon-enhanced role-specific Web and online bilingual RAG architecture. Solid arrows denote runtime or data flow; dashed arrows denote governance or control. Source: Authors' own work."),
+    ("system_architecture.pdf", "Web-based bilingual RAG system architecture for learner, teacher and administrator workflows. Solid arrows denote runtime or data flow; dashed arrows denote governance or control. Source: Authors' own work."),
     ("knowledge_governance_lifecycle.pdf", "Expert-governed knowledge, production-index and leakage-controlled evaluation lifecycle. Source: Authors' own work."),
-    ("top_k_quality_latency.pdf", "Approved-hybrid retrieval quality and latency across top-k settings. Source: Authors' own work."),
-    ("training_validation_loss.pdf", "Completion-only QLoRA training and validation loss. Source: Authors' own work."),
-    ("translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Source: Authors' own work."),
-    ("quality_latency_pareto.pdf", "Bilingual QA quality against generation latency and peak GPU memory. Source: Authors' own work."),
-    ("error_type_distribution.pdf", "Mean prevalence of automatically flagged output errors. Source: Authors' own work."),
-    ("supplementary_system_validation.pdf", "Bilingual index, evidence support, governance history and steady-state retrieval load validation. Source: Authors' own work."),
+    ("top_k_quality_latency.pdf", "Approved-hybrid retrieval quality and latency across top-k settings. Left: Recall@k; right: mean retrieval latency. Source: Authors' own work."),
+    ("training_validation_loss.pdf", "Completion-only QLoRA training and validation loss for Qwen2.5-7B and GLM-4-9B. Source: Authors' own work."),
+    ("translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
+    ("quality_latency_pareto.pdf", "Bilingual QA quality against generation latency and peak GPU memory. Left: mean generation latency; right: peak reserved GPU memory. Source: Authors' own work."),
+    ("error_type_distribution.pdf", "Mean prevalence of automatically flagged output errors across the evaluated generator and retrieval conditions. Source: Authors' own work."),
+    ("supplementary_system_validation.pdf", "Bilingual index, evidence support, governance history and steady-state retrieval load validation. Panels A-D report field ablation, evidence support, governance history and load results, respectively. Source: Authors' own work."),
 ]
 
 TABLE_CAPTION = re.compile(r"^\*\*Table ([IVX]+)\. (.+)\*\*$")
