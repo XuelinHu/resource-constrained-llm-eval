@@ -13,6 +13,14 @@ env/
 .DS_Store
 Thumbs.db
 
+# Local temporary files and editor backups.
+tmp/
+*.tmp
+*.temp
+*.swp
+*~
+*.title-backup
+
 build/
 dist/
 node_modules/
