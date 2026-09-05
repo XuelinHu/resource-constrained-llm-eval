@@ -12,7 +12,7 @@
 
 This repository contains the experiments and manuscript assets for the IJWIS paper:
 
-`A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education`
+`Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints`
 
 Target hardware:
 
@@ -102,7 +102,9 @@ results/         Generated outputs, metrics, and tables
 - Anonymous submission package: `paper/ijwis/submission/`
 - LaTeX template wrapper: `IJWIS__Copy_/Main.tex`
 - Final evidence tables and figures: `paper/ijwis/{tables,figures}/`
-- Canonical local PDF: `output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf`
+- Final full manuscript PDF: `output/pdf/ijwis_manuscript_full.pdf`
+- Final anonymous manuscript PDF: `output/pdf/ijwis_manuscript_anonymous.pdf`
+- Final Chinese review PDF: `output/pdf/ijwis_manuscript_zh.pdf`
 - Private derived-artifact release: `paper/ijwis/huggingface_release/`
 - Formal experiment checklist: `paper/ijwis/experiment_todo.md`
 

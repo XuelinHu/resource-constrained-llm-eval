@@ -6,6 +6,7 @@ from pathlib import Path
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+from matplotlib import rcParams
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,15 +15,26 @@ PANELS = (
     ("bilingual_index_ablation.png", "A", "Bilingual index fields"),
     ("rag_faithfulness.png", "B", "Automated evidence support"),
     ("governance_history_audit.png", "C", "Governance history audit"),
-    ("web_load_test.png", "D", "Steady-state retrieval load"),
 )
 OUTPUT_PNG = FIGURE_DIR / "supplementary_system_validation.png"
 OUTPUT_PDF = FIGURE_DIR / "supplementary_system_validation.pdf"
 
 
 def main() -> None:
-    fig, axes = plt.subplots(2, 2, figsize=(12.0, 8.0))
-    for axis, (filename, label, title) in zip(axes.flat, PANELS, strict=True):
+    rcParams.update(
+        {
+            "font.family": "serif",
+            "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "savefig.dpi": 300,
+            "pdf.fonttype": 42,
+        }
+    )
+    # Each source panel already contains multiple axes. A vertical journal
+    # layout keeps labels legible at manuscript text width.
+    fig, axes = plt.subplots(3, 1, figsize=(12.0, 10.2))
+    for axis, (filename, label, title) in zip(axes, PANELS, strict=True):
         axis.imshow(mpimg.imread(FIGURE_DIR / filename))
         axis.set_axis_off()
         axis.text(
@@ -32,12 +44,12 @@ def main() -> None:
             transform=axis.transAxes,
             va="top",
             ha="left",
-            fontsize=14,
+            fontsize=12,
             fontweight="bold",
             bbox={"facecolor": "white", "edgecolor": "none", "pad": 2},
         )
         axis.set_title(title, fontsize=11, pad=4)
-    fig.tight_layout(pad=0.8)
+    fig.tight_layout(pad=0.9)
     fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight", facecolor="white")
     fig.savefig(OUTPUT_PDF, bbox_inches="tight", facecolor="white")
     plt.close(fig)

@@ -13,14 +13,14 @@ Formal implementation and experimental environment.
 | Adapted generators | Qwen2.5-7B-Instruct; GLM-4-9B-Chat-HF |
 | Reference generator | Qwen3-14B through Ollama 0.19.0 |
 | Training | NF4 QLoRA; rank 64; one epoch; seed 42 |
-| Hardware | RTX 3090 24 GB; 32 GB RAM; single workstation |
-| Statistical analysis | 2,000 bootstrap resamples; paired Wilcoxon; Holm correction |
+| Hardware boundary | One RTX 3090 24 GB; 32 GB RAM; no multi-GPU or required cloud inference |
+| Statistical analysis | 2,000 bootstrap resamples; paired Wilcoxon; Cohen's *d*<sub>z</sub>; Holm correction |
 
 ## Table II
 
-Formal cross-source retrieval on 400 knowledge pairs.
+Formal cross-source evidence-equivalent retrieval on 400 knowledge pairs.
 
-| Retrieval | Language | R@1 | R@3 | R@5 | MRR | Mean latency (ms) |
+| Retrieval | Language | Evidence R@1 | Evidence R@3 | Evidence R@5 | MRR | Mean latency (ms) |
 |---|---:|---:|---:|---:|---:|---:|
 | BM25 | Chinese | 0.520 | 0.595 | 0.620 | 0.560 | **69.5** |
 | Vector | Chinese | 0.518 | 0.653 | 0.690 | 0.588 | 134.4 |
@@ -35,9 +35,7 @@ Supplementary information-system validation results.
 
 | Validation | Chinese | English | Operational result |
 |---|---:|---:|---|
-| Bilingual-field hybrid index, Recall@5 | 0.718 | 0.675 | Highest balanced mean (0.696) |
+| Bilingual-field hybrid index, Evidence Recall@5 | 0.718 | 0.675 | Highest balanced mean (0.696) |
 | Original Qwen hybrid, supported-claim proxy | 0.878 | 0.836 | Citation precision 0.955/0.970 |
 | Qwen QLoRA hybrid, supported-claim proxy | 0.964 | 0.905 | Citation recall 0.000/0.002 |
 | Governance history | - | - | 1,337 events; 82 edits; two recorded reviewers |
-| BM25 retrieval, concurrency 10 | - | - | P95 0.515 s; 21.57 requests/s; 0/12 failures |
-| Hybrid retrieval, concurrency 10 | - | - | P95 1.125 s; 9.51 requests/s; 0/12 failures |

@@ -13,7 +13,7 @@ tags:
 
 # IJWIS bilingual railway RAG reproducibility release
 
-This dataset repository contains the non-copyrighted derived artifacts supporting the manuscript **A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education**.
+This dataset repository contains the non-copyrighted derived artifacts supporting the manuscript **Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints**.
 
 ## Contents
 

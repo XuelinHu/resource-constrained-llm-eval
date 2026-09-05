@@ -2,13 +2,13 @@
 
 Target journal: *International Journal of Web Information Systems* (Emerald).
 
-Working title: **A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education**
+Working title: **Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints**
 
 The manuscript follows an Emerald-style structured abstract and a system-oriented argument. The former generic single-GPU benchmark draft has been removed; this directory is the authoritative draft for the IJWIS submission.
 
-The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix and automated system validation were completed on 2026-08-01. Knowledge review was performed jointly by the three authors; no independent inter-rater statistic or new human semantic rating is claimed.
+The authoritative execution checklist is `experiment_todo.md`. The formal experiment matrix and automated system validation were completed on 2026-08-01. The three authors jointly constructed and checked the data; the released governance audit contains two distinct reviewer identifiers, and no independent inter-rater statistic or new human semantic rating is claimed.
 
-The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonymous IJWIS template wrapper, and `IJWIS__Copy_/manuscript_body.tex` is regenerated from Markdown. The three authors jointly checked the training and evaluation data and reviewed domain correctness, educational suitability, bilingual expression and source consistency. The manuscript does not claim independent external-expert agreement.
+The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonymous IJWIS template wrapper, and `IJWIS__Copy_/manuscript_body.tex` is regenerated from Markdown. The manuscript treats `approved` as an executable governance state and does not claim independent external-expert agreement.
 
 ## Reproducible evidence
 
@@ -49,9 +49,14 @@ conda run -n rc-llm-eval python scripts/plot_ijwis_architecture.py
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/evaluate_bilingual_index_ablation.py --batch-size 8 --max-seq-length 512
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/evaluate_rag_faithfulness.py --backend embedding --batch-size 8
 conda run -n rc-llm-eval python scripts/analyze_governance_history.py
-conda run -n rc-llm-eval python scripts/load_test_rag_api.py --concurrency 1 5 10 --requests 12
 conda run -n rc-llm-eval python scripts/build_ijwis_validation_figure.py
 conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
 latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
-cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf
+latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main_full.tex
+latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main_zh.tex
+
+# Final PDFs
+# output/pdf/ijwis_manuscript_anonymous.pdf
+# output/pdf/ijwis_manuscript_full.pdf
+# output/pdf/ijwis_manuscript_zh.pdf
 ```

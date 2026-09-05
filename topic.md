@@ -47,8 +47,8 @@
 
 建议题目：
 
-- 中文：面向双语铁路职业教育的知识增强大语言模型网络信息系统研究
-- 英文：A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education
+- 中文：资源约束下双语铁路职业教育的知识增强型大语言模型
+- 英文：Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints
 
 建议贡献点：
 

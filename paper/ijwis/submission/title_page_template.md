@@ -1,4 +1,4 @@
-# A Knowledge-Enhanced Large Language Model Web Information System for Bilingual Railway Vocational Education
+# Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints
 
 **Article type:** Research Paper
 

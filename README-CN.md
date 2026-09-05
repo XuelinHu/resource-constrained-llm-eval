@@ -13,7 +13,7 @@
 
 本仓库面向 IJWIS 论文及其可复现实验：
 
-`面向双语铁路职业教育的知识增强大语言模型 Web 信息系统`
+`资源约束下双语铁路职业教育的知识增强型大语言模型`
 
 目标硬件：
 
@@ -103,7 +103,9 @@ results/         生成的结果、指标与表格
 - 匿名投稿包：`paper/ijwis/submission/`
 - LaTeX 模板封装：`IJWIS__Copy_/Main.tex`
 - 论文证据表和图：`paper/ijwis/{tables,figures}/`
-- 最终本地 PDF：`output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf`
+- 最终英文全量稿：`output/pdf/ijwis_manuscript_full.pdf`
+- 最终英文匿名稿：`output/pdf/ijwis_manuscript_anonymous.pdf`
+- 最终中文核对稿：`output/pdf/ijwis_manuscript_zh.pdf`
 - Hugging Face 私有派生结果包：`paper/ijwis/huggingface_release/`
 - 正式实验清单：`paper/ijwis/experiment_todo.md`
 
