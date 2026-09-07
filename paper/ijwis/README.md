@@ -25,7 +25,7 @@ The authoritative text is `manuscript.md`. `IJWIS__Copy_/Main.tex` is the anonym
 - Traceable asset hashes: `results/ijwis_single_gpu_3090/analysis/asset_manifest.json`
 - Supplementary validation hashes: `results/ijwis_single_gpu_3090/analysis/supplementary_asset_manifest.json`
 - Paper-ready tables and figures: `paper/ijwis/{tables,figures}/`
-- Editable architecture sources: `paper/ijwis/figures/{system_architecture,knowledge_governance_lifecycle}.drawio`
+- Editable architecture sources: `paper/ijwis/figures/{neural_retrieval_qlora_model_v3,knowledge_governance_lifecycle}.drawio` (Figures 1 and 2). The former `system_architecture.*` files are retained as historical artwork, not used in the manuscript.
 - Translation metrics: direction- and subtask-separated SacreBLEU, chrF++ and COMET using `Unbabel/wmt22-comet-da` revision `2760a223ac957f30acfb18c8aa649b01cf1d75f2`.
 
 All numerical claims in `manuscript.md` are regenerated from these artifacts. Independent human semantic evaluation remains outside the current protocol. In particular, citation-format coverage is not treated as citation entailment or factual correctness. A public release should contain only non-copyrighted derived metrics and identifiers; restricted source passages and reproducibility materials can be requested from the authors through the journal submission system.
@@ -50,6 +50,7 @@ HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/
 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 conda run -n rc-llm-eval python scripts/evaluate_rag_faithfulness.py --backend embedding --batch-size 8
 conda run -n rc-llm-eval python scripts/analyze_governance_history.py
 conda run -n rc-llm-eval python scripts/build_ijwis_validation_figure.py
+conda run -n rc-llm-eval python scripts/export_ijwis_neural_figure.py --display :1
 conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
 latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
 latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main_full.tex
@@ -60,3 +61,7 @@ latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main_z
 # output/pdf/ijwis_manuscript_full.pdf
 # output/pdf/ijwis_manuscript_zh.pdf
 ```
+
+Figure 1 uses the v3 editable vector layer only, excluding the raster reference and editing notes. Its cropped, light-background PDF has embedded fonts and is placed on a landscape page in both English versions and the Chinese companion. A 600-dpi PNG at 257 mm width is exported alongside it as a raster alternative. Set `--display` to the available Linux X display, or omit it when `DISPLAY` is already configured. Regenerating the historical `plot_ijwis_architecture.py` figures does not replace the v3 artwork.
+
+The LaTeX and submission exporters select the same Figure 1 PDF and caption; `scripts/prepare_ijwis_submission.py` copies the v3 source to `submission/figures/Figure_1.drawio`. The original v3 source is preserved unchanged. Exporting does not assert external-expert validation or universal QLoRA gains.

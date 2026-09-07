@@ -566,17 +566,18 @@ def plot_pareto(metrics: pd.DataFrame, efficiency: pd.DataFrame) -> None:
     markers = {"original": "o", "qlora": "s"}
     colors = {"qwen2_5_7b_instruct": "#0072B2", "glm_4_9b_chat_hf": "#D55E00"}
     panels = (("mean_latency_s", "Mean generation latency (s)"),
-              ("peak_memory_reserved_gb", "Peak reserved GPU memory (GB)"))
+              ("peak_memory_reserved_gb", "Peak reserved GPU memory (GiB)"))
     for ax, (column, xlabel) in zip(axes, panels):
         for _, row in merged.iterrows():
             ax.scatter(row[column], row["score"], marker=markers[row["condition"]],
                        color=colors[row["model_key"]], s=50)
-            horizontal = -4 if row[column] == merged[column].max() else 4
+            midpoint = (merged[column].min() + merged[column].max()) / 2
+            horizontal = -4 if row[column] > midpoint else 4
             alignment = "right" if horizontal < 0 else "left"
             condition_label = "QLoRA" if row["condition"] == "qlora" else row["condition"]
             ax.annotate(f"{MODELS[row['model_key']]} {condition_label}",
                         (row[column], row["score"]), xytext=(horizontal, 4),
-                        textcoords="offset points", fontsize=7.5, ha=alignment)
+                        textcoords="offset points", fontsize=8, ha=alignment)
         ax.margins(x=0.08, y=0.1)
         ax.set_xlabel(xlabel)
         ax.grid(color="#D9D9D9", linewidth=0.6)

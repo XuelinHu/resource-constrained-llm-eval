@@ -14,13 +14,13 @@ SOURCE = ROOT / "paper/ijwis/manuscript.md"
 OUTPUT = ROOT / "paper/ijwis/submission"
 
 FIGURES = [
-    ("system_architecture.pdf", "Four-layer bounded bilingual agent workflow linking three role-access clusters to Web applications, governed retrieval, local generation and single-workstation infrastructure. Solid arrows denote runtime or data flow; dashed arrows denote governance or control. Source: Authors' own work."),
+    ("neural_retrieval_qlora_model_v3.pdf", "Hybrid retrieval and QLoRA architecture for bilingual railway question answering. Stages 1-5 connect governed inputs, frozen BGE-M3 encoding, BM25/dense rank fusion, evidence-conditioned generation and independent evaluation. The lower branch shows offline answer-only adapter training with frozen base weights; retrieval and evaluation are outside the gradient path. Trade-off annotations summarise task-dependent empirical results, not guaranteed gains. Source: Authors' own work."),
     ("knowledge_governance_lifecycle.pdf", "Four-stage expert-governed lifecycle covering source acquisition and bilingual editing, review-state decisions, approved production indexing, and evaluation splits with exact held-out records excluded from indexing and training. Source: Authors' own work."),
     ("top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
-    ("training_validation_loss.pdf", "Completion-only QLoRA training and validation loss for Qwen2.5-7B and GLM-4-9B. Source: Authors' own work."),
+    ("training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ("translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
-    ("quality_latency_pareto.pdf", "Bilingual QA quality against generation latency and peak GPU memory. Left: mean generation latency; right: peak reserved GPU memory. Source: Authors' own work."),
-    ("error_type_distribution.pdf", "Mean prevalence of automatically flagged output errors across the evaluated generator and retrieval conditions. Source: Authors' own work."),
+    ("quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
+    ("error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
     ("supplementary_system_validation.pdf", "Bilingual index, automated evidence support and governance-history validation. Panels A-C report field ablation, evidence support and governance audit results, respectively. Source: Authors' own work."),
 ]
 
@@ -115,7 +115,7 @@ def main(skip_docx: bool = False) -> None:
     for index, (filename, _) in enumerate(FIGURES, start=1):
         shutil.copy2(ROOT / "paper/ijwis/figures" / filename, figure_output / f"Figure_{index}.pdf")
 
-    for index, filename in enumerate(("system_architecture.drawio", "knowledge_governance_lifecycle.drawio"), start=1):
+    for index, filename in enumerate(("neural_retrieval_qlora_model_v3.drawio", "knowledge_governance_lifecycle.drawio"), start=1):
         shutil.copy2(ROOT / "paper/ijwis/figures" / filename, figure_output / f"Figure_{index}.drawio")
 
     if not skip_docx:

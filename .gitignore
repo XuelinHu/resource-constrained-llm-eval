@@ -45,6 +45,18 @@ games/
 data/
 local_backups/
 
+# Generated local documentation and review material.
+docs/softcopyright/generated-*/
+
+# Figure-editing scratch space and previews. Keep the authoritative Draw.io
+# sources and the final paper figures under paper/ijwis/figures/ tracked.
+paper/ijwis/figures/_audit_current_*
+paper/ijwis/figures/_v2_work/
+paper/ijwis/figures/*_agent_preview.png
+paper/ijwis/figures/*_debug.svg
+paper/ijwis/figures/*_backup_*.drawio
+paper/ijwis/figures/out*.svg
+
 # Experiment outputs, snapshots, and heavyweight generated artifacts.
 *.ckpt
 *.safetensors

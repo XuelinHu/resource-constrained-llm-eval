@@ -15,21 +15,21 @@ BIBLIOGRAPHY = ROOT / "paper/ijwis/references.bib"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("system_architecture.pdf", "Four-layer bounded bilingual agent workflow linking three role-access clusters to Web applications, governed retrieval, local generation and single-workstation infrastructure. Solid arrows denote runtime or data flow; dashed arrows denote governance or control. Source: Authors' own work."),
+        ("neural_retrieval_qlora_model_v3.pdf", "Hybrid retrieval and QLoRA architecture for bilingual railway question answering. Stages 1-5 connect governed inputs, frozen BGE-M3 encoding, BM25/dense rank fusion, evidence-conditioned generation and independent evaluation. The lower branch shows offline answer-only adapter training with frozen base weights; retrieval and evaluation are outside the gradient path. Trade-off annotations summarise task-dependent empirical results, not guaranteed gains. Source: Authors' own work."),
         ("knowledge_governance_lifecycle.pdf", "Expert-governed knowledge, production-index and evaluation lifecycle with exact held-out records excluded from indexing and training. Source: Authors' own work."),
     ],
     "### 4.3 QLoRA adaptation and held-out QA": [
         ("top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
     ],
     "### 4.4 Multi-generator RAG comparisons": [
-        ("training_validation_loss.pdf", "Completion-only QLoRA training and validation loss for Qwen2.5-7B and GLM-4-9B. Source: Authors' own work."),
+        ("training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ],
     "### 4.6 Resource use and automated error analysis": [
         ("translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
     ],
     "### 4.7 Index, evidence-support and governance validation": [
-        ("quality_latency_pareto.pdf", "Bilingual QA quality against generation latency and peak GPU memory. Left: mean generation latency; right: peak reserved GPU memory. Source: Authors' own work."),
-        ("error_type_distribution.pdf", "Mean prevalence of automatically flagged output errors across the evaluated generator and retrieval conditions. Source: Authors' own work."),
+        ("quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
+        ("error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
         ("supplementary_system_validation.pdf", "Bilingual index, automated evidence support and governance-history validation. Panels A-C report field ablation, evidence support and governance audit results, respectively. Source: Authors' own work."),
     ],
 }
@@ -126,9 +126,26 @@ def prepare_markdown(source: str) -> str:
             output.extend(["```{=latex}", r"\end{abstract}", "```", "## Introduction"])
             continue
         if line in FIGURES:
+            # Let the current text page fill before the landscape page. Keep
+            # both architecture figures in one deferred group to preserve order.
+            defer_architecture = line == "### 3.3 Retrieval and answer generation"
+            if defer_architecture:
+                output.extend(["```{=latex}", r"\afterpage{\clearpage", "```", ""])
             for filename, caption in FIGURES[line]:
                 path = f"../paper/ijwis/figures/{filename}"
+                if filename == "neural_retrieval_qlora_model_v3.pdf":
+                    output.extend([
+                        "", "```{=latex}", r"\begin{landscape}",
+                        r"\begin{figure}[p]", r"\centering",
+                        rf"\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{{{path}}}",
+                        r"\caption{" + escape_latex(caption) + "}",
+                        r"\label{fig:neural-retrieval-qlora}",
+                        r"\end{figure}", r"\end{landscape}", "```", "",
+                    ])
+                    continue
                 output.extend(["", f"![{caption}]({path}){{width=96%}}", ""])
+            if defer_architecture:
+                output.extend(["```{=latex}", "}", "```", ""])
         line = re.sub(r"^(#{2,3})\s+\d+(?:\.\d+)?\.?(?:\s+)", r"\1 ", line)
         if line.startswith('<div class="equation">'):
             output.extend(
