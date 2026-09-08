@@ -1,0 +1,257 @@
+\begin{thebibliography}{}
+
+\bibitem[Barnett et~al., 2024]{barnett2024finetuning}
+Barnett, S., Brannelly, Z., Kurniawan, S., and Wong, S. (2024).
+\newblock Fine-tuning or fine-failing? debunking performance myths in large
+  language models.
+\newblock {\em arXiv preprint arXiv:2406.11201}.
+\newblock Available at: \url{https://arxiv.org/abs/2406.11201}.
+
+\bibitem[Chang et~al., 2024]{chang2024survey}
+Chang, Y., Wang, X., Wang, J., Wu, Y., Yang, L., Zhu, K., Chen, H., Yi, X.,
+  Wang, C., Wang, Y., Ye, W., Zhang, Y., Chang, Y., Yu, P.~S., Yang, Q., and
+  Xie, X. (2024).
+\newblock A survey on evaluation of large language models.
+\newblock {\em ACM Transactions on Intelligent Systems and Technology},
+  15(3):1--45.
+\newblock DOI: \url{https://doi.org/10.1145/3641289}.
+
+\bibitem[Chen et~al., 2024]{chen2024bgem3}
+Chen, J., Xiao, S., Zhang, P., Luo, K., Lian, D., and Liu, Z. (2024).
+\newblock Bge m3-embedding: Multi-lingual, multi-functionality,
+  multi-granularity text embeddings through self-knowledge distillation.
+\newblock {\em arXiv preprint arXiv:2402.03216}.
+\newblock Available at: \url{https://arxiv.org/abs/2402.03216}.
+
+\bibitem[Cormack et~al., 2009]{cormack2009rrf}
+Cormack, G.~V., Clarke, C. L.~A., and Buettcher, S. (2009).
+\newblock Reciprocal rank fusion outperforms condorcet and individual rank
+  learning methods.
+\newblock In {\em Proceedings of the 32nd International ACM SIGIR Conference},
+  pages 758--759.
+\newblock DOI: \url{https://doi.org/10.1145/1571941.1572114}.
+
+\bibitem[Dettmers et~al., 2023]{dettmers2023qlora}
+Dettmers, T., Pagnoni, A., Holtzman, A., and Zettlemoyer, L. (2023).
+\newblock Qlora: Efficient finetuning of quantized llms.
+\newblock In {\em Advances in Neural Information Processing Systems},
+  volume~36.
+\newblock Available at: \url{https://arxiv.org/abs/2305.14314}.
+
+\bibitem[Ding et~al., 2023]{ding2023peft}
+Ding, N., Qin, Y., Yang, G., Wei, F., Yang, Z., Su, Y., Hu, S., Chen, Y., Chan,
+  C.-M., and Chen, W. (2023).
+\newblock Parameter-efficient fine-tuning of large-scale pre-trained language
+  models.
+\newblock {\em Nature Machine Intelligence}, 5(3):220--235.
+\newblock DOI: \url{https://doi.org/10.1038/s42256-023-00626-4}.
+
+\bibitem[{GLM Team}, 2024]{glm2024chatglm}
+{GLM Team} (2024).
+\newblock Chatglm: a family of large language models from glm-130b to glm-4 all
+  tools.
+\newblock Available at: \url{https://arxiv.org/abs/2406.12793}.
+
+\bibitem[Hu et~al., 2024]{hu2024translation}
+Hu, T., Zhang, P., Yang, B., Xie, J., Wong, D.~F., and Wang, R. (2024).
+\newblock Large language model for multi-domain translation: benchmarking and
+  domain cot fine-tuning.
+\newblock In {\em Findings of the Association for Computational Linguistics:
+  EMNLP 2024}, pages 5726--5746.
+\newblock DOI: \url{https://doi.org/10.18653/v1/2024.findings-emnlp.328}.
+
+\bibitem[Huang et~al., 2026]{huang2026emergency}
+Huang, L., Liu, Z., Yu, C., Zhu, T., and Yan, B. (2026).
+\newblock Emergency operation scheme generation for urban rail transit train
+  door systems using retrieval-augmented large language models.
+\newblock {\em Sensors}, 26(6):2006.
+\newblock DOI: \url{https://doi.org/10.3390/s26062006}.
+
+\bibitem[H{\"u}bscher et~al., 2021]{hubscher2021knowledge}
+H{\"u}bscher, G., Geist, V., Auer, D., H{\"u}bscher, N., and K{\"u}ng, J.
+  (2021).
+\newblock Representation and presentation of knowledge and processes -- an
+  integrated approach for a dynamic communication-intensive environment.
+\newblock {\em International Journal of Web Information Systems},
+  17(6):669--697.
+\newblock DOI: \url{https://doi.org/10.1108/IJWIS-03-2021-0031}.
+
+\bibitem[Kasneci et~al., 2023]{kasneci2023chatgpt}
+Kasneci, E., Sessler, K., K{\"u}chemann, S., Bannert, M., Dementieva, D.,
+  Fischer, F., Gasser, U., Groh, G., G{\"u}nnemann, S., H{\"u}llermeier, E.,
+  Krusche, S., Kutyniok, G., Michaeli, T., Nerdel, C., Pfeffer, J., Poquet, O.,
+  Sailer, M., Schmidt, A., Seidel, T., Stadler, M., Weller, J., Kuhn, J., and
+  Kasneci, G. (2023).
+\newblock Chatgpt for good? on opportunities and challenges of large language
+  models for education.
+\newblock {\em Learning and Individual Differences}, 103:102274.
+\newblock DOI: \url{https://doi.org/10.1016/j.lindif.2023.102274}.
+
+\bibitem[Lahnalampi, 2024]{lahnalampi2024rail}
+Lahnalampi, A. (2024).
+\newblock Utilizing large language models in rail design projects.
+\newblock Master's thesis, Aalto University.
+\newblock Available at:
+  \url{https://aaltodoc.aalto.fi/items/87b7ac34-756c-4db2-8bea-f9b9e6b453ed}.
+
+\bibitem[Lawrence et~al., 2019]{lawrence2019hsr}
+Lawrence, M., Bullock, R., and Liu, Z. (2019).
+\newblock {\em China's High-Speed Rail Development}.
+\newblock World Bank, Washington, DC.
+\newblock DOI: \url{https://doi.org/10.1596/978-1-4648-1425-9}.
+
+\bibitem[Lewis et~al., 2020]{lewis2020rag}
+Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N.,
+  K{\"u}ttler, H., Lewis, M., Yih, W.-T., Rockt{\"a}schel, T., Riedel, S., and
+  Kiela, D. (2020).
+\newblock Retrieval-augmented generation for knowledge-intensive nlp tasks.
+\newblock In {\em Advances in Neural Information Processing Systems},
+  volume~33, pages 9459--9474.
+\newblock Available at: \url{https://arxiv.org/abs/2005.11401}.
+
+\bibitem[Li et~al., 2024]{li2024rschat}
+Li, J., Li, C., Niu, S., and Dai, B. (2024).
+\newblock Rschat: intelligent question answering model for railway safety
+  knowledge.
+\newblock In {\em 2024 IEEE/ACIS 24th International Conference on Computer and
+  Information Science}, pages 55--60.
+\newblock DOI: \url{https://doi.org/10.1109/ICIS61260.2024.10778327}.
+
+\bibitem[Li et~al., 2025]{li2025training}
+Li, Y., Chen, J., Luo, X., and Zheng, H. (2025).
+\newblock Intelligent human-computer interactive training assistant system for
+  rail systems.
+\newblock {\em High-speed Railway}, 3(1):64--77.
+\newblock DOI: \url{https://doi.org/10.1016/j.hspr.2025.02.001}.
+
+\bibitem[Luo et~al., 2025]{luo2025driver}
+Luo, Y.~C., Xun, J., Wang, W., Zhang, R.~Z., and Zhao, Z.~C. (2025).
+\newblock A driver advisory system based on large language model for high-speed
+  train.
+\newblock Available at: \url{https://arxiv.org/abs/2501.07837}.
+
+\bibitem[Lv et~al., 2024]{lv2024full}
+Lv, K., Yang, Y., Liu, T., Guo, Q., and Qiu, X. (2024).
+\newblock Full parameter fine-tuning for large language models with limited
+  resources.
+\newblock In {\em Proceedings of the 62nd Annual Meeting of the Association for
+  Computational Linguistics}, pages 8187--8198.
+\newblock DOI: \url{https://doi.org/10.18653/v1/2024.acl-long.445}.
+
+\bibitem[{Qwen Team}, 2024]{qwen2024technical}
+{Qwen Team} (2024).
+\newblock Qwen2.5 technical report.
+\newblock Available at: \url{https://arxiv.org/abs/2412.15115}.
+
+\bibitem[{Qwen Team}, 2025]{qwen2025technical}
+{Qwen Team} (2025).
+\newblock Qwen3 technical report.
+\newblock Available at: \url{https://arxiv.org/abs/2505.09388}.
+
+\bibitem[Robertson and Zaragoza, 2009]{robertson2009bm25}
+Robertson, S. and Zaragoza, H. (2009).
+\newblock The probabilistic relevance framework: Bm25 and beyond.
+\newblock {\em Foundations and Trends in Information Retrieval}, 3(4):333--389.
+\newblock DOI: \url{https://doi.org/10.1561/1500000019}.
+
+\bibitem[Schwartz et~al., 2020]{schwartz2020green}
+Schwartz, R., Dodge, J., Smith, N.~A., and Etzioni, O. (2020).
+\newblock Green ai.
+\newblock {\em Communications of the ACM}, 63(12):54--63.
+\newblock DOI: \url{https://doi.org/10.1145/3381831}.
+
+\bibitem[Song et~al., 2025]{song2025railway}
+Song, Y., Tang, Y., and Liu, R. (2025).
+\newblock Large language model and application for railway track management
+  based on domain specialization.
+\newblock In {\em The Proceedings of the 11th International Conference on
+  Traffic and Transportation Studies}, volume 616, pages 194--204.
+\newblock DOI: \url{https://doi.org/10.1007/978-981-97-9644-1_21}.
+
+\bibitem[Tian et~al., 2024]{tian2024factuality}
+Tian, K., Mitchell, E., Yao, H., Manning, C., and Finn, C. (2024).
+\newblock Fine-tuning language models for factuality.
+\newblock In {\em International Conference on Learning Representations}.
+\newblock Available at:
+  \url{https://proceedings.iclr.cc/paper_files/paper/2024/hash/c361ae924c23cafca6033610d25dbc65-Abstract-Conference.html}.
+
+\bibitem[{UNESCO}, 2023]{unesco2023guidance}
+{UNESCO} (2023).
+\newblock Guidance for generative ai in education and research.
+\newblock Available at:
+  \url{https://unesdoc.unesco.org/ark:/48223/pf0000386693}.
+
+\bibitem[Vieira et~al., 2024]{vieira2024translation}
+Vieira, I., Allred, W., Lankford, S., Castilho, S., and Way, A. (2024).
+\newblock How much data is enough data? fine-tuning large language models for
+  in-house translation.
+\newblock In {\em Proceedings of the 16th Conference of the Association for
+  Machine Translation in the Americas}, pages 236--249.
+\newblock Available at: \url{https://aclanthology.org/2024.amta-research.20/}.
+
+\bibitem[Wandelt et~al., 2024]{wandelt2024transport}
+Wandelt, S., Zheng, C., Wang, S., Liu, Y., and Sun, X. (2024).
+\newblock Large language models for intelligent transportation: a review of the
+  state of the art and challenges.
+\newblock {\em Applied Sciences}, 14(17):7455.
+\newblock DOI: \url{https://doi.org/10.3390/app14177455}.
+
+\bibitem[Wang and Li, 2024]{wang2024phm}
+Wang, H. and Li, Y.-F. (2024).
+\newblock Large-scale language models for phm in railway systems: potential
+  applications, limitations, and solutions.
+\newblock In {\em Proceedings of the 6th International Conference on Electrical
+  Engineering and Information Technologies for Rail Transportation}, volume
+  1137, pages 591--599.
+\newblock DOI: \url{https://doi.org/10.1007/978-981-99-9311-6_59}.
+
+\bibitem[Wang et~al., 2025]{wang2025peft}
+Wang, L., Chen, S., Jiang, L., Pan, S., Cai, R., Yang, S., and Yang, F. (2025).
+\newblock Parameter-efficient fine-tuning in large language models: a survey of
+  methodologies.
+\newblock {\em Artificial Intelligence Review}, 58(8):227.
+\newblock DOI: \url{https://doi.org/10.1007/s10462-025-11236-4}.
+
+\bibitem[Wooldridge and Jennings, 1995]{wooldridge1995agents}
+Wooldridge, M. and Jennings, N.~R. (1995).
+\newblock Intelligent agents: theory and practice.
+\newblock {\em The Knowledge Engineering Review}, 10(2):115--152.
+\newblock DOI: \url{https://doi.org/10.1017/S0269888900008122}.
+
+\bibitem[Xi et~al., 2025]{xi2025agents}
+Xi, Z., Chen, W., Guo, X., He, W., Ding, Y., Hong, B., Zhang, M., Wang, J.,
+  Jin, S., Zhou, E., Zheng, R., Fan, X., Wang, X., Xiong, L., Zhou, Y., Wang,
+  W., Jiang, C., Zou, Y., Liu, X., Yin, Z., Dou, S., Weng, R., Qin, W., Zheng,
+  Y., Qiu, X., Huang, X., Zhang, Q., and Gui, T. (2025).
+\newblock The rise and potential of large language model based agents: a
+  survey.
+\newblock {\em Science China Information Sciences}, 68(2):121101.
+\newblock DOI: \url{https://doi.org/10.1007/s11432-024-4222-0}.
+
+\bibitem[Xu, 2018]{xu2018education}
+Xu, F. (2018).
+\newblock Future of high-speed railway and university education.
+\newblock In {\em The Belt and Road}, pages 167--183. Springer, Singapore.
+\newblock DOI: \url{https://doi.org/10.1007/978-981-13-1105-5_7}.
+
+\bibitem[Yang et~al., 2024]{yang2024legalqa}
+Yang, X., Wang, Z., Wang, Q., Wei, K., Zhang, K., and Shi, J. (2024).
+\newblock Large language models for automated q\&a involving legal documents: a
+  survey on algorithms, frameworks and applications.
+\newblock {\em International Journal of Web Information Systems},
+  20(4):413--435.
+\newblock DOI: \url{https://doi.org/10.1108/IJWIS-12-2023-0256}.
+
+\bibitem[Zheng et~al., 2024]{zheng2024translation}
+Zheng, J., Hong, H., Liu, F., Wang, X., Su, J., Liang, Y., and Wu, S. (2024).
+\newblock Fine-tuning large language models for domain-specific machine
+  translation.
+\newblock Available at: \url{https://arxiv.org/abs/2402.15061}.
+
+\bibitem[Zheng et~al., 2023]{zheng2023trafficsafety}
+Zheng, O., Abdel-Aty, M., Wang, D., Wang, C., and Ding, S. (2023).
+\newblock Trafficsafetygpt: tuning a pre-trained large language model to a
+  domain-specific expert in transportation safety.
+\newblock Available at: \url{https://arxiv.org/abs/2307.15311}.
+
+\end{thebibliography}
