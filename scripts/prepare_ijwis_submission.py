@@ -14,7 +14,7 @@ SOURCE = ROOT / "paper/ijwis/manuscript.md"
 OUTPUT = ROOT / "paper/ijwis/submission"
 
 FIGURES = [
-    ("figure_01_neural_retrieval.pdf", "Detailed neural retrieval and QLoRA workflow for bilingual railway question answering. The upper path separates governed bilingual inputs, shared BGE-M3 encoding, parallel dense/BM25 retrieval, reciprocal-rank fusion, evidence-conditioned generation and independent evaluation. The lower path isolates completion-only adapter training with a frozen quantised base model; retrieval and evaluation remain outside the gradient path. The schematic clarifies information flow and trainable boundaries rather than claiming identical internals for the two generators. Source: Authors' own work."),
+    ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow. The upper path covers governed input, retrieval, evidence-conditioned generation and evaluation; the lower path shows completion-only QLoRA adaptation with a frozen base model. Source: Authors' own work."),
     ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
     ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ("figure_05_translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),

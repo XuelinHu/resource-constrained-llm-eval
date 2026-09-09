@@ -54,8 +54,8 @@
     },
     {
       "path": "paper/ijwis/figures/figure_08_system_validation.pdf",
-      "size_bytes": 560338,
-      "sha256": "44b627a38a813690621cb4e1540b2cd135c82510683d85c536db530f1f98d5d9"
+      "size_bytes": 524477,
+      "sha256": "960bdedc5273691914a974b8064a8b0b3de7a68bc09b8f58fb804906efa6975e"
     },
     {
       "path": "paper/ijwis/tables/table10_bilingual_index_ablation.csv",

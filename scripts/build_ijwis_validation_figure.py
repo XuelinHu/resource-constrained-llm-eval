@@ -32,14 +32,13 @@ def main() -> None:
             "pdf.fonttype": 42,
         }
     )
-    # Use two columns for the compact field/support checks and a full-width
-    # governance panel below them so each validation layer remains legible.
-    fig = plt.figure(figsize=(12.0, 9.0), constrained_layout=True)
-    grid = GridSpec(2, 2, figure=fig, height_ratios=(1, 1.08))
+    # Stack all three panels at the same scale for a compact portrait figure.
+    fig = plt.figure(figsize=(8.0, 12.0), constrained_layout=True)
+    grid = GridSpec(3, 1, figure=fig, height_ratios=(1, 1, 1))
     axes = [
         fig.add_subplot(grid[0, 0]),
-        fig.add_subplot(grid[0, 1]),
-        fig.add_subplot(grid[1, :]),
+        fig.add_subplot(grid[1, 0]),
+        fig.add_subplot(grid[2, 0]),
     ]
     for axis, (filename, label, title) in zip(axes, PANELS, strict=True):
         axis.imshow(mpimg.imread(FIGURE_DIR / filename))

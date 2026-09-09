@@ -1,6 +1,6 @@
 # Figure captions
 
-**Figure 1.** Detailed neural retrieval and QLoRA workflow for bilingual railway question answering. The upper path separates governed bilingual inputs, shared BGE-M3 encoding, parallel dense/BM25 retrieval, reciprocal-rank fusion, evidence-conditioned generation and independent evaluation. The lower path isolates completion-only adapter training with a frozen quantised base model; retrieval and evaluation remain outside the gradient path. The schematic clarifies information flow and trainable boundaries rather than claiming identical internals for the two generators. Source: Authors' own work.
+**Figure 1.** Bilingual railway QA workflow. The upper path covers governed input, retrieval, evidence-conditioned generation and evaluation; the lower path shows completion-only QLoRA adaptation with a frozen base model. Source: Authors' own work.
 
 **Figure 2.** Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work.
 

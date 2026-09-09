@@ -15,7 +15,7 @@ BIBLIOGRAPHY = ROOT / "paper/ijwis/references.bib"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("figure_01_neural_retrieval.pdf", "Detailed neural retrieval and QLoRA workflow for bilingual railway question answering. The upper path separates governed bilingual inputs, shared BGE-M3 encoding, parallel dense/BM25 retrieval, reciprocal-rank fusion, evidence-conditioned generation and independent evaluation. The lower path isolates completion-only adapter training with a frozen quantised base model; retrieval and evaluation remain outside the gradient path. The schematic clarifies information flow and trainable boundaries rather than claiming identical internals for the two generators. Source: Authors' own work."),
+        ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow. The upper path covers governed input, retrieval, evidence-conditioned generation and evaluation; the lower path shows completion-only QLoRA adaptation with a frozen base model. Source: Authors' own work."),
     ],
     "### 4.3 QLoRA adaptation and held-out QA": [
         ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
@@ -135,7 +135,7 @@ def prepare_markdown(source: str) -> str:
                     output.extend([
                         "", "```{=latex}", r"\begin{landscape}",
                         r"\begin{figure}[p]", r"\centering",
-                        rf"\includegraphics[width=0.84\linewidth,height=0.62\textheight,keepaspectratio]{{{path}}}",
+                        rf"\includegraphics[width=0.55\linewidth,height=0.78\textheight,keepaspectratio]{{{path}}}",
                         r"\caption{" + escape_latex(caption) + "}",
                         r"\label{fig:neural-retrieval-qlora}",
                         r"\end{figure}", r"\end{landscape}", "```", "",
