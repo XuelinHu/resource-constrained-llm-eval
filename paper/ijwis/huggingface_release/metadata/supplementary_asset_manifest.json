@@ -24,13 +24,8 @@
     },
     {
       "path": "paper/ijwis/figures/figure_01_neural_retrieval.pdf",
-      "size_bytes": 129201,
-      "sha256": "d4a45427c0cd0f04143ee2a8bec9584fede368c9f438fc4e7720fe5d6822fcdc"
-    },
-    {
-      "path": "paper/ijwis/figures/figure_02_knowledge_governance.pdf",
-      "size_bytes": 105344,
-      "sha256": "51c6024b654319ed7b971156a9bd68d722510c5a6947cddb30065ecac9636880"
+      "size_bytes": 568095,
+      "sha256": "eadd4ff63c6e9e9d99ae95c44b109a473acd829479b354b441a02423fade67ee"
     },
     {
       "path": "paper/ijwis/figures/figure_03_top_k_quality_latency.pdf",
@@ -59,8 +54,8 @@
     },
     {
       "path": "paper/ijwis/figures/figure_08_system_validation.pdf",
-      "size_bytes": 119367,
-      "sha256": "54ca004afb5136cb01d3c5c56c3baae6808c133305aaa587023d76589cee801b"
+      "size_bytes": 560338,
+      "sha256": "44b627a38a813690621cb4e1540b2cd135c82510683d85c536db530f1f98d5d9"
     },
     {
       "path": "paper/ijwis/tables/table10_bilingual_index_ablation.csv",

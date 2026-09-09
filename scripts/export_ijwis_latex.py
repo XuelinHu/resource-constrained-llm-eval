@@ -15,8 +15,7 @@ BIBLIOGRAPHY = ROOT / "paper/ijwis/references.bib"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("figure_01_neural_retrieval.pdf", "Hybrid retrieval and QLoRA architecture for bilingual railway question answering. Stages 1-5 connect governed inputs, frozen BGE-M3 encoding, BM25/dense rank fusion, evidence-conditioned generation and independent evaluation. The lower branch shows offline answer-only adapter training with frozen base weights; retrieval and evaluation are outside the gradient path. Trade-off annotations summarise task-dependent empirical results, not guaranteed gains. Source: Authors' own work."),
-        ("figure_02_knowledge_governance.pdf", "Expert-governed knowledge, production-index and evaluation lifecycle with exact held-out records excluded from indexing and training. Source: Authors' own work."),
+        ("figure_01_neural_retrieval.pdf", "Detailed neural retrieval and QLoRA workflow for bilingual railway question answering. The upper path separates governed bilingual inputs, shared BGE-M3 encoding, parallel dense/BM25 retrieval, reciprocal-rank fusion, evidence-conditioned generation and independent evaluation. The lower path isolates completion-only adapter training with a frozen quantised base model; retrieval and evaluation remain outside the gradient path. The schematic clarifies information flow and trainable boundaries rather than claiming identical internals for the two generators. Source: Authors' own work."),
     ],
     "### 4.3 QLoRA adaptation and held-out QA": [
         ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
@@ -30,7 +29,7 @@ FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 4.7 Index, evidence-support and governance validation": [
         ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
         ("figure_07_error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
-        ("figure_08_system_validation.pdf", "Bilingual index, automated evidence support and governance-history validation. Panels A-C report field ablation, evidence support and governance audit results, respectively. Source: Authors' own work."),
+        ("figure_08_system_validation.pdf", "Three complementary information-system checks. Panel A tests bilingual index fields, Panel B measures automated evidence support, and Panel C audits governance history; the panels are arranged by validation layer rather than merged into one numerical score. Source: Authors' own work."),
     ],
 }
 
@@ -126,8 +125,7 @@ def prepare_markdown(source: str) -> str:
             output.extend(["```{=latex}", r"\end{abstract}", "```", "## Introduction"])
             continue
         if line in FIGURES:
-            # Let the current text page fill before the landscape page. Keep
-            # both architecture figures in one deferred group to preserve order.
+            # Let the current text page fill before the landscape page.
             defer_architecture = line == "### 3.3 Retrieval and answer generation"
             if defer_architecture:
                 output.extend(["```{=latex}", r"\afterpage{\clearpage", "```", ""])
@@ -137,7 +135,7 @@ def prepare_markdown(source: str) -> str:
                     output.extend([
                         "", "```{=latex}", r"\begin{landscape}",
                         r"\begin{figure}[p]", r"\centering",
-                        rf"\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{{{path}}}",
+                        rf"\includegraphics[width=0.84\linewidth,height=0.62\textheight,keepaspectratio]{{{path}}}",
                         r"\caption{" + escape_latex(caption) + "}",
                         r"\label{fig:neural-retrieval-qlora}",
                         r"\end{figure}", r"\end{landscape}", "```", "",

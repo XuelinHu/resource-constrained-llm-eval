@@ -7,6 +7,7 @@ from pathlib import Path
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
+from matplotlib.gridspec import GridSpec
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,9 +32,15 @@ def main() -> None:
             "pdf.fonttype": 42,
         }
     )
-    # Each source panel already contains multiple axes. A vertical journal
-    # layout keeps labels legible at manuscript text width.
-    fig, axes = plt.subplots(3, 1, figsize=(12.0, 10.2))
+    # Use two columns for the compact field/support checks and a full-width
+    # governance panel below them so each validation layer remains legible.
+    fig = plt.figure(figsize=(12.0, 9.0), constrained_layout=True)
+    grid = GridSpec(2, 2, figure=fig, height_ratios=(1, 1.08))
+    axes = [
+        fig.add_subplot(grid[0, 0]),
+        fig.add_subplot(grid[0, 1]),
+        fig.add_subplot(grid[1, :]),
+    ]
     for axis, (filename, label, title) in zip(axes, PANELS, strict=True):
         axis.imshow(mpimg.imread(FIGURE_DIR / filename))
         axis.set_axis_off()
@@ -49,7 +56,6 @@ def main() -> None:
             bbox={"facecolor": "white", "edgecolor": "none", "pad": 2},
         )
         axis.set_title(title, fontsize=11, pad=4)
-    fig.tight_layout(pad=0.9)
     fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight", facecolor="white")
     fig.savefig(OUTPUT_PDF, bbox_inches="tight", facecolor="white")
     plt.close(fig)
