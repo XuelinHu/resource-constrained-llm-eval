@@ -97,6 +97,8 @@ results/         Generated outputs, metrics, and tables
 ### Paper And Project Notes
 
 - Authoritative manuscript: `paper/ijwis/manuscript.md`
+- English manuscript PDF: `paper/ijwis/manuscript_en.pdf`
+- Chinese manuscript PDF: `paper/ijwis/manuscript_zh.pdf`
 - Anonymous submission package: `paper/ijwis/submission/`
 - LaTeX template wrapper: `IJWIS/Main.tex`
 - Final evidence tables and figures: `paper/ijwis/{tables,figures}/`
