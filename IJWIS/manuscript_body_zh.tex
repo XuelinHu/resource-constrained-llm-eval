@@ -97,7 +97,7 @@ PEFT 方法可以减少可训练参数，但不保证部署后的系统更好 \c
 \begin{landscape}
 \begin{figure}[p]
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{../paper/ijwis/figures/neural_retrieval_qlora_model_v3.pdf}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{../paper/ijwis/figures/figure_01_neural_retrieval.pdf}
 \caption{双语铁路问答的混合检索与 QLoRA 架构。阶段 1--5 连接受治理输入、冻结的 BGE-M3 编码、BM25/密集检索排名融合、证据条件化生成及独立评估。下方分支展示基础权重冻结、仅答案监督的离线适配器训练；检索与评估不参与梯度更新。权衡标注为依赖任务的实证结果概括，不代表必然收益。来源：作者绘制。}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
@@ -105,7 +105,7 @@ PEFT 方法可以减少可训练参数，但不保证部署后的系统更好 \c
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/knowledge_governance_lifecycle.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_02_knowledge_governance.pdf}
 \caption{专家治理的知识、生产索引与评估生命周期：确切留出记录同时从索引和训练中排除。}
 \end{figure}
 }
@@ -199,7 +199,7 @@ BM25 & 英文 & \textbf{0.570} & \textbf{0.670} & 0.685 & 0.620 & \textbf{59.0} 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/top_k_quality_latency.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_03_top_k_quality_latency.pdf}
 \caption{不同 top-$k$ 设置下混合检索的证据等价质量与时延。左图为证据 Recall@$k$，右图为平均检索时延。}
 \end{figure}
 
@@ -215,7 +215,7 @@ BM25 & 英文 & \textbf{0.570} & \textbf{0.670} & 0.685 & 0.620 & \textbf{59.0} 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/training_validation_loss.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_04_training_validation_loss.pdf}
 \caption{Qwen2.5-7B 和 GLM-4-9B 的仅答案监督 QLoRA 优化过程。曲线表示日志记录的训练损失；菱形表示每个模型唯一的 epoch 末验证点。}
 \end{figure}
 
@@ -235,7 +235,7 @@ GLM QLoRA 是明显的失败案例。其句子 COMET 在中译英中从 0.667 �
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/translation_before_after.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_05_translation_before_after.pdf}
 \caption{按方向和任务拆分的 QLoRA 前后 COMET。左图为 Qwen2.5-7B，右图为 GLM-4-9B。}
 \end{figure}
 
@@ -249,13 +249,13 @@ GLM QLoRA 是明显的失败案例。其句子 COMET 在中译英中从 0.667 �
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/quality_latency_pareto.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_06_quality_latency_pareto.pdf}
 \caption{Qwen2.5/GLM 原始与 QLoRA 四种条件下，独立问答双语平均字符级 F1 与生成时延、峰值预留显存（GiB）的关系。左图为平均生成时延；右图为 PyTorch 预留显存。质量与资源在不同负载上测量。}
 \end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/error_type_distribution.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_07_error_type_distribution.pdf}
 \caption{独立双语问答及领域/翻译输出标记。柱形表示出现对应标记的模型条件/任务组内比例的均值，不是合并样本后的发生率。各标记不互斥；RAG 检索遗漏与引用缺失另见正文。}
 \end{figure}
 
@@ -280,7 +280,7 @@ Qwen QLoRA 混合，支持声明代理 & 0.964 & 0.905 & 引用召回率 0.000/0
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/supplementary_system_validation.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_08_system_validation.pdf}
 \caption{双语索引、自动证据支持与治理历史验证。A--C 面板依次报告字段消融、证据支持和治理审计结果。}
 \end{figure}
 

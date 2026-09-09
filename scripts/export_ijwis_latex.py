@@ -10,27 +10,27 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "paper/ijwis/manuscript.md"
-OUTPUT = ROOT / "IJWIS__Copy_/manuscript_body.tex"
+OUTPUT = ROOT / "IJWIS/manuscript_body.tex"
 BIBLIOGRAPHY = ROOT / "paper/ijwis/references.bib"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("neural_retrieval_qlora_model_v3.pdf", "Hybrid retrieval and QLoRA architecture for bilingual railway question answering. Stages 1-5 connect governed inputs, frozen BGE-M3 encoding, BM25/dense rank fusion, evidence-conditioned generation and independent evaluation. The lower branch shows offline answer-only adapter training with frozen base weights; retrieval and evaluation are outside the gradient path. Trade-off annotations summarise task-dependent empirical results, not guaranteed gains. Source: Authors' own work."),
-        ("knowledge_governance_lifecycle.pdf", "Expert-governed knowledge, production-index and evaluation lifecycle with exact held-out records excluded from indexing and training. Source: Authors' own work."),
+        ("figure_01_neural_retrieval.pdf", "Hybrid retrieval and QLoRA architecture for bilingual railway question answering. Stages 1-5 connect governed inputs, frozen BGE-M3 encoding, BM25/dense rank fusion, evidence-conditioned generation and independent evaluation. The lower branch shows offline answer-only adapter training with frozen base weights; retrieval and evaluation are outside the gradient path. Trade-off annotations summarise task-dependent empirical results, not guaranteed gains. Source: Authors' own work."),
+        ("figure_02_knowledge_governance.pdf", "Expert-governed knowledge, production-index and evaluation lifecycle with exact held-out records excluded from indexing and training. Source: Authors' own work."),
     ],
     "### 4.3 QLoRA adaptation and held-out QA": [
-        ("top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
+        ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
     ],
     "### 4.4 Multi-generator RAG comparisons": [
-        ("training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
+        ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ],
     "### 4.6 Resource use and automated error analysis": [
-        ("translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
+        ("figure_05_translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
     ],
     "### 4.7 Index, evidence-support and governance validation": [
-        ("quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
-        ("error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
-        ("supplementary_system_validation.pdf", "Bilingual index, automated evidence support and governance-history validation. Panels A-C report field ablation, evidence support and governance audit results, respectively. Source: Authors' own work."),
+        ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
+        ("figure_07_error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
+        ("figure_08_system_validation.pdf", "Bilingual index, automated evidence support and governance-history validation. Panels A-C report field ablation, evidence support and governance audit results, respectively. Source: Authors' own work."),
     ],
 }
 
@@ -133,7 +133,7 @@ def prepare_markdown(source: str) -> str:
                 output.extend(["```{=latex}", r"\afterpage{\clearpage", "```", ""])
             for filename, caption in FIGURES[line]:
                 path = f"../paper/ijwis/figures/{filename}"
-                if filename == "neural_retrieval_qlora_model_v3.pdf":
+                if filename == "figure_01_neural_retrieval.pdf":
                     output.extend([
                         "", "```{=latex}", r"\begin{landscape}",
                         r"\begin{figure}[p]", r"\centering",

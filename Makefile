@@ -30,7 +30,7 @@ qlora-all:
 
 paper:
 	conda run -n rc-llm-eval python scripts/export_ijwis_latex.py
-	latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS__Copy_/Main.tex
+	latexmk -cd -xelatex -interaction=nonstopmode -halt-on-error IJWIS/Main.tex
 	mkdir -p output/pdf
-	cp IJWIS__Copy_/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf
+	cp IJWIS/Main.pdf output/pdf/ijwis_bilingual_railway_manuscript_latex.pdf
 	conda run -n rc-llm-eval python scripts/prepare_ijwis_submission.py

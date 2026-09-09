@@ -41,7 +41,7 @@ configs/         Experiment, model, and task configuration
 scripts/         Bash and PowerShell entry scripts
 src/             Python package for orchestration
 paper/ijwis/     Authoritative IJWIS manuscript, evidence and submission package
-IJWIS__Copy_/    Anonymous IJWIS LaTeX template wrapper
+IJWIS/            Anonymous IJWIS LaTeX template wrapper
 results/         Generated outputs, metrics, and tables
 ```
 
@@ -93,20 +93,17 @@ results/         Generated outputs, metrics, and tables
 - Domain validation set: `data/domain/valid.jsonl`
 - Domain test set: `data/domain/test.jsonl`
 - Efficiency prompts: `data/efficiency/prompts.jsonl`
-- Domain dataset notes: `data/domain/README.md`
 
 ### Paper And Project Notes
 
 - Authoritative manuscript: `paper/ijwis/manuscript.md`
-- IJWIS project README: `paper/ijwis/README.md`
 - Anonymous submission package: `paper/ijwis/submission/`
-- LaTeX template wrapper: `IJWIS__Copy_/Main.tex`
+- LaTeX template wrapper: `IJWIS/Main.tex`
 - Final evidence tables and figures: `paper/ijwis/{tables,figures}/`
 - Final full manuscript PDF: `output/pdf/ijwis_manuscript_full.pdf`
 - Final anonymous manuscript PDF: `output/pdf/ijwis_manuscript_anonymous.pdf`
 - Final Chinese review PDF: `output/pdf/ijwis_manuscript_zh.pdf`
 - Private derived-artifact release: `paper/ijwis/huggingface_release/`
-- Formal experiment checklist: `paper/ijwis/experiment_todo.md`
 
 ## Output And Snapshot Paths
 
@@ -259,8 +256,6 @@ Then run a pilot on a real target model:
 conda activate rc-llm-eval
 bash scripts/run_baseline_pilot.sh
 ```
-
-Use `paper/ijwis/experiment_todo.md` as the authoritative record of the completed formal experiments.
 
 ## Notes
 

@@ -10,7 +10,7 @@ class IjwisFigureExportTests(unittest.TestCase):
     def test_figure_one_matches_submission(self) -> None:
         figure = latex.FIGURES["### 3.3 Retrieval and answer generation"][0]
         self.assertEqual(figure, submission.FIGURES[0])
-        self.assertEqual(figure[0], "neural_retrieval_qlora_model_v3.pdf")
+        self.assertEqual(figure[0], "figure_01_neural_retrieval.pdf")
         self.assertEqual(len(submission.FIGURES), 8)
 
     def test_revised_captions_match_submission(self) -> None:
@@ -26,11 +26,11 @@ class IjwisFigureExportTests(unittest.TestCase):
         self.assertEqual(result.count(r"\end{landscape}"), 1)
         self.assertEqual(result.count(r"\afterpage{\clearpage"), 1)
         self.assertEqual(result.count(r"\begin{figure}"), 8)
-        self.assertEqual(result.count("neural_retrieval_qlora_model_v3.pdf"), 1)
+        self.assertEqual(result.count("figure_01_neural_retrieval.pdf"), 1)
         self.assertNotIn("system_architecture.pdf", result)
         self.assertLess(
-            result.index("neural_retrieval_qlora_model_v3.pdf"),
-            result.index("knowledge_governance_lifecycle.pdf"),
+            result.index("figure_01_neural_retrieval.pdf"),
+            result.index("figure_02_knowledge_governance.pdf"),
         )
         self.assertIn(r"\label{fig:neural-retrieval-qlora}", result)
 

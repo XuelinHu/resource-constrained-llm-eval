@@ -536,7 +536,7 @@ def plot_training_curves() -> None:
     ax.set_ylabel("Completion loss")
     ax.grid(axis="y", color="#D9D9D9", linewidth=0.6)
     ax.legend(frameon=False, ncol=2)
-    save_figure(fig, "training_validation_loss")
+    save_figure(fig, "figure_04_training_validation_loss")
 
 
 def plot_errors(errors: pd.DataFrame) -> None:
@@ -548,7 +548,7 @@ def plot_errors(errors: pd.DataFrame) -> None:
     ax.barh(grouped["label"], 100 * grouped["proportion"], color="#009E73")
     ax.set_xlabel("Mean proportion of flagged outputs (%)")
     ax.grid(axis="x", color="#D9D9D9", linewidth=0.6)
-    save_figure(fig, "error_type_distribution")
+    save_figure(fig, "figure_07_error_type_distribution")
 
 
 def plot_pareto(metrics: pd.DataFrame, efficiency: pd.DataFrame) -> None:
@@ -582,7 +582,7 @@ def plot_pareto(metrics: pd.DataFrame, efficiency: pd.DataFrame) -> None:
         ax.set_xlabel(xlabel)
         ax.grid(color="#D9D9D9", linewidth=0.6)
     axes[0].set_ylabel("Bilingual QA Char F1")
-    save_figure(fig, "quality_latency_pareto")
+    save_figure(fig, "figure_06_quality_latency_pareto")
 
 
 def plot_top_k(ablation: pd.DataFrame) -> None:
@@ -603,7 +603,7 @@ def plot_top_k(ablation: pd.DataFrame) -> None:
         axis.set_xticks(sorted(selected["top_k"].unique()))
         axis.grid(color="#D9D9D9", linewidth=0.6)
     axes[0].legend(frameon=False)
-    save_figure(fig, "top_k_quality_latency")
+    save_figure(fig, "figure_03_top_k_quality_latency")
 
 
 def plot_translation_before_after(translation: pd.DataFrame) -> None:
@@ -627,7 +627,7 @@ def plot_translation_before_after(translation: pd.DataFrame) -> None:
         ax.grid(axis="y", color="#D9D9D9", linewidth=0.6)
     axes[0].set_ylabel("COMET score")
     axes[0].legend(frameon=False, ncol=2)
-    save_figure(fig, "translation_before_after")
+    save_figure(fig, "figure_05_translation_before_after")
 
 
 def write_table(frame: pd.DataFrame, name: str) -> None:

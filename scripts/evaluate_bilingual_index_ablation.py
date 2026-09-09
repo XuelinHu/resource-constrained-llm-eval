@@ -33,7 +33,7 @@ CACHE_DIR = RESULT_ROOT / "ablation_cache"
 OUTPUT_JSON = RESULT_ROOT / "analysis/bilingual_index_ablation.json"
 OUTPUT_CSV = ROOT / "paper/ijwis/tables/table10_bilingual_index_ablation.csv"
 OUTPUT_TEX = ROOT / "paper/ijwis/tables/table10_bilingual_index_ablation.tex"
-FIGURE_PNG = ROOT / "paper/ijwis/figures/bilingual_index_ablation.png"
+FIGURE_PNG = ROOT / "paper/ijwis/figures/figure_08_panel_a_bilingual_index.png"
 FIGURE_PDF = ROOT / "paper/ijwis/figures/bilingual_index_ablation.pdf"
 
 VARIANTS = ("source_only", "zh_only", "en_only", "bilingual")

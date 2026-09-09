@@ -98,7 +98,7 @@ Figure 2 distinguishes the authoritative PostgreSQL record from its derived BM25
 \begin{landscape}
 \begin{figure}[p]
 \centering
-\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{../paper/ijwis/figures/neural_retrieval_qlora_model_v3.pdf}
+\includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{../paper/ijwis/figures/figure_01_neural_retrieval.pdf}
 \caption{Hybrid retrieval and QLoRA architecture for bilingual railway question answering. Stages 1-5 connect governed inputs, frozen BGE-M3 encoding, BM25/dense rank fusion, evidence-conditioned generation and independent evaluation. The lower branch shows offline answer-only adapter training with frozen base weights; retrieval and evaluation are outside the gradient path. Trade-off annotations summarise task-dependent empirical results, not guaranteed gains. Source: Authors' own work.}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
@@ -107,7 +107,7 @@ Figure 2 distinguishes the authoritative PostgreSQL record from its derived BM25
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/knowledge_governance_lifecycle.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_02_knowledge_governance.pdf}
 \caption{Expert-governed knowledge, production-index and evaluation lifecycle with exact held-out records excluded from indexing and training. Source: Authors' own work.}
 \end{figure}
 
@@ -206,7 +206,7 @@ Table II reports the formal evidence-equivalent retrieval comparison. BM25 is pa
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/top_k_quality_latency.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_03_top_k_quality_latency.pdf}
 \caption{Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work.}
 \end{figure}
 
@@ -223,7 +223,7 @@ A limited general-capability check (maximum 200 examples per subtask) found that
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/training_validation_loss.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_04_training_validation_loss.pdf}
 \caption{Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work.}
 \end{figure}
 
@@ -244,7 +244,7 @@ GLM QLoRA is a clear failure case. Its sentence COMET dropped from 0.667 to 0.34
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/translation_before_after.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_05_translation_before_after.pdf}
 \caption{Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work.}
 \end{figure}
 
@@ -259,21 +259,21 @@ Automated failure flags provide additional descriptive comparisons for the aggre
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/quality_latency_pareto.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_06_quality_latency_pareto.pdf}
 \caption{Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work.}
 \end{figure}
 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/error_type_distribution.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_07_error_type_distribution.pdf}
 \caption{Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work.}
 \end{figure}
 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/supplementary_system_validation.pdf}
+\includegraphics[width=0.96\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_08_system_validation.pdf}
 \caption{Bilingual index, automated evidence support and governance-history validation. Panels A-C report field ablation, evidence support and governance audit results, respectively. Source: Authors' own work.}
 \end{figure}
 

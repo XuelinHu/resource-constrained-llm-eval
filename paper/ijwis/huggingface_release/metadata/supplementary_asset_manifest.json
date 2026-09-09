@@ -23,42 +23,42 @@
       "sha256": "141e4800d47d941d36a37bf6ca69af3614cde1468bc007fe116f310488ab025f"
     },
     {
-      "path": "paper/ijwis/figures/system_architecture.pdf",
+      "path": "paper/ijwis/figures/figure_01_neural_retrieval.pdf",
       "size_bytes": 129201,
       "sha256": "d4a45427c0cd0f04143ee2a8bec9584fede368c9f438fc4e7720fe5d6822fcdc"
     },
     {
-      "path": "paper/ijwis/figures/knowledge_governance_lifecycle.pdf",
+      "path": "paper/ijwis/figures/figure_02_knowledge_governance.pdf",
       "size_bytes": 105344,
       "sha256": "51c6024b654319ed7b971156a9bd68d722510c5a6947cddb30065ecac9636880"
     },
     {
-      "path": "paper/ijwis/figures/top_k_quality_latency.pdf",
+      "path": "paper/ijwis/figures/figure_03_top_k_quality_latency.pdf",
       "size_bytes": 17046,
       "sha256": "e8322d3bb7d0bee9fd4ab10ffdc776ae514d73972500bb91bd481a1a14851d59"
     },
     {
-      "path": "paper/ijwis/figures/training_validation_loss.pdf",
+      "path": "paper/ijwis/figures/figure_04_training_validation_loss.pdf",
       "size_bytes": 16110,
       "sha256": "b454d29e0cc61b869c863dd4fceb986b90421fda5877705036442eb779e4e084"
     },
     {
-      "path": "paper/ijwis/figures/translation_before_after.pdf",
+      "path": "paper/ijwis/figures/figure_05_translation_before_after.pdf",
       "size_bytes": 16099,
       "sha256": "45c105c55b06db6dc0aa7dbc6cf4a74a7226e824f447b790ca70ef6cc25f324a"
     },
     {
-      "path": "paper/ijwis/figures/quality_latency_pareto.pdf",
+      "path": "paper/ijwis/figures/figure_06_quality_latency_pareto.pdf",
       "size_bytes": 19046,
       "sha256": "6070fec1d96188e4dabe906430ffe3840a7b7bfeb3c7026ad4cbec614e1ef90e"
     },
     {
-      "path": "paper/ijwis/figures/error_type_distribution.pdf",
+      "path": "paper/ijwis/figures/figure_07_error_type_distribution.pdf",
       "size_bytes": 13658,
       "sha256": "bfb9bd76aa8c7fbab68d4f43221240d0b34e27437650c174a85a8626e01459e4"
     },
     {
-      "path": "paper/ijwis/figures/supplementary_system_validation.pdf",
+      "path": "paper/ijwis/figures/figure_08_system_validation.pdf",
       "size_bytes": 119367,
       "sha256": "54ca004afb5136cb01d3c5c56c3baae6808c133305aaa587023d76589cee801b"
     },

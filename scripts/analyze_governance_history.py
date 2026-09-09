@@ -24,7 +24,7 @@ from annotation_system.backend.app.models import CorpusItem, ReviewEvent
 RESULT_JSON = ROOT / "results/ijwis_single_gpu_3090/analysis/governance_history_audit.json"
 TABLE_CSV = ROOT / "paper/ijwis/tables/table11_governance_audit.csv"
 TABLE_TEX = ROOT / "paper/ijwis/tables/table11_governance_audit.tex"
-FIGURE_PNG = ROOT / "paper/ijwis/figures/governance_history_audit.png"
+FIGURE_PNG = ROOT / "paper/ijwis/figures/figure_08_panel_c_governance_audit.png"
 FIGURE_PDF = ROOT / "paper/ijwis/figures/governance_history_audit.pdf"
 COMPARABLE_FIELDS = (
     "question",

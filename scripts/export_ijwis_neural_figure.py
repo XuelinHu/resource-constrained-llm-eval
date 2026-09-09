@@ -14,7 +14,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "paper/ijwis/figures/neural_retrieval_qlora_model_v3.drawio"
+SOURCE = ROOT / "paper/ijwis/figures/figure_01_neural_retrieval.drawio"
 
 
 def main() -> None:

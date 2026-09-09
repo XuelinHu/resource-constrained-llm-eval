@@ -12,12 +12,12 @@ from matplotlib import rcParams
 ROOT = Path(__file__).resolve().parents[1]
 FIGURE_DIR = ROOT / "paper/ijwis/figures"
 PANELS = (
-    ("bilingual_index_ablation.png", "A", "Bilingual index fields"),
-    ("rag_faithfulness.png", "B", "Automated evidence support"),
-    ("governance_history_audit.png", "C", "Governance history audit"),
+    ("figure_08_panel_a_bilingual_index.png", "A", "Bilingual index fields"),
+    ("figure_08_panel_b_evidence_support.png", "B", "Automated evidence support"),
+    ("figure_08_panel_c_governance_audit.png", "C", "Governance history audit"),
 )
-OUTPUT_PNG = FIGURE_DIR / "supplementary_system_validation.png"
-OUTPUT_PDF = FIGURE_DIR / "supplementary_system_validation.pdf"
+OUTPUT_PNG = FIGURE_DIR / "figure_08_system_validation.png"
+OUTPUT_PDF = FIGURE_DIR / "figure_08_system_validation.pdf"
 
 
 def main() -> None:

@@ -20,7 +20,7 @@ RAG_DIR = ROOT / "results/ijwis_single_gpu_3090/rag"
 OUTPUT_JSON = ROOT / "results/ijwis_single_gpu_3090/analysis/rag_evidence_support.json"
 OUTPUT_CSV = ROOT / "paper/ijwis/tables/table12_rag_faithfulness.csv"
 OUTPUT_TEX = ROOT / "paper/ijwis/tables/table12_rag_faithfulness.tex"
-FIGURE_PNG = ROOT / "paper/ijwis/figures/rag_faithfulness.png"
+FIGURE_PNG = ROOT / "paper/ijwis/figures/figure_08_panel_b_evidence_support.png"
 FIGURE_PDF = ROOT / "paper/ijwis/figures/rag_faithfulness.pdf"
 MODEL_FILES = {
     "qwen2_5_original": "qwen2_5_original.json",
