@@ -20,7 +20,7 @@ FIGURES = [
     ("figure_05_translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
     ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
     ("figure_07_error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
-    ("figure_08_system_validation.pdf", "Three complementary information-system checks. Panel A tests bilingual index fields, Panel B measures automated evidence support, and Panel C audits governance history; the panels are arranged by validation layer rather than merged into one numerical score. Source: Authors' own work."),
+    ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score."),
 ]
 
 TABLE_CAPTION = re.compile(r"^\*\*Table ([IVX]+)\. (.+)\*\*$")

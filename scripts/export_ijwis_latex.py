@@ -29,7 +29,7 @@ FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 4.7 Index, evidence-support and governance validation": [
         ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
         ("figure_07_error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
-        ("figure_08_system_validation.pdf", "Three complementary information-system checks. Panel A tests bilingual index fields, Panel B measures automated evidence support, and Panel C audits governance history; the panels are arranged by validation layer rather than merged into one numerical score. Source: Authors' own work."),
+        ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score."),
     ],
 }
 
@@ -218,11 +218,11 @@ def table_to_latex(lines: list[str], number: str) -> list[str]:
     specifications = {
         "I": r"p{0.28\linewidth}p{0.64\linewidth}",
         "II": r">{\raggedright\arraybackslash}p{0.19\linewidth}lrrrrr",
-        "III": r"p{0.38\linewidth}ccp{0.34\linewidth}",
+        "III": r">{\raggedright\arraybackslash}p{0.18\linewidth}p{0.19\linewidth}p{0.19\linewidth}p{0.18\linewidth}p{0.20\linewidth}",
     }
     specification = specifications.get(number, "l" * column_count)
     output: list[str] = []
-    if number == "II":
+    if number in {"II", "III"}:
         output.extend([r"\small", r"\begin{adjustbox}{max width=\linewidth}"])
     output.extend([rf"\begin{{tabular}}{{{specification}}}", r"\toprule"])
     for index, row in enumerate(rows):
@@ -230,7 +230,7 @@ def table_to_latex(lines: list[str], number: str) -> list[str]:
         if index == 0:
             output.append(r"\midrule")
     output.extend([r"\bottomrule", r"\end{tabular}"])
-    if number == "II":
+    if number in {"II", "III"}:
         output.append(r"\end{adjustbox}")
     return output
 
