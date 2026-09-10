@@ -1,15 +1,9 @@
 <mxfile host="65bd71144e" compressed="false">
     <diagram id="neural_retrieval_qlora" name="Editable corrected reconstruction">
-        <mxGraphModel dx="1607" dy="883" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2650" pageHeight="1350" background="#ffffff" math="1" shadow="0" adaptiveColors="auto">
+        <mxGraphModel dx="1786" dy="767" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2650" pageHeight="1350" background="#ffffff" math="1" shadow="0" adaptiveColors="auto">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="vector_layer" value="Editable corrected neural model" parent="0"/>
-                <mxCell id="top_divider" value="" style="edgeStyle=none;html=1;endArrow=none;strokeColor=#CBD5E1;strokeWidth=1;" parent="vector_layer" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="42" y="98" as="sourcePoint"/>
-                        <mxPoint x="2594" y="98" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
                 <mxCell id="panel1" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#263238;strokeWidth=2;fillColor=#FFFFFF;" parent="vector_layer" vertex="1">
                     <mxGeometry x="42" y="130" width="429" height="1110" as="geometry"/>
                 </mxCell>

@@ -134,7 +134,7 @@ def prepare_markdown(source: str) -> str:
                 if filename == "figure_01_neural_retrieval.pdf":
                     output.extend([
                         "", "```{=latex}",
-                        r"\begin{figure}[p]", r"\centering",
+                        r"\begin{figure}[H]", r"\centering",
                         rf"\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{{{path}}}",
                         r"\caption{" + escape_latex(caption) + "}",
                         r"\label{fig:neural-retrieval-qlora}",

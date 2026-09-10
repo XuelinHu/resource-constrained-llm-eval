@@ -21,7 +21,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--display", help="X display for Draw.io on Linux, e.g. :1")
     args = parser.parse_args()
-    drawio = shutil.which("drawio")
+    drawio = shutil.which("drawio") or shutil.which("draw.io")
     poppler = shutil.which("pdftoppm")
     if not drawio or not poppler:
         parser.error("drawio and pdftoppm must be on PATH")
@@ -36,9 +36,9 @@ def main() -> None:
         env["DISPLAY"] = args.display
     pdf = SOURCE.with_suffix(".pdf")
     subprocess.run([
-        drawio, "--disable-gpu", "--export", "--format", "pdf", "--crop",
+        drawio, str(SOURCE), "--disable-gpu", "--export", "--format", "pdf", "--crop",
         "--border", "8", "--layers", str(layer_index), "--theme", "light",
-        "--output", str(pdf), str(SOURCE),
+        "--output", str(pdf),
     ], env=env, check=True)
 
     # Raster companion at 600 dpi for a 257 mm-wide landscape placement.
