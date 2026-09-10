@@ -24,7 +24,7 @@ class IjwisFigureExportTests(unittest.TestCase):
         result = latex.markdown_to_latex(prepared)
         self.assertEqual(result.count(r"\begin{landscape}"), 0)
         self.assertEqual(result.count(r"\end{landscape}"), 0)
-        self.assertEqual(result.count(r"\clearpage"), 2)
+        self.assertEqual(result.count(r"\clearpage"), 1)
         self.assertEqual(result.count(r"\begin{figure}"), 7)
         self.assertEqual(result.count("figure_01_neural_retrieval.pdf"), 1)
         self.assertNotIn("figure_02_knowledge_governance.pdf", result)

@@ -142,8 +142,6 @@ def prepare_markdown(source: str) -> str:
                     ])
                     continue
                 output.extend(["", f"![{caption}]({path}){{width=96%}}", ""])
-            if defer_architecture:
-                output.extend(["```{=latex}", r"\clearpage", "```", ""])
         line = re.sub(r"^(#{2,3})\s+\d+(?:\.\d+)?\.?(?:\s+)", r"\1 ", line)
         if line.startswith('<div class="equation">'):
             output.extend(

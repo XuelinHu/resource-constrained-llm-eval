@@ -92,8 +92,6 @@ The three authors jointly constructed and checked the knowledge base and the tra
 \label{fig:neural-retrieval-qlora}
 \end{figure}
 
-\clearpage
-
 \subsection{Retrieval and answer generation}
 
 BM25 indexes Chinese and English question-answer fields and evidence. Dense search embeds a query with BGE-M3 and ranks chunks by vector similarity. Hybrid retrieval fuses keyword and dense rankings using reciprocal-rank fusion. The Approved-Only condition applies review status as a database-level eligibility filter. Retrieval mode and top-\emph{k} are configured by the user or operator rather than selected autonomously by the language model. Retrieved evidence is numbered and supplied to the local generator with an instruction to answer in the query language and cite evidence labels.
