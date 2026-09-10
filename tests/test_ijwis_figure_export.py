@@ -18,13 +18,13 @@ class IjwisFigureExportTests(unittest.TestCase):
         for index in (0, 3, 5, 6):
             self.assertEqual(figures[index], submission.FIGURES[index])
 
-    def test_landscape_figure_is_present_without_removed_figure(self) -> None:
+    def test_dedicated_portrait_figure_is_present_without_removed_figure(self) -> None:
         prepared = latex.prepare_markdown(latex.SOURCE.read_text(encoding="utf-8"))
         latex.validate_citation_graph(prepared)
         result = latex.markdown_to_latex(prepared)
-        self.assertEqual(result.count(r"\begin{landscape}"), 1)
-        self.assertEqual(result.count(r"\end{landscape}"), 1)
-        self.assertEqual(result.count(r"\afterpage{\clearpage"), 1)
+        self.assertEqual(result.count(r"\begin{landscape}"), 0)
+        self.assertEqual(result.count(r"\end{landscape}"), 0)
+        self.assertEqual(result.count(r"\clearpage"), 2)
         self.assertEqual(result.count(r"\begin{figure}"), 7)
         self.assertEqual(result.count("figure_01_neural_retrieval.pdf"), 1)
         self.assertNotIn("figure_02_knowledge_governance.pdf", result)

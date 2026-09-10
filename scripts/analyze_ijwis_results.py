@@ -562,7 +562,7 @@ def plot_pareto(metrics: pd.DataFrame, efficiency: pd.DataFrame) -> None:
     merged = quality.merge(efficiency, on=["model_key", "condition"])
     if merged.empty:
         return
-    fig, axes = plt.subplots(2, 1, figsize=(4.8, 7.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.55), sharey=True)
     markers = {"original": "o", "qlora": "s"}
     colors = {"qwen2_5_7b_instruct": "#0072B2", "glm_4_9b_chat_hf": "#D55E00"}
     panels = (("mean_latency_s", "Mean generation latency (s)"),

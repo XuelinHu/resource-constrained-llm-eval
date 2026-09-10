@@ -125,25 +125,25 @@ def prepare_markdown(source: str) -> str:
             output.extend(["```{=latex}", r"\end{abstract}", "```", "## Introduction"])
             continue
         if line in FIGURES:
-            # Let the current text page fill before the landscape page.
+            # Let the current text page fill before the dedicated figure page.
             defer_architecture = line == "### 3.3 Retrieval and answer generation"
             if defer_architecture:
-                output.extend(["```{=latex}", r"\afterpage{\clearpage", "```", ""])
+                output.extend(["```{=latex}", r"\clearpage", "```", ""])
             for filename, caption in FIGURES[line]:
                 path = f"../paper/ijwis/figures/{filename}"
                 if filename == "figure_01_neural_retrieval.pdf":
                     output.extend([
-                        "", "```{=latex}", r"\begin{landscape}",
+                        "", "```{=latex}",
                         r"\begin{figure}[p]", r"\centering",
-                        rf"\includegraphics[width=0.55\linewidth,height=0.78\textheight,keepaspectratio]{{{path}}}",
+                        rf"\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{{{path}}}",
                         r"\caption{" + escape_latex(caption) + "}",
                         r"\label{fig:neural-retrieval-qlora}",
-                        r"\end{figure}", r"\end{landscape}", "```", "",
+                        r"\end{figure}", "```", "",
                     ])
                     continue
                 output.extend(["", f"![{caption}]({path}){{width=96%}}", ""])
             if defer_architecture:
-                output.extend(["```{=latex}", "}", "```", ""])
+                output.extend(["```{=latex}", r"\clearpage", "```", ""])
         line = re.sub(r"^(#{2,3})\s+\d+(?:\.\d+)?\.?(?:\s+)", r"\1 ", line)
         if line.startswith('<div class="equation">'):
             output.extend(
