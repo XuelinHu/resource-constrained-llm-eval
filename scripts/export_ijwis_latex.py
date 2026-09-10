@@ -15,7 +15,7 @@ BIBLIOGRAPHY = ROOT / "paper/ijwis/references.bib"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow. The upper path covers governed input, retrieval, evidence-conditioned generation and evaluation; the lower path shows completion-only QLoRA adaptation with a frozen base model. Source: Authors' own work."),
+        ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. A separate lower branch shows completion-only QLoRA adaptation with a frozen base model."),
     ],
     "### 4.3 QLoRA adaptation and held-out QA": [
         ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
