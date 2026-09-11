@@ -173,19 +173,21 @@ The database contains 37,661 approved records and 37,109 complete bilingual reco
 | Vector | English | 0.463 | 0.553 | 0.580 | 0.509 | 134.4 |
 | Hybrid approved | English | **0.570** | 0.668 | **0.708** | **0.620** | 209.2 |
 
-Table II reports the formal evidence-equivalent retrieval comparison. BM25 is particularly competitive for English terminology queries, while dense retrieval records higher Chinese evidence recall in this evaluation. With the RRF candidate pool fixed at 50 for every final cutoff, hybrid fusion obtains the highest Evidence Recall@5 in both languages, although its latency is approximately three times that of BM25. Increasing the final cutoff from three to eight raises hybrid evidence recall from 0.675 to 0.743 in Chinese and from 0.668 to 0.723 in English, while mean retrieval latency remains nearly constant in this controlled evaluation (Figure 2). Approved-only and unfiltered hybrid results are identical because all admissible indexed records in this frozen experiment satisfy the approval condition. These values concern the matching rule in Section 3.5; they must not be interpreted as retrieval of the excluded test record itself.
+Table II reports the formal evidence-equivalent retrieval comparison. BM25 is particularly competitive for English terminology queries, while dense retrieval records higher Chinese evidence recall in this evaluation. With the RRF candidate pool fixed at 50 for every final cutoff, hybrid fusion obtains the highest Evidence Recall@5 in both languages, although its latency is approximately three times that of BM25. Increasing the final cutoff from three to eight raises hybrid evidence recall from 0.675 to 0.743 in Chinese and from 0.668 to 0.723 in English, while mean retrieval latency remains nearly constant in this controlled evaluation (Figure 2). Approved-only and unfiltered hybrid results are identical because all admissible indexed records in this frozen experiment satisfy the approval condition.
 
 ### 4.3 QLoRA adaptation and held-out QA
 
-Both one-epoch training runs completed without interruption. Qwen trained for 3,546 s (59.1 min), with mean training loss of 0.950, end-of-epoch validation loss of 0.720 and peak reserved GPU memory of 13.0 GiB. GLM trained for 4,571 s (76.2 min), with mean training loss of 1.146, end-of-epoch validation loss of 0.794 and peak reserved GPU memory of 15.0 GiB. The respective validation perplexities were 2.05 and 2.21.
+Having established the retrieval results, the next analysis examines the effect of QLoRA adaptation on held-out question answering.
 
-Figure 3 presents the logged training-loss curves and one end-of-epoch validation point per model. The final logged training losses were approximately 0.700 for Qwen and 0.791 for GLM; these are distinct from the whole-run mean training losses above. The one-epoch curves describe optimisation behaviour, not demonstrated convergence across extended or repeated training schedules. The absence of an extended hyperparameter search is consistent with the resource-constrained design but limits claims about globally optimal adapter settings.
+Figure 3 presents the Qwen completion-only QLoRA training-loss curve and its end-of-epoch validation point. The curve describes optimisation behaviour within one epoch; it does not establish convergence across extended or repeated training schedules. The absence of an extended hyperparameter search is consistent with the resource-constrained design but limits claims about globally optimal adapter settings.
 
 On the 1,526-example held-out bilingual QA set, Qwen QLoRA increased character-level F1 from 0.189 (95 per cent CI 0.175-0.204) to 0.398 (0.376-0.422) in Chinese and from 0.437 (0.419-0.455) to 0.648 (0.632-0.664) in English. GLM increased from 0.192 to 0.410 in Chinese and from 0.498 to 0.552 in English. All four paired gains remained significant after Holm correction (all adjusted p-values below 0.01); Cohen's *d*<sub>z</sub> was 0.569 and 0.634 for Qwen Chinese and English, and 0.614 and 0.146 for GLM. Qwen therefore provides the strongest balanced adapted QA result under this character-level metric, while the small GLM English effect cautions against pooling languages. These sample-level tests do not estimate variation across repeated training seeds.
 
 A limited general-capability check (maximum 200 examples per subtask) found that Qwen C-Eval/MMLU accuracy changed from 0.788/0.739 to 0.775/0.728, whereas GLM changed from 0.675/0.673 to 0.683/0.679. These small changes do not indicate broad catastrophic forgetting, but the limited protocol is a regression check rather than a comprehensive general benchmark.
 
 ### 4.4 Multi-generator RAG comparisons
+
+The held-out QA results motivate the next comparison, which tests how retrieved evidence changes answer quality across generators.
 
 Approved-hybrid RAG significantly improved Answer F1 over no retrieval for every generator and language after Holm correction. Table III summarises the main comparisons; the adjusted p-values are below 0.01 in every language-model condition. The results show that Qwen QLoRA achieved the highest absolute hybrid-RAG F1, whereas original Qwen obtained the largest incremental gain from adding retrieval. BM25 and hybrid did not have a uniform answer-quality ordering, so the observed gains depend on adaptation, retrieval strategy and language.
 
@@ -203,6 +205,8 @@ The traceability result was different. For original Qwen, citation-format covera
 
 ### 4.5 Directional translation
 
+Because answer quality alone does not describe bilingual deployment, the following analysis turns to translation by direction and task.
+
 Translation effects were direction- and task-dependent. Qwen COMET moved from 0.501 to 0.509 for Chinese-to-English terminology and from 0.610 to 0.614 for English-to-Chinese sentences, but fell from 0.656 to 0.599 for Chinese-to-English sentences and from 0.596 to 0.485 for English-to-Chinese terminology. Its lexical metrics show the same lack of uniform benefit: Chinese-to-English terminology chrF++ increased from 10.41 to 16.69, whereas sentence chrF++ fell from 47.43 to 31.28.
 
 Figure 4 visualises the before-and-after COMET changes by direction and task. The paired bars show increases in some conditions and decreases in others, so the result cannot be summarised as a uniform improvement or regression.
@@ -210,6 +214,8 @@ Figure 4 visualises the before-and-after COMET changes by direction and task. Th
 GLM QLoRA is a clear failure case. Its sentence COMET dropped from 0.667 to 0.348 for Chinese-to-English and from 0.742 to 0.343 for English-to-Chinese; corpus BLEU was zero in both directions. Automated inspection found 2,168 empty outputs among 2,634 translation examples (82.3 per cent). This result does not support a general claim that QA-oriented completion-only adaptation improves translation. Terminology and sentence translation are therefore reported separately from QA evaluation.
 
 ### 4.6 Resource use and automated error analysis
+
+The translation findings are followed by an assessment of runtime cost and output failure patterns.
 
 All five deployment conditions completed 270 measurements without execution failure or OOM. GPU memory measurements are expressed in GiB (2^30 bytes). Original Qwen and GLM reached 5.49 and 6.76 GiB peak PyTorch reserved memory and generated at 31.9 and 22.7 tokens/s. Their QLoRA variants reached 16.11 and 19.49 GiB and generated at 17.5 and 11.9 tokens/s. Peak allocated memory was 5.35 and 6.48 GiB for the original models, compared with 15.40 and 7.20 GiB for the QLoRA variants. Reserved memory includes caching-allocator reservations and should not be interpreted as memory occupied by live tensors or as the intrinsic adapter overhead. Qwen3-14B through Ollama reached 14.26 GiB of GPU-process memory and 78.5 tokens/s; this memory statistic is not PyTorch reserved memory, and cross-backend memory and timing comparisons are descriptive. The Qwen and GLM adapters occupy approximately 627 and 746 MB. The low 2.63 s GLM QLoRA mean latency reflects abnormally short or empty outputs and is not an efficiency advantage. All configurations fit the target 24 GB workstation, but original Qwen provides the lowest resource cost and Qwen QLoRA the strongest QA quality within the limit.
 
@@ -219,6 +225,8 @@ Automated failure flags provide additional descriptive comparisons for the aggre
 
 ### 4.7 Index, evidence-support and governance validation
 
+Finally, the study links the preceding performance findings to system-level checks on indexing, evidence support and governance.
+
 **Table IV. Supplementary information-system validation results.**
 
 | Validation | Chinese | English | Operational result |
@@ -226,7 +234,6 @@ Automated failure flags provide additional descriptive comparisons for the aggre
 | Bilingual-field hybrid index, Evidence Recall@5 | 0.718 | 0.675 | Highest balanced mean (0.696) |
 | Original Qwen hybrid, supported-claim proxy | 0.878 | 0.836 | Citation precision 0.955/0.970 |
 | Qwen QLoRA hybrid, supported-claim proxy | 0.964 | 0.905 | Citation recall 0.000/0.002 |
-| Governance history | - | - | 1,337 events; 82 edits; two recorded reviewers |
 
 Table IV and Figure 7 report three complementary validation layers. Panel A compares source-only, language-specific and bilingual index fields, showing how field choice affects Chinese and English evidence access. Panel B compares semantic support against all retrieved evidence and explicitly cited evidence; it is an automated support proxy that reveals whether citation presence keeps pace with retrieved relevance. Panel C audits immutable review events and before-state snapshots, showing whether governance actions and changed fields are traceable over time. Together, the panels connect retrieval configuration, evidence support and operational auditability without reducing them to one score. The governance database contains 37,664 records and 1,337 review events; only three current records are rejected, so the experiment does not provide an approved-versus-rejected quality comparison.
 
