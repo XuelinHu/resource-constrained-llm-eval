@@ -15,6 +15,8 @@ Formal implementation and experimental environment.
 | Training | NF4 QLoRA; rank 64; one epoch; seed 42 |
 | Hardware boundary | One RTX 3090 24 GB; 32 GB RAM; no multi-GPU or required cloud inference |
 | Statistical analysis | 2,000 bootstrap resamples; paired Wilcoxon; Cohen's *d*<sub>z</sub>; Holm correction |
+| Software | Linux; Python 3.11.15; PyTorch 2.11.0; Transformers 5.12.1; PEFT 0.18.1; bitsandbytes 0.49.2; Ollama 0.19.0 |
+| Runtime | BGE-M3 embeddings; COMET checkpoint `Unbabel/wmt22-comet-da`; greedy decoding; Temperature 0; Top-P 1 |
 
 ## Table II
 
@@ -31,6 +33,18 @@ Formal cross-source evidence-equivalent retrieval on 400 knowledge pairs.
 
 ## Table III
 
+Multi-generator RAG comparison.
+
+| Generator | No retrieval F1 (ZH/EN) | Approved-hybrid F1 (ZH/EN) | Gain (ZH/EN) | Holm-adjusted *p* (ZH/EN) |
+|---|---:|---:|---:|---:|
+| Original Qwen | 0.262 / 0.306 | 0.402 / 0.440 | +0.141 / +0.133 | 1.89e-39 / 2.28e-42 |
+| Original GLM | - | - | - | 1.13e-22 / 9.56e-31 |
+| Qwen QLoRA | 0.630 / 0.573 | 0.660 / 0.651 | +0.030 / +0.078 | 1.34e-06 / 1.41e-11 |
+| GLM QLoRA | - | - | - | 3.16e-09 / 9.37e-03 |
+| Qwen3-14B | - | 0.442 / 0.454 | - | 6.66e-32 / 7.58e-29 |
+
+## Table IV
+
 Supplementary information-system validation results.
 
 | Validation | Chinese | English | Operational result |
@@ -38,4 +52,3 @@ Supplementary information-system validation results.
 | Bilingual-field hybrid index, Evidence Recall@5 | 0.718 | 0.675 | Highest balanced mean (0.696) |
 | Original Qwen hybrid, supported-claim proxy | 0.878 | 0.836 | Citation precision 0.955/0.970 |
 | Qwen QLoRA hybrid, supported-claim proxy | 0.964 | 0.905 | Citation recall 0.000/0.002 |
-| Governance history | - | - | 1,337 events; 82 edits; two recorded reviewers |

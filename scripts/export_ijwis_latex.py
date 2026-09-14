@@ -23,18 +23,16 @@ FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 4.4 Multi-generator RAG comparisons": [
         ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ],
-    "### 4.6 Resource use and automated error analysis": [
-        ("figure_05_translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
+    "### 4.6 Resource use": [
+        ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
     ],
     "### 4.7 Index, evidence-support and governance validation": [
-        ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
-        ("figure_07_error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
         ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score."),
     ],
 }
 
-
 # Keep the Markdown source readable for the Word submission while making the
+
 # LaTeX PDF use a real citation graph checked by BibTeX/natbib.
 CITATION_KEYS: dict[tuple[str, str], str] = {
     ("Barnett", "2024"): "barnett2024finetuning",
@@ -79,8 +77,8 @@ CITATION_ITEM = re.compile(
     r"([A-Z][A-Za-z-]*(?:\s+Team)?)(?:\s+\*?et al\.\*?|\s+and\s+[A-Z][A-Za-z-]+)?\s*,\s*(\d{4})"
 )
 
-
 def convert_citations(markdown: str) -> str:
+
     def replace(match: re.Match[str]) -> str:
         group = match.group(1)
         items = CITATION_ITEM.findall(group)
@@ -96,8 +94,8 @@ def convert_citations(markdown: str) -> str:
 
     return CITATION_GROUP.sub(replace, markdown)
 
-
 def validate_citation_graph(markdown: str) -> None:
+
     cited = {
         key
         for group in re.findall(r"\\citep\{([^}]+)\}", markdown)
@@ -109,8 +107,8 @@ def validate_citation_graph(markdown: str) -> None:
     if missing or unused:
         raise ValueError(f"Citation graph mismatch: missing={missing}, unused={unused}")
 
-
 def prepare_markdown(source: str) -> str:
+
     lines = source.splitlines()
     output: list[str] = []
     for index, line in enumerate(lines):
@@ -141,7 +139,7 @@ def prepare_markdown(source: str) -> str:
                         r"\end{figure}", "```", "",
                     ])
                     continue
-                output.extend(["", f"![{caption}]({path}){{width=96%}}", ""])
+                output.extend(["", f"![{caption}]({path}){{width=82%}}", ""])
         line = re.sub(r"^(#{2,3})\s+\d+(?:\.\d+)?\.?(?:\s+)", r"\1 ", line)
         if line.startswith('<div class="equation">'):
             output.extend(
@@ -158,8 +156,8 @@ def prepare_markdown(source: str) -> str:
         output.append(line)
     return convert_citations("\n".join(output) + "\n")
 
-
 def escape_latex(text: str) -> str:
+
     replacements = {
         "\\": r"\textbackslash{}",
         "&": r"\&",
@@ -174,8 +172,8 @@ def escape_latex(text: str) -> str:
     }
     return "".join(replacements.get(character, character) for character in text)
 
-
 def inline_to_latex(text: str) -> str:
+
     """Convert the small inline-Markdown subset used by this manuscript."""
     protected: dict[str, str] = {}
 
@@ -202,8 +200,8 @@ def inline_to_latex(text: str) -> str:
         text = text.replace(key, value)
     return text
 
-
 def table_to_latex(lines: list[str], number: str) -> list[str]:
+
     rows = [
         [cell.strip() for cell in line.strip().strip("|").split("|")]
         for line in lines
@@ -234,8 +232,8 @@ def table_to_latex(lines: list[str], number: str) -> list[str]:
         output.append(r"\end{adjustbox}")
     return output
 
-
 def markdown_to_latex(markdown: str) -> str:
+
     """Fallback exporter for the deliberately constrained manuscript syntax."""
     lines = markdown.splitlines()
     output: list[str] = []
@@ -330,8 +328,8 @@ def markdown_to_latex(markdown: str) -> str:
         raise ValueError("Unclosed raw-LaTeX block or Markdown table")
     return "\n".join(output).rstrip() + "\n"
 
-
 def main() -> None:
+
     markdown_source = prepare_markdown(SOURCE.read_text(encoding="utf-8"))
     validate_citation_graph(markdown_source)
     pandoc = shutil.which("pandoc")
@@ -363,6 +361,6 @@ def main() -> None:
     OUTPUT.write_text(latex, encoding="utf-8", newline="\n")
     print(f"{OUTPUT} ({'pandoc' if pandoc else 'built-in fallback'})")
 
-
 if __name__ == "__main__":
+
     main()

@@ -17,21 +17,19 @@ FIGURES = [
     ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. A separate lower branch shows completion-only QLoRA adaptation with a frozen base model."),
     ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
     ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
-    ("figure_05_translation_before_after.pdf", "Direction- and task-separated COMET before and after QLoRA. Left: Qwen2.5-7B; right: GLM-4-9B. Source: Authors' own work."),
     ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
-    ("figure_07_error_type_distribution.pdf", "Standalone bilingual-QA and domain/translation output flags. Bars show mean condition/task-level proportions among groups in which each flag occurred, not pooled sample-level rates. Flags are non-exclusive; RAG retrieval misses and citation omissions are reported separately in the text. Source: Authors' own work."),
     ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score."),
 ]
 
 TABLE_CAPTION = re.compile(r"^\*\*Table ([IVX]+)\. (.+)\*\*$")
 
-
 def write_utf8_lf(path: Path, content: str) -> None:
+
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write(content)
 
-
 def split_tables(markdown: str) -> tuple[str, str]:
+
     lines = markdown.splitlines()
     manuscript: list[str] = []
     tables: list[str] = ["# Tables", "", "Tables are numbered with Roman numerals and supplied separately in accordance with the IJWIS author guidelines.", ""]
@@ -55,8 +53,8 @@ def split_tables(markdown: str) -> tuple[str, str]:
         tables.append("")
     return "\n".join(manuscript).rstrip() + "\n", "\n".join(tables).rstrip() + "\n"
 
-
 def run_pandoc(source: Path, target: Path) -> None:
+
     pandoc = shutil.which("pandoc")
     if pandoc is None:
         raise RuntimeError("pandoc is required to build the IJWIS Word files")
@@ -66,8 +64,8 @@ def run_pandoc(source: Path, target: Path) -> None:
         check=True,
     )
 
-
 def main(skip_docx: bool = False) -> None:
+
     OUTPUT.mkdir(parents=True, exist_ok=True)
     figure_output = OUTPUT / "figures"
     figure_output.mkdir(exist_ok=True)
@@ -132,6 +130,6 @@ def main(skip_docx: bool = False) -> None:
 
     print(OUTPUT)
 
-
 if __name__ == "__main__":
+
     main(skip_docx="--skip-docx" in sys.argv[1:])

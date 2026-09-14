@@ -288,7 +288,7 @@ Recall@5，但时延约为 BM25 的三倍。在这一受控评估中，将最终
 
 <figure data-latex-placement="ht">
 <embed src="../paper/ijwis/figures/figure_03_top_k_quality_latency.pdf"
-style="width:96.0%" />
+style="width:82.0%" />
 <figcaption>不同 top-<span class="math inline"><em>k</em></span>
 设置下混合检索的证据等价质量与时延。左图为证据 Recall@<span
 class="math inline"><em>k</em></span>，右图为平均检索时延。</figcaption>
@@ -315,7 +315,7 @@ GLM
 <figure data-latex-placement="ht">
 <embed
 src="../paper/ijwis/figures/figure_04_training_validation_loss.pdf"
-style="width:96.0%" />
+style="width:82.0%" />
 <figcaption>Qwen2.5-7B 和 GLM-4-9B 的仅答案监督 QLoRA
 优化过程。曲线表示日志记录的训练损失；菱形表示每个模型唯一的 epoch
 末验证点。</figcaption>
@@ -353,7 +353,6 @@ Holm 校正后，审批混合 RAG 在每个生成器和语言上都显著提高�
 16.69，而句子 chrF++ 从 47.43 降至
 31.28。相反的变化说明结果不能概括为单一提升或退化。
 
-图 4 按方向和任务展示适配前后的 COMET
 变化。配对柱形在部分条件下升高、在另一些条件下降低，表明结果不能概括为一致提升或退化。
 
 GLM QLoRA 是明显的失败案例。其句子 COMET 在中译英中从 0.667 降至
@@ -361,15 +360,7 @@ GLM QLoRA 是明显的失败案例。其句子 COMET 在中译英中从 0.667 �
 0。自动检查在 2,634 个翻译样本中发现 2,168
 个空输出（82.3%）。这一结果不支持“面向问答的仅完成部分适配一般能够改善翻译”的结论。因此，术语和句子翻译应与问答评估分开报告。
 
-<figure data-latex-placement="ht">
-<embed
-src="../paper/ijwis/figures/figure_05_translation_before_after.pdf"
-style="width:96.0%" />
-<figcaption>按方向和任务拆分的 QLoRA 前后 COMET。左图为
-Qwen2.5-7B，右图为 GLM-4-9B。</figcaption>
-</figure>
-
-## 资源使用与自动错误分析
+## 资源使用
 
 五种部署条件均完成 270 次测量，未出现执行失败或 OOM。显存实测值统一以
 GiB（$`2^{30}`$ 字节）表示。原始 Qwen 和 GLM 的 PyTorch 峰值预留显存为
@@ -386,35 +377,7 @@ token/s；这一显存统计并非 PyTorch
 24 GB 工作站；原始 Qwen 的资源成本最低，Qwen QLoRA
 在限制内提供最强问答质量。
 
-图 5 展示 Qwen2.5/GLM 原始与 QLoRA 四种条件下，独立问答的双语平均字符级
-F1
-与生成时延、峰值预留显存之间的关系。质量与资源测量来自各自的评估负载。该图是质量与资源的描述性比较，而不是适配器开销的受控因果估计；图中不包含通过
-Ollama 运行的 Qwen3。
-
-自动失败标记为汇总结果提供了额外的描述性对比。在前三个候选中，审批混合检索对中文
-32.5% 和英文 33.3% 的查询未返回满足冻结等价规则的证据。原始 Qwen
-的“证据命中且答案低重叠”联合事件占全部中文查询的 18.0%、全部英文查询的
-4.3%，分母为全部查询而非仅检索命中的查询；Qwen QLoRA 将其降至 4.0% 和
-1.5%，但引用标签缺失率为 100.0% 和 99.8%。图 6
-单独汇总独立双语问答及领域/翻译输出中的术语不匹配、答案低重叠、空答案、错误语言标记和过长答案。每根柱形是出现对应标记的模型条件/任务组内比例的均值，不是合并样本后的发生率，也不是前述
-RAG
-检索与引用统计的绘图。各标记可以同时出现；术语不匹配表示未通过参考答案包含检查，而非专家判定术语错误。
-
-<figure data-latex-placement="ht">
-<embed src="../paper/ijwis/figures/figure_06_quality_latency_pareto.pdf"
-style="width:96.0%" />
-<figcaption>Qwen2.5/GLM 原始与 QLoRA 四种条件下，独立问答双语平均字符级
-F1 与生成时延、峰值预留显存（GiB）的关系。左图为平均生成时延；右图为
-PyTorch 预留显存。质量与资源在不同负载上测量。</figcaption>
-</figure>
-
-<figure data-latex-placement="ht">
-<embed
-src="../paper/ijwis/figures/figure_07_error_type_distribution.pdf"
-style="width:96.0%" />
-<figcaption>独立双语问答及领域/翻译输出标记。柱形表示出现对应标记的模型条件/任务组内比例的均值，不是合并样本后的发生率。各标记不互斥；RAG
-检索遗漏与引用缺失另见正文。</figcaption>
-</figure>
+图 4 展示 Qwen2.5/GLM 原始与 QLoRA 四种条件下，独立问答的双语平均字符级 F1 与生成时延、峰值预留显存之间的关系。质量与资源测量来自各自的评估负载。该图是质量与资源的描述性比较，而不是适配器开销的受控因果估计；图中不包含通过 Ollama 运行的 Qwen3。
 
 ## 索引、证据支持与治理验证
 
@@ -426,11 +389,11 @@ style="width:96.0%" />
 
 补充信息系统验证结果
 
-表 III 和图 7 展示三个互补的验证层次。A 面板比较仅源字段、中文字段、英文字段和双语字段索引，说明字段选择如何影响中英文证据访问；B 面板比较全部检索证据与明确引用证据上的语义支持，作为自动支持代理，显示引用是否与检索相关性同步；C 面板审计不可变审核事件和修改前状态快照，说明治理动作与变更字段能否随时间追溯。三个面板共同连接检索配置、证据支持和运行审计能力，但不将其压缩为单一分数。治理数据库包含 37,664 条记录和 1,337 个审核事件；当前只有三条记录被拒绝，因此本实验不提供审批与拒绝之间的质量对比。
+表 III 和图 5 展示三个互补的验证层次。A 面板比较仅源字段、中文字段、英文字段和双语字段索引，说明字段选择如何影响中英文证据访问；B 面板比较全部检索证据与明确引用证据上的语义支持，作为自动支持代理，显示引用是否与检索相关性同步；C 面板审计不可变审核事件和修改前状态快照，说明治理动作与变更字段能否随时间追溯。三个面板共同连接检索配置、证据支持和运行审计能力，但不将其压缩为单一分数。治理数据库包含 37,664 条记录和 1,337 个审核事件；当前只有三条记录被拒绝，因此本实验不提供审批与拒绝之间的质量对比。
 
 <figure data-latex-placement="ht">
 <embed src="../paper/ijwis/figures/figure_08_system_validation.pdf"
-style="width:96.0%" />
+style="width:82.0%" />
 <figcaption>三个验证层次。A 面板比较不同索引字段，B 面板比较检索证据与明确引用证据的语义支持，C 面板审计不可变审核事件和修改前状态快照。三个面板分别表达检索均衡性、证据支持和治理可追溯性，不合并为单一分数。</figcaption>
 </figure>
 
@@ -511,3 +474,43 @@ QLoRA
 ## 参考文献
 
 参考文献沿用英文论文中的正式书目信息，完整条目见 [`references.bib`](references.bib)。
+
+
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+
+
+
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
+undefined
