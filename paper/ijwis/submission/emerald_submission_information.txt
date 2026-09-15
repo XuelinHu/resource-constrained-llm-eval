@@ -12,13 +12,13 @@ Knowledge-Enhanced Domain Adaptation of Large Language Models for Bilingual Rail
 
 STRUCTURED ABSTRACT
 -------------------
-Purpose: The international expansion of railway technology has increased demand for bilingual vocational education, yet railway regulations, technical terminology and teaching materials remain difficult to access consistently across languages. Because most vocational institutions and local research teams operate with limited computing resources, this study develops a knowledge-enhanced domain large language model for bilingual railway question answering that can be adapted and evaluated on a single workstation.
+Purpose: The international expansion of railway technology has increased demand for bilingual vocational education, yet railway regulations, technical terminology and teaching materials remain difficult to access consistently across Chinese and English. Because most vocational institutions and local research teams work with limited computing resources, this study develops and evaluates a railway-domain large language model that answers bilingual railway questions on a single workstation.
 
-Design/methodology/approach: A reviewed bilingual railway corpus was split by knowledge-pair identifier into training, validation and held-out records. BM25 lexical retrieval and BGE-M3 dense retrieval were combined by reciprocal rank fusion to supply railway evidence to Qwen2.5-7B and GLM-4-9B. The models were adapted with completion-only QLoRA and compared with their original versions and a Qwen3-14B reference through held-out domain QA, retrieval-augmented generation and measured resource use.
+Design/methodology/approach: The study addresses the problem with two methods. The first is a hybrid evidence-fusion method: BM25 lexical retrieval and BGE-M3 dense retrieval are fused by reciprocal rank fusion, and the top-ranked railway evidence passages are inserted into the prompt as the knowledge context for answering. The second is a vertical-domain adaptation method: completion-only QLoRA specialises Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF on reviewed railway question-answer pairs, with the base weights frozen in 4-bit NF4. Both methods were evaluated on a held-out bilingual railway set against the original models and an unadapted Qwen3-14B reference under an identical single-GPU boundary.
 
-Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, and the bilingual-field index produced the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Adding approved hybrid evidence improved Answer F1 for every evaluated generator in both languages; Qwen QLoRA reached 0.660 and 0.651. All evaluated model conditions fitted within the 24 GB GPU boundary.
+Findings: Evidence fusion produced the highest retrieval quality in both languages, reaching Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, and fusing both language fields gave the best cross-language balance. Vertical fine-tuning raised held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English for Qwen2.5-7B. Combining both methods gave the best answer quality: Qwen QLoRA reached an answer F1 of 0.660 in Chinese and 0.651 in English under fused evidence, and adding that evidence improved answer F1 for every evaluated generator in both languages.
 
-Originality/value: The study demonstrates that lexical-dense evidence fusion and parameter-efficient adaptation can be combined to specialise medium-sized large language models for bilingual railway education under realistic local-computing constraints. The results distinguish gains from retrieved knowledge and gains from model adaptation, providing a practical basis for developing vertical-domain railway language models without multi-GPU training.
+Originality/value: The study shows that lexical-dense evidence fusion and parameter-efficient vertical adaptation are complementary rather than substitutable mechanisms for building a domain model, especially in specialised vertical domains. Reporting the two methods under one resource boundary and one held-out protocol separates the gain obtained from retrieved railway knowledge from the gain obtained from domain-specific fine-tuning, and it gives a reproducible procedure for developing vertical-domain language models without multi-GPU training.
 
 KEYWORDS
 --------
@@ -86,10 +86,10 @@ The manuscript uses an author-date Harvard-style reference list: references are 
 
 FINAL FILE INVENTORY
 --------------------
-Manuscript figures: 5 files, named figures/Figure_1.pdf through figures/Figure_5.pdf.
-Manuscript tables: 4 tables embedded in the single TeX manuscript.
+Manuscript figures: 4 files, named figures/Figure_1.pdf through figures/Figure_4.pdf.
+Manuscript tables: 6 tables embedded in the single TeX manuscript.
 TeX source: tex/anonymous_manuscript.tex. The file contains the complete anonymous English manuscript and embedded references; the original-named figure files remain in tex/figures/.
 English anonymous PDF: anonymous_manuscript.pdf.
 The anonymous submission PDF is anonymous_manuscript.pdf.
-The Chinese translation PDF is anonymous_manuscript_zh.pdf for internal review and is not the blinded English upload.
-The manuscript contains 5 figures and 4 tables. The translation comparison and error-distribution assets remain in the project source directory but are not part of the current five-figure main manuscript because they are not embedded or cited in the authoritative manuscript.
+The Chinese translation PDF is anonymous_manuscript_zh.pdf for internal review and is not the blinded English upload. Its LaTeX source is tex/anonymous_manuscript_zh.tex, a section-by-section Chinese counterpart of the English manuscript that shares the same figures, tables, equations and reported values.
+The manuscript contains 4 figures and 6 tables. The translation comparison, error-distribution and system-validation assets remain in the project source directory but are not part of the current four-figure main manuscript because they are not embedded or cited in the authoritative manuscript.
