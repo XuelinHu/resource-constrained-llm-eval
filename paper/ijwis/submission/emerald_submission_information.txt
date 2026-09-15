@@ -8,21 +8,21 @@ Source guidance: https://www.emerald.com/journals/author-guidance/1627/emerald-p
 
 TITLE
 -----
-Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints
+Knowledge-Enhanced Domain Adaptation of Large Language Models for Bilingual Railway Vocational Education under Resource Constraints
 
 STRUCTURED ABSTRACT
 -------------------
-Purpose: This study evaluates whether a governed bilingual knowledge-enhanced workflow can support railway vocational question answering while keeping evidence access and review state traceable.
+Purpose: The international expansion of railway technology has increased demand for bilingual vocational education, yet railway regulations, technical terminology and teaching materials remain difficult to access consistently across languages. Because most vocational institutions and local research teams operate with limited computing resources, this study develops a knowledge-enhanced domain large language model for bilingual railway question answering that can be adapted and evaluated on a single workstation.
 
-Design/methodology/approach: An expert-governed bilingual corpus was split by knowledge-pair identifier into training, validation and held-out records. Qwen2.5-7B and GLM-4-9B were evaluated before and after completion-only QLoRA adaptation, with Qwen3-14B as a reference. BM25, BGE-M3 dense retrieval and reciprocal-rank-fusion hybrid retrieval were compared on held-out bilingual queries, followed by controlled retrieval-augmented generation and resource checks.
+Design/methodology/approach: A reviewed bilingual railway corpus was split by knowledge-pair identifier into training, validation and held-out records. BM25 lexical retrieval and BGE-M3 dense retrieval were combined by reciprocal rank fusion to supply railway evidence to Qwen2.5-7B and GLM-4-9B. The models were adapted with completion-only QLoRA and compared with their original versions and a Qwen3-14B reference through held-out domain QA, retrieval-augmented generation and measured resource use.
 
-Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, while the bilingual-field index achieved the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Approved-hybrid RAG improved Answer F1 for every evaluated generator and language; Qwen QLoRA reached 0.660 and 0.651. Translation and citation-following results were task-dependent.
+Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, and the bilingual-field index produced the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Adding approved hybrid evidence improved Answer F1 for every evaluated generator in both languages; Qwen QLoRA reached 0.660 and 0.651. All evaluated model conditions fitted within the 24 GB GPU boundary.
 
-Originality/value: The study provides an auditable evaluation workflow that separates bilingual retrieval, domain adaptation, answer overlap, citation behaviour and resource use. Adapted outputs still require author and railway-domain-expert review before practical use.
+Originality/value: The study demonstrates that lexical-dense evidence fusion and parameter-efficient adaptation can be combined to specialise medium-sized large language models for bilingual railway education under realistic local-computing constraints. The results distinguish gains from retrieved knowledge and gains from model adaptation, providing a practical basis for developing vertical-domain railway language models without multi-GPU training.
 
 KEYWORDS
 --------
-bilingual railway education; retrieval-augmented generation; QLoRA; knowledge governance; evidence retrieval; Web information systems
+railway domain large language model; bilingual vocational education; hybrid retrieval; retrieval-augmented generation; QLoRA; parameter-efficient fine-tuning
 
 AUTHOR INFORMATION FOR THE SEPARATE TITLE PAGE
 ------------------------------------------------
@@ -78,11 +78,11 @@ DOUBLE-ANONYMOUS UPLOAD CHECKLIST
 [ ] Do not include author names, affiliations, ORCID identifiers, email addresses, biographies, acknowledgements, author contributions or identifying funding text in the blinded manuscript.
 [ ] Check self-citations: describe unavoidable author self-citations neutrally during review and restore full attribution only after acceptance if required.
 [ ] Upload figures and tables as separate files if the submission system requests them.
-[ ] Keep the abstract as one structured block with the four Emerald headings above and keep the six keywords unchanged.
+[ ] Keep the abstract in four separate paragraphs headed Purpose, Design/methodology/approach, Findings and Originality/value, and keep the six keywords unchanged.
 
 REFERENCE STYLE CHECK
 ---------------------
-The manuscript uses an author-date Harvard-style reference list: references are arranged alphabetically by first author; journal and book titles are italicised in formatted output; journal references include year, volume, issue and page or article number where available; conference and thesis references identify the venue; DOI is retained as `doi: 10....` and stable URLs are included where no DOI is available. In-text citations use author and year, with `et al.` for multi-author citations where appropriate. Verify any final system-generated reference formatting against the journal submission form before upload.
+The manuscript uses an author-date Harvard-style reference list: references are arranged alphabetically by first author; journal and book titles are italicised in formatted output; journal references include year, volume, issue and page or article number where available; conference and thesis references identify the venue; DOI links and stable URLs are included where available. In-text citations use author and year, with `et al.` for multi-author citations where appropriate. Verify any final system-generated reference formatting against the journal submission form before upload.
 
 FINAL FILE INVENTORY
 --------------------

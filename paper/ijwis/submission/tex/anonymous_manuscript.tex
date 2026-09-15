@@ -69,9 +69,6 @@
 \usepackage{csquotes}
 \usepackage{xcolor}
 
-% Author and affiliation
-\usepackage{authblk}
-
 % (建议：排错阶段先不用 lineno，确认稳定后再加)
 % \usepackage[right]{lineno}
 
@@ -107,25 +104,8 @@
 
 %Front Matter
 
-\newif\ifanonymous
-\ifdefined\fullmanuscript
-  \anonymousfalse
-\else
-  \anonymoustrue
-\fi
-
-\ifanonymous
-  \author{}
-\else
-  \author[1]{Xiaoqin Fu}
-  \author[1]{Xuelin Hu\thanks{Corresponding author. Email: huxl@ltzy.edu.cn}}
-  \author[2]{Youjing Fu}
-  \author[1]{Shu Cai}
-  \author[1]{Simeng Li}
-  \affil[1]{Liuzhou Railway Vocational Technical College, Liuzhou, China}
-  \affil[2]{College of Earth and Environmental Sciences, Lanzhou University, Lanzhou, China}
-\fi
-\title{Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints}
+\author{}
+\title{Knowledge-Enhanced Domain Adaptation of Large Language Models for Bilingual Railway Vocational Education under Resource Constraints}
 \date{}
 
 
@@ -137,86 +117,64 @@
 
 \begin{abstract}
 
-Purpose: This study evaluates whether a governed bilingual knowledge-enhanced workflow can support railway vocational question answering while keeping evidence access and review state traceable.
+Purpose: The international expansion of railway technology has increased demand for bilingual vocational education, yet railway regulations, technical terminology and teaching materials remain difficult to access consistently across languages. Because most vocational institutions and local research teams operate with limited computing resources, this study develops a knowledge-enhanced domain large language model for bilingual railway question answering that can be adapted and evaluated on a single workstation.
 
-Design/methodology/approach: An expert-governed bilingual corpus was split by knowledge-pair identifier into training, validation and held-out records. Qwen2.5-7B and GLM-4-9B were evaluated before and after completion-only QLoRA adaptation, with Qwen3-14B as a reference. BM25, BGE-M3 dense retrieval and reciprocal-rank-fusion hybrid retrieval were compared on held-out bilingual queries, followed by controlled retrieval-augmented generation and resource checks.
+Design/methodology/approach: A reviewed bilingual railway corpus was split by knowledge-pair identifier into training, validation and held-out records. BM25 lexical retrieval and BGE-M3 dense retrieval were combined by reciprocal rank fusion to supply railway evidence to Qwen2.5-7B and GLM-4-9B. The models were adapted with completion-only QLoRA and compared with their original versions and a Qwen3-14B reference through held-out domain QA, retrieval-augmented generation and measured resource use.
 
-Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, while the bilingual-field index achieved the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Approved-hybrid RAG improved Answer F1 for every evaluated generator and language; Qwen QLoRA reached 0.660 and 0.651. Translation and citation-following results were task-dependent.
+Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, and the bilingual-field index produced the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Adding approved hybrid evidence improved Answer F1 for every evaluated generator in both languages; Qwen QLoRA reached 0.660 and 0.651. All evaluated model conditions fitted within the 24 GB GPU boundary.
 
-Originality/value: The study shows how hybrid lexical-dense retrieval can improve bilingual evidence access and retrieval-augmented answer quality within an auditable evaluation workflow that separates retrieval, domain adaptation, answer overlap, citation behaviour and resource use.
+Originality/value: The study demonstrates that lexical-dense evidence fusion and parameter-efficient adaptation can be combined to specialise medium-sized large language models for bilingual railway education under realistic local-computing constraints. The results distinguish gains from retrieved knowledge and gains from model adaptation, providing a practical basis for developing vertical-domain railway language models without multi-GPU training.
 
-\textbf{Keywords:} bilingual railway education; retrieval-augmented generation; QLoRA; knowledge governance; evidence retrieval; Web information systems
+\textbf{Keywords:} railway domain large language model; bilingual vocational education; hybrid retrieval; retrieval-augmented generation; QLoRA; parameter-efficient fine-tuning
 
 \end{abstract}
 \section{Introduction}
 
-China's high-speed railway development has increased the need for bilingual technical exchange and vocational training \citep{lawrence2019hsr,xu2018education}. Railway learners and practitioners often move between Chinese regulations or teaching materials and English learning support, while terminology, source access and review practice vary across languages. Generic large language models can produce fluent answers, but their parametric knowledge does not clearly distinguish verified railway knowledge from unsupported generation. This motivates a workflow that links bilingual questions to reviewed evidence, retrieves that evidence, and preserves its source information during answer generation.
+The international expansion of high-speed railway construction, operation and technical cooperation has increased demand for bilingual vocational education \citep{lawrence2019hsr,xu2018education}. Railway personnel and learners working across national and linguistic settings must understand operating rules, safety procedures, equipment terminology and teaching materials that are often written first in Chinese. The challenge is therefore not limited to translating isolated terms. Educational support must connect a question in either language to the relevant railway knowledge and produce an answer that remains grounded in technical evidence.
 
-The system is intended for learners, railway staff, teachers, trainers, consultants and managers. It connects a bilingual question to an admissible regulation or teaching passage, retains provenance and exposes review state. Railway studies have explored specialised language models for safety, rail design, track management, prognostics, driver advice and interactive training \citep{zheng2023trafficsafety,lahnalampi2024rail,wang2024phm,song2025railway,luo2025driver,li2025training}, while broader reviews identify reliability and deployment as continuing challenges \citep{wandelt2024transport}. The combined problem of bilingual access, governed evidence and local deployment therefore remains insufficiently tested.
+Large language models offer a means of organising and communicating this knowledge, but general-purpose models are not trained to reproduce the terminology, evidence boundaries and procedural detail of a specific railway corpus. Their fluent responses may also obscure whether an answer comes from an applicable regulation or from parametric generation. Railway studies have explored specialised models for safety, rail design, track management, prognostics, driver advice and interactive training \citep{zheng2023trafficsafety,lahnalampi2024rail,wang2024phm,song2025railway,luo2025driver,li2025training}, while broader reviews continue to identify reliability and deployment as open problems \citep{wandelt2024transport}. A railway domain model therefore needs both external evidence access and adaptation to the language and answer patterns of the target knowledge base.
 
-Existing studies commonly evaluate either general-purpose language models or retrieval-augmented generation in isolation. Three evaluation gaps are especially relevant here: bilingual retrieval is rarely reported separately by query language; review status is often described as preprocessing rather than enforced during retrieval; and domain adaptation is often judged on the target task without checking translation or citation-following behaviour. In addition, reports that use the term agent do not always specify its action boundary or relate retrieval quality to measured local cost. This study addresses these issues in one controlled comparison.
+Computing availability is a second constraint. Many vocational institutions and local research teams cannot maintain multi-GPU training clusters or depend continuously on commercial cloud inference. This makes full-parameter adaptation of large models difficult to reproduce and expensive to maintain. Quantised low-rank adaptation offers a more realistic route: a 7B or 9B model can be specialised on a single 24 GB GPU while the base weights remain frozen. Resource constraint is therefore part of the research problem rather than a secondary deployment detail.
 
-This study addresses the following research questions:
-
-\begin{itemize}
-\item \textbf{RQ1:} How accurately do BM25, pgvector dense retrieval and hybrid fusion retrieve evidence-equivalent indexed records for held-out Chinese and English railway question-answer pairs?
-\item \textbf{RQ2:} How do retrieval strategies affect answer overlap and citation-format compliance, and can approved-only record eligibility be enforced and audited at retrieval time?
-\item \textbf{RQ3:} What bilingual translation quality is achieved in each direction, and how does completion-only QLoRA affect domain QA under pair-grouped held-out evaluation?
-\end{itemize}
-
-The study evaluates a bilingual railway question-answering workflow built from reviewed records, lexical-dense hybrid retrieval and evidence-conditioned local generation. It measures retrieval and evidence access, answer quality, citation behaviour, translation and local resource use separately. Hybrid retrieval gives the best evidence recall in both languages and improves retrieval-augmented answer quality in the evaluated generator matrix, while adaptation and translation outcomes remain task-dependent.
+The study develops and evaluates a knowledge-enhanced railway domain LLM through two complementary mechanisms. First, BM25 and BGE-M3 rankings are fused to improve access to bilingual railway evidence. Second, completion-only QLoRA adapts Qwen2.5-7B and GLM-4-9B to held-out railway question answering within a single-workstation resource boundary. Controlled comparisons separate retrieval effectiveness, adaptation gains, retrieval-augmented answer quality and measured computing cost. This design tests whether retrieved knowledge and parameter-efficient adaptation can jointly strengthen a vertical-domain model without assuming that a larger general model is sufficient.
 
 \section{Related work}
 
-\subsection{Knowledge-enhanced Web information systems}
+\subsection{Knowledge-enhanced large language models}
 
-Web information systems increasingly combine structured data management, semantic access and generative interfaces. Work in \emph{International Journal of Web Information Systems} shows the value of integrating knowledge representation, process state and user-facing tasks rather than treating them as isolated technical components \citep{hubscher2021knowledge}. Retrieval-augmented generation (RAG) provides a practical separation between parametric generation and an externally maintained evidence collection \citep{lewis2020rag}. This separation is relevant to institutional knowledge systems because source records can be revised without retraining the generator. It does not, however, guarantee faithful generation: retrieval can miss relevant evidence, and a generator can still misrepresent correctly retrieved material. The study evaluates retrieval, answer overlap, evidence support and citation-format behaviour as distinct outcomes.
+Knowledge-enhanced large language models combine parametric generation with an externally maintained evidence collection \citep{lewis2020rag}. This arrangement is useful for railway education because regulations and teaching records can be revised without retraining every model parameter. It also supports explicit links between an answer and its source. Retrieval quality and generation quality remain separate concerns: a retriever may miss the relevant passage, while a generator may fail to use evidence that was retrieved correctly. The present experiments therefore measure evidence access and answer quality independently.
 
-The retrieval layer combines complementary lexical and semantic signals. BM25 remains an efficient lexical baseline for exact domain terms \citep{robertson2009bm25}, while reciprocal-rank fusion can combine rankings without requiring directly comparable score scales \citep{cormack2009rrf}. PostgreSQL and pgvector place vector search beside governed relational metadata, allowing approval state and held-out split boundaries to be applied in the query rather than after generation. This makes knowledge governance an executable part of the information-system design.
+Knowledge representation and process state remain relevant because evidence records must retain their source and eligibility metadata \citep{hubscher2021knowledge}. In this study, those controls define which railway records may enter retrieval and prevent exact held-out records from being returned. They support the evaluation of the domain model but are not treated as the primary research object.
 
-The system therefore treats retrieval as part of the information-system workflow rather than as a document-only RAG demonstration. Record identity and review state are retained from ingestion through presentation, while embeddings remain derived fields attached to the reviewed record. Changing a record's status changes its retrieval eligibility at the database layer without rebuilding the application.
+\subsection{Hybrid retrieval for railway education}
 
-\subsection{Retrieval-augmented generation in education}
+Generative AI can support explanation, feedback and access to learning resources, but education research has identified risks involving factual reliability, learner over-reliance and opaque provenance \citep{kasneci2023chatgpt,unesco2023guidance}. Educational RAG addresses part of this problem by conditioning an answer on course or institutional material. In bilingual railway education, exact terminology and regulation identifiers favour lexical matching, whereas differently worded Chinese and English questions benefit from semantic retrieval. BM25 and BGE-M3 therefore provide complementary evidence rankings. Reciprocal rank fusion combines them without requiring their scores to share a scale \citep{robertson2009bm25,cormack2009rrf,chen2024bgem3}.
 
-Generative AI can support explanation, feedback and access to learning resources, but education research has also identified risks involving factual reliability, learner over-reliance and opaque provenance \citep{kasneci2023chatgpt,unesco2023guidance}. Survey evidence from legal-document question answering similarly shows that specialised LLM services require coordinated data processing, model adjustment and application frameworks rather than model substitution alone \citep{yang2024legalqa}. Educational RAG addresses part of this problem by conditioning responses on course or institutional material. Many demonstrations nevertheless report a pooled answer score without isolating retrieval failure, language effects or deployment cost. Such aggregation is particularly problematic for international vocational education, where an English query may need evidence originating in Chinese regulations or textbooks. The study reports Chinese and English retrieval and generation separately and preserves document-level provenance in every retrieved result.
+Railway applications provide related examples. RSChat addresses railway safety question answering \citep{li2024rschat}, and an LLM-based training assistant has been evaluated for railway dispatching and professional training \citep{li2025training}. Other systems target train-driver advice and emergency-response generation \citep{luo2025driver,huang2026emergency}. The present study adds a controlled cross-language retrieval comparison and tests how the retrieved evidence changes answers from original, adapted and larger reference models.
 
-Railway applications provide related examples. RSChat addresses railway safety question answering \citep{li2024rschat}, and an LLM-based training assistant has been evaluated for railway dispatching and professional training \citep{li2025training}. Other systems target train-driver advice and emergency-response generation \citep{luo2025driver,huang2026emergency}. The present evaluation adds a cross-language retrieval case in which an English question may require evidence from Chinese regulations or textbooks, with the retrieved source and review state retained in the answer workflow.
+\subsection{Parameter-efficient railway domain adaptation}
 
-\subsection{Bounded agents and resource-aware deployment}
+Parameter-efficient adaptation provides the second mechanism for domain specialisation. QLoRA trains low-rank adapters through a frozen 4-bit quantised base model, reducing training memory while retaining task adaptation capacity \citep{dettmers2023qlora}. Completion-only masking focuses the objective on railway answers, and Chinese and English variants sharing a knowledge-pair identifier remain in the same split. This prevents closely related bilingual records from crossing the training and held-out boundary.
 
-Classical agent research associates agency with situated action and a degree of autonomy \citep{wooldridge1995agents}, while recent LLM-agent surveys describe planning, memory, tool use and environmental action as common but variable components \citep{xi2025agents}. The present system uses the term \textbf{bounded workflow agent} in a narrower, operational sense. Its fixed action space is to route Chinese or English fields, invoke an operator-selected BM25, vector or hybrid retriever, enforce record eligibility, assemble numbered evidence, call a local generator and return a deterministic no-evidence or retrieval fallback. It does not set open-ended goals, browse the external Web, select arbitrary tools or change the knowledge base without human approval. Retrieval mode and top-\emph{k} remain user- or operator-configured. This boundary distinguishes the implemented service from an autonomous general-purpose agent and makes each action auditable.
+PEFT methods reduce trainable parameters but do not guarantee a better domain model \citep{ding2023peft,wang2025peft}. Limited-resource training remains sensitive to quantisation, sequence length, optimiser state and model-specific target modules \citep{lv2024full}. Task adaptation can also improve target-task overlap while changing instruction-following behaviour \citep{tian2024factuality,barnett2024finetuning}. A before-and-after design is therefore needed to separate domain QA gains from the effect of adding retrieved evidence.
 
-Resource-aware evaluation is part of that boundary. Efficient-AI research argues that computational cost and efficiency should be reported alongside predictive quality \citep{schwartz2020green}. For a local agent, a small adapter file or a low trainable-parameter percentage does not establish low inference memory or latency. The study treats the defined workstation, peak reserved GPU memory, generation speed and latency as reproducibility conditions rather than inferring affordability from parameter count alone.
+Efficient-AI research further argues that predictive quality should be reported together with computational cost \citep{schwartz2020green}. Adapter size alone does not establish low inference memory or latency. The experiments consequently report held-out railway QA, retrieval-augmented answer quality, peak GPU memory and generation speed under the same single-workstation boundary.
 
-\subsection{Bilingual domain adaptation and evaluation}
+\section{Knowledge-enhanced domain LLM method}
 
-Bilingual domain systems require both cross-lingual retrieval and controlled generation. BGE-M3 supports multilingual dense retrieval and was selected to provide a shared embedding space for the Chinese and English knowledge fields \citep{chen2024bgem3}. Dense similarity is not assumed to dominate lexical matching; the two methods are compared independently before fusion.
+\subsection{Problem setting and model overview}
 
-Parameter-efficient adaptation provides a second mechanism for domain specialisation. QLoRA trains low-rank adapters through a frozen 4-bit quantised base model, reducing memory requirements while retaining task adaptation capacity \citep{dettmers2023qlora}. In this study, completion-only masking prevents the prompt from contributing to the training loss, and bilingual variants sharing a knowledge-pair identifier remain in the same split. Translation is evaluated directionally because Chinese-to-English and English-to-Chinese scores are not interchangeable. Terminology and complete-sentence translation are also kept separate.
+The target task is bilingual railway question answering from reviewed regulations, terminology records and vocational teaching material. Given a Chinese or English question, the model must retrieve relevant railway evidence and generate an answer in the query language. The resource boundary is one RTX 3090 GPU with 24 GB memory and 32 GB system RAM, without multi-GPU training or required cloud inference. This setting determines the choice of medium-sized base models, NF4 quantisation and QLoRA.
 
-PEFT methods reduce trainable parameters but do not guarantee a better deployed system \citep{ding2023peft,wang2025peft}. Limited-resource training remains sensitive to quantisation, sequence length, optimiser state and model-specific target modules \citep{lv2024full}. Moreover, task adaptation can improve answer overlap while degrading factuality, instruction following or unrelated capabilities \citep{tian2024factuality,barnett2024finetuning}. This motivates the present before-and-after design, which reports not only domain QA but also general-capability checks, citation behaviour and memory use.
+Figure 1 summarises the two mechanisms used to construct the railway domain LLM. The upper evidence path sends an input question through BM25 and BGE-M3, fuses their rankings with reciprocal rank fusion, and inserts the selected railway passages into the model prompt. The lower adaptation path applies completion-only QLoRA to the frozen base model using the training partition. Their outputs meet at the same evidence-conditioned generator, allowing retrieval gains and adaptation gains to be compared under a common held-out protocol.
 
-These considerations make it necessary to evaluate more than answer generation alone. The present study reports model quality together with retrieval quality, citation behaviour, latency and peak memory; parameter efficiency by itself is not treated as evidence of deployability \citep{ding2023peft,lv2024full,wang2025peft}.
+The figure also makes the resource constraint explicit: only the low-rank adapter is trained, while the base model and BGE-M3 encoder remain frozen. This design concentrates available computation on railway answer adaptation and leaves the evidence collection updateable outside the model parameters. The principal advantage represented by the figure is therefore complementary specialisation: hybrid retrieval supplies current domain knowledge, while QLoRA changes how the model answers railway questions.
 
-Domain translation creates a further risk of pooled evaluation. Prior work shows that fine-tuning effects depend on training direction, domain composition and data volume \citep{hu2024translation,vieira2024translation,zheng2024translation}. The analysis does not interpret a single bilingual mean as evidence of robust translation. It reports terminology and sentence tasks independently in both directions and retains empty or wrong-language outputs as failures rather than silently discarding them.
-
-\section{System design and research method}
-
-\subsection{Application context and requirements}
-
-The target users comprise four role groups. First, learners include international students, vocational trainees and Chinese-speaking learners requiring bilingual support. Second, railway practitioners include service personnel, locally employed staff and technical specialists in cross-border railway settings. Third, education and advisory users include vocational teachers, workplace trainers and technical consultants. Fourth, management and system-administration users include training managers and platform administrators. These roles map to three access clusters: learners and practitioners use the bilingual portal; teachers, trainers and consultants use the review console; managers and administrators use the operations console. The system must return concise answers, expose numbered evidence, preserve document metadata and run on the defined workstation without required cloud inference.
-
-Figure 1 presents the bilingual railway QA workflow from left to right. Governed bilingual inputs are encoded in a shared BGE-M3 space, passed through parallel dense and BM25 retrieval, fused, and serialised as numbered evidence for the rightmost evidence-conditioned generation module. The rightmost module contains a frozen decoder path and a parallel QLoRA low-rank adapter path; the adapter updates task-specific low-rank parameters while the base weights remain fixed. The final answer is then assessed by independent QA, citation, translation, evidence-support and resource-use measures.
-
-The rightmost module in Figure 1 separates evidence-conditioned inference from completion-only adaptation. During adaptation, approved bilingual QA pairs are partitioned by knowledge-pair identifier, prompt tokens are masked, and only answer tokens contribute to the training loss. During inference, the serialised context is supplied to the decoder, while QLoRA provides an optional low-rank update to selected modules. Retrieval contexts and downstream evaluation scores do not backpropagate through the encoder or generator; the evaluation panel reports each outcome independently.
-
-\subsection{Expert-governed knowledge base}
+\subsection{Bilingual railway knowledge corpus}
 
 Knowledge records include Chinese and English questions and answers, evidence, original text, source document, chapter, page, task type, quality flags, review status and revision history. PostgreSQL stores governed records; pgvector stores 1,024-dimensional BGE-M3 embeddings. The production index excludes the exact records assigned to the held-out test split.
 
 The knowledge sources comprise railway terminology, operating and safety regulations, and vocational textbook or concept material. Ingestion preserves source-document, chapter and page fields whenever available. Chinese and English questions and answers are stored in separate fields on the same logical record so that a language variant does not lose its source identity. Embeddings are linked by record identifier and model revision; they can be rebuilt without changing the reviewed text. A record marked \texttt{Rejected}, \texttt{Needs Revision} or as part of the frozen RAG test is excluded before ranking. This database-level decision prevents the exact test record from leaking through BM25 or vector retrieval. The retrieval outcome is defined as evidence-equivalent recall rather than exact-record recall because another admissible record may contain relevant evidence.
-
-The authors jointly constructed and checked the knowledge base and the training and evaluation datasets; their combined expertise covers railway vocational education, international vocational education, environmental and data analysis, and software and multimodal language-model engineering.
 
 \clearpage
 
@@ -224,13 +182,13 @@ The authors jointly constructed and checked the knowledge base and the training 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
-\caption{Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. The rightmost module shows the QLoRA adapter path alongside the frozen base model.}
+\caption{Knowledge-enhanced adaptation of the railway domain LLM. The evidence path combines BM25 lexical ranking and BGE-M3 dense ranking through reciprocal rank fusion before adding top-ranked railway passages to the prompt. The adaptation path trains completion-only QLoRA parameters while keeping the base model frozen. The two paths are evaluated separately and jointly to distinguish retrieval gains, domain-adaptation gains and their resource cost.}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
 
-\subsection{Retrieval and answer generation}
+\subsection{Hybrid retrieval and evidence-conditioned generation}
 
-BM25 indexes Chinese and English question-answer fields and evidence. Dense search embeds a query with BGE-M3 and ranks chunks by vector similarity. Hybrid retrieval fuses keyword and dense rankings using reciprocal-rank fusion. The Approved-Only condition applies review status as a database-level eligibility filter. Retrieval mode and top-\emph{k} are configured by the user or operator rather than selected autonomously by the language model. Retrieved evidence is numbered and supplied to the local generator with an instruction to answer in the query language and cite evidence labels.
+BM25 indexes Chinese and English question-answer fields and evidence, preserving exact matches for railway terms, equipment names and regulation identifiers. Dense search embeds the query with BGE-M3 and ranks semantically related passages by vector similarity. Reciprocal rank fusion combines the two rankings, and the approved-only condition excludes ineligible or held-out records before ranking. The top-ranked passages are numbered and inserted into the model prompt, enabling the generator to answer in the query language with explicit evidence labels.
 
 Following Cormack \emph{et al.} (2009), the reciprocal-rank-fusion score for a candidate document \emph{d} is defined in Equation (1):
 
@@ -238,7 +196,7 @@ Following Cormack \emph{et al.} (2009), the reciprocal-rank-fusion score for a c
 \operatorname{RRF}(d)=\sum_{r \in \{\mathrm{BM25},\mathrm{vector}\}}\frac{1}{k_0+\operatorname{rank}_r(d)}.
 \end{equation}
 
-In Equation (1), a document absent from a retriever's candidate list contributes zero for that retriever. The candidate pool is fixed at 50 per retriever and the conventional rank constant is \texttt{k0 = 60}; Equation (1) is applied before final top-\emph{k} is varied. This controlled top-\emph{k} comparison changes the amount of evidence delivered to the generator without changing the upstream search pool. Dense ranking uses BGE-M3 query embeddings and pgvector distance, while lexical ranking retains exact matches that are valuable for abbreviations, equipment names and regulation numbers. Every returned evidence object contains record identifier, source document, task type and retrieval score.
+In Equation (1), a document absent from a retriever's candidate list contributes zero for that retriever. The candidate pool is fixed at 50 per retriever and the conventional rank constant is $k_0=60$; Equation (1) is applied before final top-\emph{k} is varied. This controlled top-\emph{k} comparison changes the amount of evidence delivered to the generator without changing the upstream search pool. Every returned evidence object contains its record identifier, source document, task type and retrieval score.
 
 For query and candidate embeddings, dense retrieval uses cosine similarity:
 
@@ -246,43 +204,43 @@ For query and candidate embeddings, dense retrieval uses cosine similarity:
 s_{\mathrm{dense}}(q,d)=\frac{\mathbf{e}_q^{\top}\mathbf{e}_d}{\lVert\mathbf{e}_q\rVert_2\lVert\mathbf{e}_d\rVert_2}.
 \end{equation}
 
-The completion-only adaptation objective is computed on answer positions only. If \$m\_t\$ is one for an answer token and zero for a masked prompt token, the optimisation target is:
+The completion-only adaptation objective is computed on answer positions only. If $m_t$ is one for an answer token and zero for a masked prompt token, the optimisation target is:
 
 \begin{equation}
 \mathcal{L}_{\mathrm{answer}}(\theta_A)=-\frac{1}{\sum_t m_t}\sum_t m_t\log p_{\theta_0,\theta_A}(y_t\mid y_{<t},x).
 \end{equation}
 
-Here \$\textbackslash{}theta\_0\$ denotes frozen NF4 base weights and \$\textbackslash{}theta\_A\$ denotes trainable LoRA parameters. For an answer prediction \$\textbackslash{}hat\{y\}\$ and reference \$y\$, the character-level overlap used for standalone bilingual QA is:
+Here $\theta_0$ denotes frozen NF4 base weights and $\theta_A$ denotes trainable LoRA parameters. For an answer prediction $\hat{y}$ and reference $y$, the character-level overlap used for standalone bilingual QA is:
 
 \begin{equation}
 P=\frac{|\hat{y}\cap y|}{|\hat{y}|},\qquad R=\frac{|\hat{y}\cap y|}{|y|},\qquad F1=\frac{2PR}{P+R}.
 \end{equation}
 
-A companion Web system provides knowledge review, search, conversational access and source-evidence display through a Vite client and FastAPI backend. It offers an application interface to the locally maintained knowledge base and generator. The experimental comparisons in this paper focus on retrieval, model outputs and resource use; the Web interface is not itself an educational-effectiveness evaluation. Generated answers are described as evidence-conditioned because citation-format compliance and semantic support are evaluated separately.
+The trained model and retriever are exposed through a local Vite and FastAPI interface for testing, but interface design is outside the experimental comparison. The reported results concern evidence retrieval, model outputs and resource use. Answers are described as evidence-conditioned because retrieved passages are included in the prompt; citation-format compliance and semantic support are evaluated separately.
 
-\subsection{Bilingual QLoRA adaptation}
+\subsection{Resource-constrained QLoRA domain adaptation}
 
 The adaptation dataset is generated only from approved records and split by knowledge-pair identifier, task type and source document. Chinese and English variants of the same knowledge item are assigned to the same partition. The current frozen 80/10/10 corpus contains 12,178 training, 1,524 validation and 1,526 test examples, balanced equally by language, with zero knowledge-pair identifier overlap among partitions. The 120 regulation items reserved for RAG evaluation are forced into the test partition and never used for training. Loss is computed only on answer tokens; all prompt labels are masked with Minus 100.
 
-Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF form the adaptation matrix; their architectures and post-training lineage are documented in the corresponding official technical reports \citep{qwen2024technical,glm2024chatglm}. Both were loaded with NF4 quantisation and PEFT adapters on the target GPU. Qwen exposes separate Gate Projection and Up Projection modules, whereas GLM uses a fused Gate-Up Projection; This requires model-specific target lists. The formal Rank-64 configuration trained 161,480,704 Qwen parameters and 190,382,080 GLM parameters, representing 3.58 and 3.45 per cent of the parameters visible to the quantised training process, respectively. Qwen3-14B is retained only as an unadapted reference generator and is associated with the Qwen3 technical report \citep{qwen2025technical}.
+Qwen2.5-7B-Instruct and GLM-4-9B-Chat-HF form the adaptation matrix; their architectures and post-training lineage are documented in the corresponding official technical reports \citep{qwen2024technical,glm2024chatglm}. Both were loaded with NF4 quantisation and PEFT adapters on the target GPU. Qwen exposes separate Gate Projection and Up Projection modules, whereas GLM uses a fused Gate-Up Projection, requiring model-specific target lists. The Rank-64 configuration trained 161,480,704 Qwen parameters and 190,382,080 GLM parameters, representing 3.58 and 3.45 per cent of the parameters visible to the quantised training process, respectively. Qwen3-14B is retained as an unadapted larger reference generator \citep{qwen2025technical}.
 
-Both runs use LoRA Rank 64, Alpha 16, Dropout 0.05, Learning Rate 2e-4, Maximum Sequence Length 1,024 and one epoch. The Per-Device Batch Size is one with 16 Gradient Accumulation Steps and a 0.03 Warm-Up Ratio. Random Seed 42 is fixed in the experiment configuration. Generation uses greedy decoding with Temperature 0 and Top-P 1, plus a task-dependent output limit. Completion-only supervision masks every prompt token with label minus 100, so training optimises the answer sequence rather than reproducing instructions. Its effects are evaluated separately for QA, translation and citation behaviour.
+Both runs use LoRA Rank 64, Alpha 16, Dropout 0.05, Learning Rate 2e-4, Maximum Sequence Length 1,024 and one epoch. The Per-Device Batch Size is one with 16 Gradient Accumulation Steps and a 0.03 Warm-Up Ratio. Random Seed 42 is fixed in the experiment configuration. Generation uses greedy decoding with Temperature 0 and Top-P 1, plus a task-dependent output limit. Completion-only supervision masks every prompt token with label minus 100, so training optimises the railway answer sequence rather than reproducing instructions.
 
 \subsection{Evaluation design}
 
-Retrieval conditions are BM25, vector, hybrid and approved hybrid. Metrics are evidence-equivalent Recall@1/3/5, MRR and mean latency. The formal generator matrix fixes no retrieval, BM25-RAG and approved hybrid-RAG so that five generators receive identical cached contexts. Automatic metrics include Answer F1, reference containment, citation-format coverage, citation omission and end-to-end latency. Citation measures are treated as instruction-following indicators, not evidence entailment or factual hallucination measures. Translation is reported independently for Chinese-to-English and English-to-Chinese terminology and sentences using SacreBLEU, chrF++ and COMET. The separate metrics prevent a retrieval score, answer score or resource measure from standing in for the other outcomes \citep{chang2024survey}.
+Retrieval conditions are BM25, vector, hybrid and approved hybrid. Metrics are evidence-equivalent Recall@1/3/5, MRR and mean latency. The formal generator matrix fixes no retrieval, BM25-RAG and approved hybrid-RAG so that five generators receive identical cached contexts. Automatic metrics include Answer F1, reference containment, citation-format coverage, citation omission and end-to-end latency. Citation measures are instruction-following indicators, not evidence-entailment or factual-hallucination measures. A supplementary directional translation check is retained only as a diagnostic and does not define the primary model outcome. The separate metrics prevent a retrieval score, answer score or resource measure from standing in for the other outcomes \citep{chang2024survey}.
 
 Evidence-equivalent Recall@\emph{k} is one when at least one of the first \emph{k} candidates satisfies the frozen matching rule: the same record identifier, normalised gold and candidate evidence containment in either direction, or the same source document with the gold answer contained in candidate evidence. Because exact RAG-test records are excluded from the production index, observed hits normally arise from the latter evidence-equivalence criteria rather than identity. MRR averages the reciprocal rank of the first such match. The standalone bilingual QA evaluation uses character-level F1 in both languages: precision and recall are computed from multiset character overlap after answer normalisation and whitespace removal. The paired QA tests use this same metric. The RAG evaluation instead computes overlap F1 over individual Chinese characters and lower-cased Latin/alphanumeric word tokens. These two F1 definitions are reported within their respective evaluation settings, not treated as interchangeable absolute scores. In standalone QA, reference containment is a binary indicator of whether the normalised reference occurs in the prediction. In RAG, the stored reference-containment score is one when the whitespace-normalised reference is contained in the prediction, otherwise it falls back to RAG F1; empty predictions or references score zero. This is a graded containment score, not a binary containment rate. Citation-format coverage records only whether the requested evidence-label syntax appears; its complement is reported as citation omission.
 
 All core comparisons use paired samples. Mean metrics are accompanied by 2,000-resample bootstrap 95 per cent confidence intervals in the released analysis tables. Original-versus-QLoRA comparisons use two-sided paired Wilcoxon tests, Cohen's \emph{d}\textsubscript{z} for paired effects and Holm correction across the pre-specified family recorded in the analysis configuration. Exploratory error categories are reported separately and are not treated as confirmatory hypothesis tests. Efficiency measurements use 30 Chinese short questions, 30 English short questions and 30 regulation-oriented long-context questions, with one warm-up and three measured repetitions per model condition.
 
-\subsection{Implementation and reproducibility}
+\subsection{Resource-constrained implementation}
 
-The formal implementation and experimental environment are summarised in Table I. No multi-GPU or cloud inference resource is required by the evaluated path, and the manifest records model revisions, input hashes and generated assets for reconstruction.
+Table I defines the single-workstation boundary used throughout the experiments. The adapted 7B and 9B models require neither multi-GPU training nor cloud inference, allowing retrieval, adaptation and generation to be tested on hardware available to a small institutional laboratory.
 
 \begin{table}[ht]
 \centering
-\caption{Formal implementation and experimental environment.}
+\caption{Single-workstation implementation and experimental configuration.}
 
 \begin{tabular}{p{0.28\linewidth}p{0.64\linewidth}}
 \toprule
@@ -302,7 +260,7 @@ Software & Linux; Python 3.11.15; PyTorch 2.11.0; Transformers 5.12.1; PEFT 0.18
 
 The code separates test-set construction, embedding, retrieval evaluation, generator evaluation, adaptation and report export. This prevents an analysis script from silently changing the production index or training split. Cached retrieval contexts are reused across generators in the formal RAG matrix, so model comparisons receive identical evidence. The manifest records the Git state and every input hash at freeze time, supporting result reconstruction and consistent comparison across runs.
 
-Production embedding loading is local-files-only by default, so the running service does not depend on an unavailable model registry. The review and question-answering views were rendered through the Vite and FastAPI services. The environment, model revisions, split statistics and asset hashes are recorded with the comparison outputs.
+Production embedding loading is local-files-only by default. The environment, model revisions, split statistics and asset hashes are recorded with the comparison outputs so that the reported resource boundary can be reconstructed.
 
 \section{Results}
 
@@ -333,30 +291,29 @@ Hybrid approved & English & \textbf{0.570} & 0.668 & \textbf{0.708} & \textbf{0.
 \end{adjustbox}
 \end{table}
 
-Table II reports the formal evidence-equivalent retrieval comparison. BM25 is particularly competitive for English terminology queries, while dense retrieval records higher Chinese evidence recall in this evaluation. With the RRF candidate pool fixed at 50 for every final cutoff, hybrid fusion obtains the highest Evidence Recall@5 in both languages, although its latency is approximately three times that of BM25. Increasing the final cutoff from three to eight raises hybrid evidence recall from 0.675 to 0.743 in Chinese and from 0.668 to 0.723 in English, while mean retrieval latency remains nearly constant in this controlled evaluation (Figure 2). Approved-only and unfiltered hybrid results are identical because all admissible indexed records in this frozen experiment satisfy the approval condition.
+Table II reports the formal evidence-equivalent retrieval comparison. BM25 is particularly competitive for English terminology queries, while dense retrieval records higher Chinese evidence recall in this evaluation. Hybrid fusion combines these strengths and obtains the highest Evidence Recall@5 in both languages: 0.715 in Chinese and 0.708 in English. Its mean latency is approximately three times that of BM25, so the gain is a quality--latency trade-off rather than a universal efficiency advantage. Approved-only and unfiltered hybrid results are identical because all admissible indexed records in this frozen experiment satisfy the approval condition.
 
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_03_top_k_quality_latency.pdf}
-\caption{Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work.}
+\caption{Effect of the final evidence cutoff on hybrid retrieval. Recall rises from 0.570 at top-1 to 0.743/0.723 at top-8 for Chinese/English, whereas mean retrieval latency remains near 218/209 ms because the upstream candidate pool is fixed. The figure shows that returning more fused candidates improves evidence coverage without materially changing search time in this experiment. Source: Authors' own work.}
 \end{figure}
+
+Figure 2 shows a consistent recall gain as the final cutoff increases from one to eight. The largest gain occurs between top-1 and top-3, followed by smaller improvements at top-5 and top-8. In contrast, the latency curves remain nearly flat because each setting reuses the same 50-candidate BM25 and dense search pools. The objective advantage is therefore greater evidence coverage at a larger final cutoff without additional upstream retrieval work; the generator may still incur extra context cost when more passages are supplied.
 
 \subsection{QLoRA adaptation and held-out QA}
 
 Having established the retrieval results, the next analysis examines the effect of QLoRA adaptation on held-out question answering.
 
-Figure 3 presents the Qwen completion-only QLoRA training-loss curve and its end-of-epoch validation point. The curve describes optimisation behaviour within one epoch; it does not establish convergence across extended or repeated training schedules. The absence of an extended hyperparameter search is consistent with the resource-constrained design but limits claims about globally optimal adapter settings.
+Figure 3 presents the completion-only QLoRA training trajectories. Both models show a steep initial reduction followed by a slower decline, and their end-of-epoch validation losses remain close to the final training region. Qwen finishes with lower training and validation loss than GLM, which is consistent with its stronger held-out bilingual QA result. The figure supports successful one-epoch optimisation under the resource limit, but it does not establish convergence across longer schedules or repeated random seeds.
 
 On the 1,526-example held-out bilingual QA set, Qwen QLoRA increased character-level F1 from 0.189 (95 per cent CI 0.175-0.204) to 0.398 (0.376-0.422) in Chinese and from 0.437 (0.419-0.455) to 0.648 (0.632-0.664) in English. GLM increased from 0.192 to 0.410 in Chinese and from 0.498 to 0.552 in English. All four paired gains remained significant after Holm correction (all adjusted p-values below 0.01); Cohen's \emph{d}\textsubscript{z} was 0.569 and 0.634 for Qwen Chinese and English, and 0.614 and 0.146 for GLM. Qwen provides the strongest balanced adapted QA result under this character-level metric; the small GLM English effect cautions against pooling languages. These sample-level tests do not estimate variation across repeated training seeds.
-
-A limited general-capability check found that Qwen C-Eval/MMLU accuracy changed from 0.788/0.739 to 0.775/0.728, whereas GLM changed from 0.675/0.673 to 0.683/0.679. These small changes do not indicate broad catastrophic forgetting, but the limited protocol is a regression check rather than a comprehensive general benchmark.
-
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_04_training_validation_loss.pdf}
-\caption{Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the end-of-epoch validation measurement for each model. Source: Authors' own work.}
+\caption{One-epoch completion-only QLoRA optimisation. Training loss declines rapidly for both models and then stabilises, while the end-of-epoch validation diamonds remain near the final training-loss range. Qwen ends below GLM on both curves, providing optimisation evidence consistent with its stronger held-out QA score. Source: Authors' own work.}
 \end{figure}
 
 \subsection{Multi-generator RAG comparisons}
@@ -387,46 +344,43 @@ Qwen3-14B & 0.295 / 0.336 & 0.442 / 0.454 & +0.147 / +0.118 & 6.66e-32 / 7.58e-2
 
 Here, each cell reports Chinese/English values; no value is omitted in the comparison. The paired significance values correspond to the no-retrieval versus approved-hybrid comparison.
 
-The traceability result was different. For original Qwen, citation-format coverage moved from 0.543/0.638 under BM25 to 0.595/0.643 under hybrid in Chinese/English; Qwen3 moved from 0.715/0.900 to 0.788/0.905. By contrast, Qwen QLoRA achieved only 0.000/0.003 under hybrid, and GLM showed the same, less extreme adaptation-related pattern. In the tested conditions, QLoRA produced stronger answer overlap but weaker compliance with the citation instruction used in the evaluation targets; citation omission approached one for the adapted models. This is an instruction-following failure, not a measured factual hallucination rate. For an operational workflow, Qwen2.5 QLoRA is the primary answer-quality model, while original Qwen or Qwen3 remains the safer traceability control until citation-aware adaptation is added.
+The traceability result was different. For original Qwen, citation-format coverage moved from 0.543/0.638 under BM25 to 0.595/0.643 under hybrid in Chinese/English; Qwen3 moved from 0.715/0.900 to 0.788/0.905. By contrast, Qwen QLoRA achieved only 0.000/0.003 under hybrid, and GLM showed the same, less extreme adaptation-related pattern. In the tested conditions, QLoRA produced stronger answer overlap but weaker compliance with the citation instruction used in the evaluation targets; citation omission approached one for the adapted models. This is an instruction-following failure, not a measured factual hallucination rate. For railway-domain answering, Qwen2.5 QLoRA provides the strongest answer overlap, while original Qwen and Qwen3 show stronger citation-format compliance until citation-aware adaptation is added.
 
-\subsection{Directional translation}
+\subsection{Supplementary translation check}
 
-Because answer quality alone does not describe bilingual deployment, the following analysis turns to translation by direction and task.
-
-Translation effects were direction- and task-dependent. Qwen COMET moved from 0.501 to 0.509 for Chinese-to-English terminology and from 0.610 to 0.614 for English-to-Chinese sentences, but fell from 0.656 to 0.599 for Chinese-to-English sentences and from 0.596 to 0.485 for English-to-Chinese terminology. Its lexical metrics show the same lack of uniform benefit: Chinese-to-English terminology chrF++ increased from 10.41 to 16.69, whereas sentence chrF++ fell from 47.43 to 31.28.
-
-GLM QLoRA is a clear failure case. Its sentence COMET dropped from 0.667 to 0.348 for Chinese-to-English and from 0.742 to 0.343 for English-to-Chinese; corpus BLEU was zero in both directions. Automated inspection found 2,168 empty outputs among 2,634 translation examples (82.3 per cent). This result does not support a general claim that QA-oriented completion-only adaptation improves translation. Terminology and sentence translation are reported separately from QA evaluation.
+A supplementary translation check produced direction- and task-dependent changes after adaptation. Because the primary objective is railway-domain question answering, these translation results are retained only as a diagnostic and are not used to define the main model improvement.
 
 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_06_quality_latency_pareto.pdf}
-\caption{Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work.}
+\caption{Quality--resource comparison for original and QLoRA-adapted models. Qwen QLoRA has the highest mean bilingual QA F1, while remaining within the 24 GB GPU limit; its higher latency and reserved memory show the cost of this gain. The low latency of GLM QLoRA reflects abnormally short or empty outputs and is not interpreted as an efficiency advantage. Source: Authors' own work.}
 \end{figure}
 
 \subsection{Resource use}
 
-The translation findings are followed by an assessment of runtime cost and output failure patterns.
+Resource measurements test whether the domain-adapted models remain executable on the defined single workstation and show the cost associated with their QA gains.
 
 All five deployment conditions completed 270 measurements without execution failure or OOM. GPU memory measurements are expressed in GiB (2\textasciicircum{}30 bytes). Original Qwen and GLM reached 5.49 and 6.76 GiB peak PyTorch reserved memory and generated at 31.9 and 22.7 tokens/s. Their QLoRA variants reached 16.11 and 19.49 GiB and generated at 17.5 and 11.9 tokens/s. Peak allocated memory was 5.35 and 6.48 GiB for the original models, compared with 15.40 and 7.20 GiB for the QLoRA variants. Reserved memory includes caching-allocator reservations and should not be interpreted as memory occupied by live tensors or as the intrinsic adapter overhead. Qwen3-14B through Ollama reached 14.26 GiB of GPU-process memory and 78.5 tokens/s; this memory statistic is not PyTorch reserved memory, and cross-backend memory and timing comparisons are descriptive. The Qwen and GLM adapters occupy approximately 627 and 746 MB. The low 2.63 s GLM QLoRA mean latency reflects abnormally short or empty outputs and is not an efficiency advantage. All configurations fit the target 24 GB workstation, but original Qwen provides the lowest resource cost and Qwen QLoRA the strongest QA quality within the limit.
 
-Figure 4 relates the bilingual mean standalone character-level F1 to generation latency and peak reserved GPU memory for the four Qwen2.5/GLM original and QLoRA conditions. The quality and resource measurements come from their respective evaluation workloads. The plot is a descriptive quality-resource comparison, not a controlled causal estimate of adapter overhead; Qwen3 through Ollama is not included in this figure.
+Figure 4 relates mean bilingual standalone QA F1 to generation latency and peak reserved GPU memory. Qwen QLoRA occupies the highest-quality position in both panels and remains below the 24 GB boundary, demonstrating that the strongest adapted QA result is attainable on the target workstation. The original models use substantially less memory, so adaptation improves quality at a measurable resource cost. The plot is descriptive rather than a controlled causal estimate of adapter overhead, and Qwen3 through Ollama is excluded because its backend reports a different memory statistic.
 
 
-\begin{figure}[ht]
+\subsection{Supplementary evidence and corpus-control checks}
+
+Figure 5 examines whether the knowledge component behind the domain model behaves as intended. It compares language-field choices, checks whether generated claims are supported by retrieved or explicitly cited evidence, and records corpus review operations. These checks supplement the primary retrieval and QA results.
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_08_system_validation.pdf}
-\caption{Three validation checks. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. An em dash indicates that a measure is not language-specific.}
+\caption{Supplementary validation of the knowledge-enhanced model. Panel A shows that the bilingual index provides the strongest cross-language Recall@5 balance. Panel B shows high semantic support from retrieved evidence but substantially lower support through explicit citations, especially after QLoRA. Panel C confirms that corpus approval and edit operations are recorded. The panels distinguish evidence access, visible attribution and data control rather than combining them into one quality claim.}
 \end{figure}
 
-\subsection{Index, evidence-support and governance validation}
-
-Finally, the study links the preceding performance findings to system-level checks on indexing, evidence support and governance.
-
-\begin{table}[ht]
+\begin{table}[H]
 \centering
-\caption{Supplementary information-system validation results.}
+\caption{Supplementary evidence-access, attribution and corpus-control results.}
 
+\begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{llll}
 \toprule
 Validation & Chinese & English & Operational result \\
@@ -437,29 +391,36 @@ Qwen QLoRA hybrid, supported-claim proxy & 0.964 & 0.905 & Citation recall 0.000
 Governance history & — & — & 1,337 events; 82 edits; two recorded reviewers \\
 \bottomrule
 \end{tabular}
+\end{adjustbox}
 \end{table}
 
-Table IV and Figure 5 show the three checks separately. Panel A compares source-only, language-specific and bilingual index fields; the bilingual field has the strongest balanced result, although a language-specific field is better for English alone. Panel B contrasts support from all retrieved evidence with support from explicitly cited evidence, separating evidence access from visible attribution. Panel C records review events and before-state snapshots so that status changes and edited fields can be traced. An em dash indicates that the measure is not language-specific.
+Panel A of Figure 5 shows why bilingual indexing is retained: it reaches 0.718 Recall@5 in Chinese and 0.675 in English, giving the highest balanced mean of 0.696, although the English-only field remains better on English alone. Panel B shows that the generated claims generally have strong semantic support somewhere in the retrieved context, including 0.964/0.905 for Qwen QLoRA in Chinese/English. The much lower explicitly cited support reveals a separate attribution weakness; retrieval can provide useful evidence even when the adapted model does not reproduce the requested citation labels. Panel C records 1,337 corpus operations and the fields changed during edits, confirming that the evidence used for training and retrieval has an inspectable history. The figure therefore demonstrates the advantage of bilingual evidence access while also locating the remaining weakness in citation behaviour rather than in retrieval support itself.
 
 \clearpage
 
 \section{Discussion}
 
-\subsection{Answers to the research questions}
+\subsection{Effectiveness of hybrid evidence retrieval}
 
-\textbf{RQ1 concerned bilingual retrieval.} The evidence-equivalent comparison produced language-specific outcomes. Dense retrieval had higher recall in Chinese in this evaluation, whereas exact terminology made BM25 competitive in English. Hybrid fusion reached the highest Evidence Recall@5 in both languages, and the field comparison reported the strongest balanced result for the bilingual index even though an English-only index was best for English alone. Hybrid had higher latency, while lexical retrieval remained a credible lower-cost configuration. These conclusions apply to the pre-specified equivalence rule, not exact retrieval of records excluded from the index \citep{robertson2009bm25,cormack2009rrf}.
+The retrieval experiments show that lexical and dense signals solve different parts of the railway evidence problem. BM25 remains strong for exact English terminology and regulation identifiers, while BGE-M3 retrieves more semantically related Chinese evidence. Reciprocal rank fusion preserves useful candidates from both rankings and produces the highest Evidence Recall@5 in Chinese and English. The bilingual-field ablation adds a second result: indexing both language fields gives the strongest balance across languages, even though a language-specific index can lead on one language alone. These findings support hybrid retrieval as the knowledge-access component of the railway domain LLM \citep{robertson2009bm25,cormack2009rrf}.
 
-\textbf{RQ2 concerned retrieval strategy, enforceable eligibility and answer behaviour.} RAG produced higher answer overlap than no retrieval for every evaluated generator, but retrieval and answer-quality rankings were not identical. The adaptation and RAG conditions also showed different answer-overlap and citation-format patterns. Automated semantic support remained high for adapted answers while citation recall approached zero, so relevance to retrieved evidence and visible attribution should be treated as separate requirements. This result cautions against reporting fine-tuning or RAG gains as a single aggregate outcome \citep{li2024rschat,li2025training,luo2025driver,huang2026emergency}. Citation-aware targets, constrained citation insertion and entailment checking remain separate requirements for operational use.
+The gain is not cost-free. Hybrid search takes approximately three times the latency of BM25, and increasing the number of passages can enlarge the generator context. However, Figure 2 shows that changing the final cutoff from top-1 to top-8 raises evidence recall while leaving retrieval latency nearly constant under the fixed candidate pool. This gives a practical control for choosing evidence coverage according to the available context budget.
 
-The formal generator matrix confirms that approved-hybrid RAG improves Answer F1 over no retrieval for every evaluated generator in both Chinese and English, while the magnitude of the gain remains model- and language-dependent.
+\subsection{Effectiveness of low-resource domain adaptation}
 
-\textbf{RQ3 concerned bilingual adaptation and translation.} Completion-only QLoRA substantially improves held-out QA, particularly for Qwen, but adaptation quality is task-specific. QA gains coexist with asymmetric Qwen translation regressions and severe GLM sentence-translation failure. This mirrors concerns that domain-limited fine-tuning can overfit task form or translation direction \citep{hu2024translation,vieira2024translation}. The practical implication is that QA, terminology translation, sentence translation and citation compliance need independent acceptance thresholds; no pooled bilingual score can justify deployment.
+Completion-only QLoRA improves held-out railway QA for both model families and both languages. The gains are strongest and most balanced for Qwen2.5-7B, which also reaches the highest Answer F1 after hybrid evidence is added. The generator matrix further shows that approved-hybrid RAG improves Answer F1 over no retrieval for every evaluated model and language. Retrieved knowledge and parameter adaptation therefore provide distinct benefits: retrieval improves every generator, while QLoRA gives the medium-sized Qwen model the strongest absolute railway QA result.
 
-The retrieval, governance and adaptation comparisons show where the workflow helps and where it does not. Hybrid lexical-dense retrieval improves bilingual evidence access and retrieval-augmented answer overlap in the evaluated setting. Held-out domain QA also improves after QLoRA for the reported models, whereas translation results are mixed and citation-format coverage is weaker for adapted models. These outcomes define the scope of the evidence without reducing the workflow to a single aggregate score.
+This distinction matters for vertical-domain modelling. A larger unadapted reference model does not replace either railway evidence access or target-domain adaptation. Conversely, adaptation alone does not guarantee correct evidence attribution. Qwen QLoRA retains high semantic support against retrieved passages but weak citation-label coverage, indicating that answer quality and visible attribution require different optimisation targets.
 
-\section{Practical implications and conclusion}
+\subsection{Resource--quality trade-off and limitations}
 
-The resulting workflow demonstrates a governed approach to bilingual railway education and workforce development. Hybrid retrieval achieved the strongest Evidence Recall@5 in both languages, and the bilingual-field index produced the strongest balanced result. Approved-hybrid RAG improved Answer F1 for every evaluated generator and language, while Qwen2.5 QLoRA achieved the strongest held-out QA and RAG answer-overlap scores in the evaluated matrix. Translation and citation behaviour were not uniformly improved, so these outcomes should be interpreted by task and language rather than by a pooled score. The system should support learning and decisions, not replace safety-critical authority; teachers and operators should inspect the displayed evidence before use.
+All evaluated models run within the 24 GB GPU boundary, confirming that the approach is feasible without multi-GPU training. Figure 4 nevertheless shows a clear trade-off: Qwen QLoRA provides the strongest QA quality but uses more reserved memory and generation time than the original model. GLM QLoRA also consumes more memory, and its abnormally short outputs mean that low measured latency cannot be interpreted as useful efficiency. The evidence supports local feasibility, not negligible adaptation cost.
+
+The study is limited to one frozen corpus split, one epoch and one principal random seed. The sample-level significance tests do not measure variation across repeated training runs, and evidence-equivalent recall depends on the predefined matching rule. Citation-format compliance is also weaker for adapted models. These boundaries limit broad claims while leaving the main finding intact: under the tested resource constraint, hybrid evidence retrieval and QLoRA jointly improve railway-domain question answering.
+
+\section{Conclusion}
+
+This study develops a knowledge-enhanced railway domain LLM for bilingual vocational education under a single-workstation resource constraint. BM25 and BGE-M3 provide complementary rankings, and reciprocal rank fusion achieves the strongest Evidence Recall@5 in both languages. Completion-only QLoRA substantially improves held-out railway QA, with Qwen2.5-7B producing the strongest balanced adapted result. When hybrid evidence is added, Answer F1 improves for every evaluated generator and language. These results show that a medium-sized model can gain both domain knowledge access and domain-specific answering ability without multi-GPU training. The remaining citation and repeated-run limitations identify where evaluation and adaptation should be strengthened, but they do not alter the observed retrieval and railway QA gains.
 
 \bibliographystyle{apalike}
 \begin{thebibliography}{}
@@ -515,14 +476,6 @@ Ding, N., Qin, Y., Yang, G., Wei, F., Yang, Z., Su, Y., Hu, S., Chen, Y., Chan,
 \newblock Chatglm: a family of large language models from glm-130b to glm-4 all
   tools.
 \newblock Available at: \url{https://arxiv.org/abs/2406.12793}.
-
-\bibitem[Hu et~al., 2024]{hu2024translation}
-Hu, T., Zhang, P., Yang, B., Xie, J., Wong, D.~F., and Wang, R. (2024).
-\newblock Large language model for multi-domain translation: benchmarking and
-  domain cot fine-tuning.
-\newblock In {\em Findings of the Association for Computational Linguistics:
-  EMNLP 2024}, pages 5726--5746.
-\newblock DOI: \url{https://doi.org/10.18653/v1/2024.findings-emnlp.328}.
 
 \bibitem[Huang et~al., 2026]{huang2026emergency}
 Huang, L., Liu, Z., Yu, C., Zhu, T., and Yan, B. (2026).
@@ -645,14 +598,6 @@ Tian, K., Mitchell, E., Yao, H., Manning, C., and Finn, C. (2024).
 \newblock Available at:
   \url{https://unesdoc.unesco.org/ark:/48223/pf0000386693}.
 
-\bibitem[Vieira et~al., 2024]{vieira2024translation}
-Vieira, I., Allred, W., Lankford, S., Castilho, S., and Way, A. (2024).
-\newblock How much data is enough data? fine-tuning large language models for
-  in-house translation.
-\newblock In {\em Proceedings of the 16th Conference of the Association for
-  Machine Translation in the Americas}, pages 236--249.
-\newblock Available at: \url{https://aclanthology.org/2024.amta-research.20/}.
-
 \bibitem[Wandelt et~al., 2024]{wandelt2024transport}
 Wandelt, S., Zheng, C., Wang, S., Liu, Y., and Sun, X. (2024).
 \newblock Large language models for intelligent transportation: a review of the
@@ -676,22 +621,6 @@ Wang, L., Chen, S., Jiang, L., Pan, S., Cai, R., Yang, S., and Yang, F. (2025).
 \newblock {\em Artificial Intelligence Review}, 58(8):227.
 \newblock DOI: \url{https://doi.org/10.1007/s10462-025-11236-4}.
 
-\bibitem[Wooldridge and Jennings, 1995]{wooldridge1995agents}
-Wooldridge, M. and Jennings, N.~R. (1995).
-\newblock Intelligent agents: theory and practice.
-\newblock {\em The Knowledge Engineering Review}, 10(2):115--152.
-\newblock DOI: \url{https://doi.org/10.1017/S0269888900008122}.
-
-\bibitem[Xi et~al., 2025]{xi2025agents}
-Xi, Z., Chen, W., Guo, X., He, W., Ding, Y., Hong, B., Zhang, M., Wang, J.,
-  Jin, S., Zhou, E., Zheng, R., Fan, X., Wang, X., Xiong, L., Zhou, Y., Wang,
-  W., Jiang, C., Zou, Y., Liu, X., Yin, Z., Dou, S., Weng, R., Qin, W., Zheng,
-  Y., Qiu, X., Huang, X., Zhang, Q., and Gui, T. (2025).
-\newblock The rise and potential of large language model based agents: a
-  survey.
-\newblock {\em Science China Information Sciences}, 68(2):121101.
-\newblock DOI: \url{https://doi.org/10.1007/s11432-024-4222-0}.
-
 \bibitem[Xu, 2018]{xu2018education}
 Xu, F. (2018).
 \newblock Future of high-speed railway and university education.
@@ -705,12 +634,6 @@ Yang, X., Wang, Z., Wang, Q., Wei, K., Zhang, K., and Shi, J. (2024).
 \newblock {\em International Journal of Web Information Systems},
   20(4):413--435.
 \newblock DOI: \url{https://doi.org/10.1108/IJWIS-12-2023-0256}.
-
-\bibitem[Zheng et~al., 2024]{zheng2024translation}
-Zheng, J., Hong, H., Liu, F., Wang, X., Su, J., Liang, Y., and Wu, S. (2024).
-\newblock Fine-tuning large language models for domain-specific machine
-  translation.
-\newblock Available at: \url{https://arxiv.org/abs/2402.15061}.
 
 \bibitem[Zheng et~al., 2023]{zheng2023trafficsafety}
 Zheng, O., Abdel-Aty, M., Wang, D., Wang, C., and Ding, S. (2023).
