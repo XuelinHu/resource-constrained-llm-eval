@@ -88,7 +88,7 @@ def main(skip_docx: bool = False) -> None:
         title_page_path,
         "# Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints\n\n"
         "**Article type:** Research Paper\n\n"
-        "**Authors in publication order:** Xiaoqin Fu, Youjing Fu, Xuelin Hu\n\n"
+        "**Authors in publication order:** Xiaoqin Fu, Youjing Fu, Xuelin Hu, Shu Cai, Simeng Li\n\n"
         "## Author 1: Xiaoqin Fu\n\n"
         "**Affiliation:** School of Railway Locomotive and Rolling Stock, Liuzhou Railway Vocational Technical College, Liuzhou 545000, China\n\n"
         "**ORCID:** 0009-0003-5123-8393\n\n"
@@ -103,9 +103,15 @@ def main(skip_docx: bool = False) -> None:
         "**ORCID:** 0000-0002-4475-3034\n\n"
         "**Email:** huxuelinai@gmail.com; huxl@ltzy.edu.cn\n\n"
         "**Biography:** Master's degree in software engineering; senior engineer. Research interests include graph neural networks, trustworthy software testing and development, computer vision and multimodal foundation models.\n\n"
+        "## Author 4: Shu Cai\n\n"
+        "**Affiliation:** School of Railway Locomotive and Rolling Stock, Liuzhou Railway Vocational Technical College, Liuzhou 545000, China\n\n"
+        "**Email:** caishuqqcom@qq.com\n\n"
+        "## Author 5: Simeng Li\n\n"
+        "**Affiliation:** School of Railway Locomotive and Rolling Stock, Liuzhou Railway Vocational Technical College, Liuzhou 545000, China\n\n"
+        "**Email:** li.simeng.ai@qq.com\n\n"
         "**Corresponding author:** Xuelin Hu, huxl@ltzy.edu.cn; huxuelinai@gmail.com\n\n"
         "**Funding:** This research received no external funding.\n\n"
-        "**Author contributions (CRediT):** Xiaoqin Fu: Conceptualization, Methodology, Data curation, Investigation, Validation, Writing - original draft, Writing - review and editing. Youjing Fu: Data curation, Investigation, Formal analysis, Validation, Writing - review and editing. Xuelin Hu: Conceptualization, Methodology, Software, Data curation, Formal analysis, Validation, Resources, Supervision, Project administration, Writing - review and editing. All three authors jointly constructed the training datasets and performed data checking and quality control.\n\n"
+        "**Author contributions (CRediT):** Xiaoqin Fu: Conceptualization, Methodology, Data curation, Investigation, Validation, Writing - original draft, Writing - review and editing. Youjing Fu: Data curation, Investigation, Formal analysis, Validation, Writing - review and editing. Xuelin Hu: Conceptualization, Methodology, Software, Data curation, Formal analysis, Validation, Resources, Supervision, Project administration, Writing - review and editing. Shu Cai and Simeng Li: Data curation, Investigation, Validation, Writing - review and editing. All five authors jointly constructed the training datasets and performed data checking and quality control.\n\n"
         "**Acknowledgements:** The authors have no acknowledgements to declare.\n",
     )
 
