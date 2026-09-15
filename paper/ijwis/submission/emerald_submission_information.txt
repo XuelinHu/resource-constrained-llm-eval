@@ -87,8 +87,8 @@ The manuscript uses an author-date Harvard-style reference list: references are 
 FINAL FILE INVENTORY
 --------------------
 Manuscript figures: 5 files, named figures/Figure_1.pdf through figures/Figure_5.pdf.
-Manuscript tables: 4 files, named tables/Table_1.md through tables/Table_4.md.
-TeX source: tex/Main.tex, tex/manuscript_body.tex, tex/Main_zh.tex, tex/manuscript_body_zh.tex, tex/references.bib and the original-named figure files in tex/figures/.
+Manuscript tables: 4 tables embedded in the single TeX manuscript.
+TeX source: tex/anonymous_manuscript.tex. The file contains the complete anonymous English manuscript and embedded references; the original-named figure files remain in tex/figures/.
 English anonymous PDF: anonymous_manuscript.pdf.
 The anonymous submission PDF is anonymous_manuscript.pdf.
 The Chinese translation PDF is anonymous_manuscript_zh.pdf for internal review and is not the blinded English upload.
