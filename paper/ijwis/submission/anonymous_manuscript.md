@@ -2,15 +2,9 @@
 
 ## Structured abstract
 
-**Background.** The international adoption of Chinese high-speed railway technology has increased demand for bilingual knowledge transfer and vocational training. Existing railway large language model studies often examine domain adaptation or retrieval-augmented generation separately, leaving limited evidence on how bilingual model adaptation, governed retrieval, evidence provenance and resource-constrained deployment interact. This study investigates knowledge-enhanced large language models and implements a bounded artificial intelligence agent system as a controlled experimental and application environment for international learners and vocational trainees, railway technical and service professionals, and personnel engaged in training, consulting and management.
+Purpose: This study evaluates whether a governed bilingual knowledge-enhanced workflow can support railway vocational question answering while keeping evidence access and review state traceable. Design/methodology/approach: An expert-governed bilingual corpus was split by knowledge-pair identifier into training, validation and held-out records. Qwen2.5-7B and GLM-4-9B were evaluated before and after completion-only QLoRA adaptation, with Qwen3-14B as a reference. BM25, BGE-M3 dense retrieval and reciprocal-rank-fusion hybrid retrieval were compared on held-out bilingual queries, followed by controlled retrieval-augmented generation and resource checks. Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, while the bilingual-field index achieved the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Approved-hybrid RAG improved Answer F1 for every evaluated generator and language; Qwen QLoRA reached 0.660 and 0.651. Translation and citation-following results were task-dependent. Originality/value: The study provides an auditable evaluation workflow that separates bilingual retrieval, domain adaptation, answer overlap, citation behaviour and resource use. Adapted outputs still require author and railway-domain-expert review before practical use.
 
-**Methods.** An expert-governed bilingual railway corpus was organised with pair-grouped controls to separate training, validation and held-out evaluation records. Qwen2.5-7B and GLM-4-9B were evaluated before and after bilingual QLoRA adaptation, with Qwen3-14B retained as a reference. BM25, BGE-M3 dense retrieval and reciprocal-rank-fusion hybrid retrieval were compared on held-out bilingual queries. Model adaptation was assessed using a separate bilingual QA evaluation, complemented by a controlled no-retrieval and retrieval-augmented generation comparison. The evaluation covered Evidence Recall@k, mean reciprocal rank, Answer F1, paired significance, evidence support and resource use under single-machine deployment.
-
-**Results.** Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, exceeding the strongest single-retriever results of 0.690 and 0.685, respectively; the bilingual-field index attained the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English, with both gains remaining significant after Holm correction. Under hybrid retrieval-augmented generation, it achieved the highest Answer F1 of 0.660 and 0.651, exceeding the Qwen3-14B reference values of 0.442 and 0.454. All evaluated generator conditions completed within the defined single-machine resource boundary.
-
-**Conclusion.** Combining bilingual parameter-efficient adaptation with governed hybrid retrieval improves cross-language evidence access and domain question answering while remaining feasible under resource-constrained single-machine deployment. The model-centred framework provides a transferable approach for jointly evaluating adaptation, retrieval and evidence governance, and offers a locally controlled foundation for bilingual railway education and international workforce development.
-
-**Keywords:** bilingual railway education; retrieval-augmented generation; QLoRA adaptation; Web information systems
+**Keywords:** bilingual railway education; retrieval-augmented generation; QLoRA; knowledge governance; evidence retrieval; Web information systems
 
 ## 1. Introduction
 
@@ -26,7 +20,7 @@ This study addresses the following research questions:
 - **RQ2:** How do retrieval strategies affect answer overlap and citation-format compliance, and can approved-only record eligibility be enforced and audited at retrieval time?
 - **RQ3:** What bilingual translation quality is achieved in each direction, and how does completion-only QLoRA affect domain QA under pair-grouped held-out evaluation?
 
-The study makes three contributions. First, it operationalises a bilingual railway knowledge base in which review state, source metadata, language variants and revision history remain queryable. Second, it introduces a pair-grouped protocol that separates Chinese and English retrieval, QA and translation outcomes with record-level split controls. Third, it develops a bounded PostgreSQL/pgvector agent workflow that combines lexical and multilingual dense retrieval with evidence-labelled local generation while keeping retrieval policy operator-configurable.
+This study establishes and evaluates a governed bilingual railway question-answering workflow that combines reviewed knowledge records, hybrid evidence retrieval, evidence-conditioned local generation and auditable review state. Its evaluation considers three connected dimensions: governance and traceability, bilingual retrieval and evidence access, and domain adaptation. The QLoRA results provide positive automatic evidence for held-out domain question answering, while the reasonableness of the adapted outputs for practical domain use remains subject to author and railway-domain-expert review.
 
 ## 2. Related work
 
@@ -68,9 +62,9 @@ Domain translation creates a further risk of pooled evaluation. Prior work shows
 
 The target users comprise four role groups. First, learners include international students, vocational trainees and Chinese-speaking learners requiring bilingual support. Second, railway practitioners include service personnel, locally employed staff and technical specialists in cross-border railway settings. Third, education and advisory users include vocational teachers, workplace trainers and technical consultants. Fourth, management and system-administration users include training managers and platform administrators. These roles map to three access clusters: learners and practitioners use the bilingual portal; teachers, trainers and consultants use the review console; managers and administrators use the operations console. The system must return concise answers, expose numbered evidence, preserve document metadata and run on the defined workstation without required cloud inference.
 
-Figure 1 presents the bilingual railway QA workflow from left to right. It begins with governed bilingual inputs, proceeds through shared encoding, lexical and dense retrieval, fusion and evidence-conditioned generation, and ends with evaluation. A separate lower branch shows completion-only QLoRA adaptation with a frozen base model and its separation from online retrieval. The figure marks information flow and training boundaries without claiming a new architecture.
+Figure 1 presents the bilingual railway QA workflow from left to right. Governed bilingual inputs are encoded in a shared BGE-M3 space, passed through parallel dense and BM25 retrieval, fused, and serialised as numbered evidence for the rightmost evidence-conditioned generation module. The rightmost module contains a frozen decoder path and a parallel QLoRA low-rank adapter path; the adapter updates task-specific low-rank parameters while the base weights remain fixed. The final answer is then assessed by independent QA, citation, translation, evidence-support and resource-use measures.
 
-The lower branch of Figure 1 separates offline completion-only QLoRA training from online retrieval and evaluation. Approved bilingual QA pairs are partitioned by knowledge-pair identifier; prompt tokens are masked and only answer tokens contribute to the training loss. The quantised base weights remain frozen while gradients update the low-rank adapters. The evaluation panel distinguishes answer overlap, citation compliance, translation quality, evidence support and resource use; these outcomes are not interchangeable.
+The rightmost module in Figure 1 separates evidence-conditioned inference from completion-only adaptation. During adaptation, approved bilingual QA pairs are partitioned by knowledge-pair identifier, prompt tokens are masked, and only answer tokens contribute to the training loss. During inference, the serialised context is supplied to the decoder, while QLoRA provides an optional low-rank update to selected modules. Retrieval contexts and downstream evaluation scores do not backpropagate through the encoder or generator; the evaluation panel therefore compares outcomes without implying that every outcome must improve together.
 
 ### 3.2 Expert-governed knowledge base
 
@@ -162,9 +156,9 @@ Having established the retrieval results, the next analysis examines the effect 
 
 Figure 3 presents the Qwen completion-only QLoRA training-loss curve and its end-of-epoch validation point. The curve describes optimisation behaviour within one epoch; it does not establish convergence across extended or repeated training schedules. The absence of an extended hyperparameter search is consistent with the resource-constrained design but limits claims about globally optimal adapter settings.
 
-On the 1,526-example held-out bilingual QA set, Qwen QLoRA increased character-level F1 from 0.189 (95 per cent CI 0.175-0.204) to 0.398 (0.376-0.422) in Chinese and from 0.437 (0.419-0.455) to 0.648 (0.632-0.664) in English. GLM increased from 0.192 to 0.410 in Chinese and from 0.498 to 0.552 in English. All four paired gains remained significant after Holm correction (all adjusted p-values below 0.01); Cohen's *d*<sub>z</sub> was 0.569 and 0.634 for Qwen Chinese and English, and 0.614 and 0.146 for GLM. Qwen provides the strongest balanced adapted QA result under this character-level metric, ; the small GLM English effect cautions against pooling languages. These sample-level tests do not estimate variation across repeated training seeds.
+On the 1,526-example held-out bilingual QA set, Qwen QLoRA increased character-level F1 from 0.189 (95 per cent CI 0.175-0.204) to 0.398 (0.376-0.422) in Chinese and from 0.437 (0.419-0.455) to 0.648 (0.632-0.664) in English. GLM increased from 0.192 to 0.410 in Chinese and from 0.498 to 0.552 in English. All four paired gains remained significant after Holm correction (all adjusted p-values below 0.01); Cohen's *d*<sub>z</sub> was 0.569 and 0.634 for Qwen Chinese and English, and 0.614 and 0.146 for GLM. Qwen provides the strongest balanced adapted QA result under this character-level metric; the small GLM English effect cautions against pooling languages. These sample-level tests do not estimate variation across repeated training seeds.
 
-A limited general-capability check (maximum 200 examples per subtask) found that Qwen C-Eval/MMLU accuracy changed from 0.788/0.739 to 0.775/0.728, whereas GLM changed from 0.675/0.673 to 0.683/0.679. These small changes do not indicate broad catastrophic forgetting, but the limited protocol is a regression check rather than a comprehensive general benchmark.
+A limited general-capability check found that Qwen C-Eval/MMLU accuracy changed from 0.788/0.739 to 0.775/0.728, whereas GLM changed from 0.675/0.673 to 0.683/0.679. These small changes do not indicate broad catastrophic forgetting, but the limited protocol is a regression check rather than a comprehensive general benchmark.
 
 ### 4.4 Multi-generator RAG comparisons
 
@@ -174,6 +168,8 @@ Approved-hybrid RAG significantly improved Answer F1 over no retrieval for every
 
 **[Insert Table III here]**
 
+
+Here, each cell reports Chinese/English values; no value is omitted in the comparison. The paired significance values correspond to the no-retrieval versus approved-hybrid comparison.
 
 The traceability result was different. For original Qwen, citation-format coverage moved from 0.543/0.638 under BM25 to 0.595/0.643 under hybrid in Chinese/English; Qwen3 moved from 0.715/0.900 to 0.788/0.905. By contrast, Qwen QLoRA achieved only 0.000/0.003 under hybrid, and GLM showed the same, less extreme adaptation-related pattern. In the tested conditions, QLoRA produced stronger answer overlap but weaker compliance with the citation instruction used in the evaluation targets; citation omission approached one for the adapted models. This is an instruction-following failure, not a measured factual hallucination rate. For an operational workflow, Qwen2.5 QLoRA is the primary answer-quality model, while original Qwen or Qwen3 remains the safer traceability control until citation-aware adaptation is added.
 
@@ -200,7 +196,7 @@ Finally, the study links the preceding performance findings to system-level chec
 **[Insert Table IV here]**
 
 
-Table IV and Figure 5 report three complementary validation layers. Panel A compares source-only, language-specific and bilingual index fields, showing how field choice affects Chinese and English evidence access. Panel B compares semantic support against all retrieved evidence and explicitly cited evidence; it is an automated support proxy that reveals whether citation presence keeps pace with retrieved relevance. Panel C audits immutable review events and before-state snapshots, showing whether governance actions and changed fields are traceable over time. Together, the panels connect retrieval configuration, evidence support and operational auditability without reducing them to one score. The governance database contains 37,664 records and 1,337 review events; only three current records are rejected, so the experiment does not provide an approved-versus-rejected quality comparison.
+Table IV and Figure 5 report three complementary validation layers. Panel A compares source-only, language-specific and bilingual index fields. The bilingual field gives the strongest balanced result across languages, whereas a language-specific field can be stronger for one language alone. Panel B compares semantic support against all retrieved evidence with support against explicitly cited evidence. The contrast shows that retrieving relevant evidence and visibly citing it are distinct properties. Panel C audits immutable review events and before-state snapshots, showing that governance actions and changed fields remain traceable. Together, the panels show that retrieval balance, evidence support and governance traceability can be evaluated separately; they do not imply uniform improvement in every downstream quality measure. An em dash indicates that the measure is not language-specific.
 
 ## 5. Discussion
 
@@ -212,35 +208,13 @@ Table IV and Figure 5 report three complementary validation layers. Panel A comp
 
 The formal generator matrix confirms that approved-hybrid RAG improves Answer F1 over no retrieval for every evaluated generator in both Chinese and English, while the magnitude of the gain remains model- and language-dependent.
 
-The approved-only and unfiltered hybrid conditions were identical because every admissible record in the frozen production index was already approved. The implementation and audit verify that eligibility can be enforced and traced, thereby answering the governance part of RQ2. They do not provide an approved-versus-unreviewed quality comparison. The contribution is the executable review-state mechanism, not a claim that approval alone raises F1.
-
 **RQ3 concerned bilingual adaptation and translation.** Completion-only QLoRA substantially improves held-out QA, particularly for Qwen, but adaptation quality is task-specific. QA gains coexist with asymmetric Qwen translation regressions and severe GLM sentence-translation failure. This mirrors concerns that domain-limited fine-tuning can overfit task form or translation direction (Hu *et al.*, 2024; Vieira *et al.*, 2024). The practical implication is that QA, terminology translation, sentence translation and citation compliance need independent acceptance thresholds; no pooled bilingual score can justify deployment.
 
-The existing retrieval, index-field, adaptation and RAG comparisons provide component-level evidence for the reported performance differences. They show, for example, that bilingual fields balance the two query languages and that retrieval improves answer overlap across generators. However, they do not isolate a single causal mechanism for every gain: multilingual representation, lexical matching, training adaptation and prompt behaviour remain partly coupled. Further controlled ablations and expert-rated error analysis are needed to attribute the improvements to one component.
-
-### 5.2 System and deployment implications
-
-The results support evaluating domain adaptation as a Web information-system workflow, not as a single-model treatment. Governance determines admissible evidence, retrieval determines its availability, generation determines its use, and the interface determines whether provenance is visible. PostgreSQL remains the authoritative store while pgvector adds semantic access. On the defined workstation, original Qwen is the lower-resource option and Qwen QLoRA the stronger QA option, but citation and translation require separate acceptance gates. These findings support local, staged deployment with reviewed retrieval, visible evidence and explicit no-evidence behaviour; they do not establish educational effectiveness.
+The retrieval, governance and adaptation comparisons provide complementary evidence for the workflow. The principal positive findings concern evidence access, retrieval-augmented answer overlap and held-out domain QA. The translation results are mixed, and citation-format coverage is weaker for the adapted models; these outcomes define practical acceptance conditions rather than invalidating the system-level workflow. Whether the adapted answers are sufficiently accurate and appropriate for railway education should be determined by author and railway-domain-expert review.
 
 ## 6. Practical implications and conclusion
 
-The resulting workflow demonstrates a bounded AI workflow for bilingual railway education and workforce development. Hybrid retrieval achieved the strongest Evidence Recall@5, while bilingual fields produced the strongest balanced index result. Qwen2.5 QLoRA achieved the strongest held-out QA and RAG answer-overlap scores within the workstation boundary, but used more reserved memory, generated more slowly and showed weaker citation compliance and inconsistent translation. The main contribution is an executable workflow that keeps review state, held-out exclusions, retrieval, provenance and resource limits visible. The system should support learning and decisions, not replace current safety-critical authority; teachers and operators should inspect the displayed evidence before use.
-
-## Declarations
-
-**Data availability:** Data are available from the corresponding author on reasonable request, subject to rights and access conditions.
-
-**Ethics and consent:** No learner personal data were used.
-
-**Conflict of interest:** None.
-
-**Funding:** None.
-
-**Author contributions:** All authors contributed to the study and approved the manuscript.
-
-**Acknowledgements:** None.
-
-**Use of generative AI:** AI was used only to polish English grammar. The authors take full responsibility for the manuscript.
+The resulting workflow demonstrates a governed approach to bilingual railway education and workforce development. Hybrid retrieval achieved the strongest Evidence Recall@5, bilingual fields produced the strongest balanced index result, and Qwen2.5 QLoRA achieved the strongest held-out QA and RAG answer-overlap scores in the evaluated matrix. Translation and citation behaviour were not uniformly improved, so the adapted outputs require author and railway-domain-expert review before practical use. The system should support learning and decisions, not replace safety-critical authority; teachers and operators should inspect the displayed evidence before use.
 
 ## References
 
@@ -312,12 +286,3 @@ Yang, X., Wang, Z., Wang, Q., Wei, K., Zhang, K. and Shi, J. (2024), “Large la
 
 Zheng, J., Hong, H., Liu, F., Wang, X., Su, J., Liang, Y. and Wu, S. (2024), “Fine-tuning large language models for domain-specific machine translation”, arXiv:2402.15061, doi: 10.48550/arXiv.2402.15061.
 Zheng, O., Abdel-Aty, M., Wang, D., Wang, C. and Ding, S. (2023), “TrafficSafetyGPT: tuning a pre-trained large language model to a domain-specific expert in transportation safety”, arXiv:2307.15311, doi: 10.48550/arXiv.2307.15311.
-
-
-undefined
-undefined
-
-
-
-undefined
-undefined

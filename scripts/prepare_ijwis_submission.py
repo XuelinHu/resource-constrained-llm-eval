@@ -14,11 +14,11 @@ SOURCE = ROOT / "paper/ijwis/manuscript.md"
 OUTPUT = ROOT / "paper/ijwis/submission"
 
 FIGURES = [
-    ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. A separate lower branch shows completion-only QLoRA adaptation with a frozen base model."),
+    ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. The rightmost module shows the QLoRA adapter path alongside the frozen base model."),
     ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
-    ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
+    ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
-    ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score."),
+    ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score. An em dash indicates that a measure is not language-specific."),
 ]
 
 TABLE_CAPTION = re.compile(r"^\*\*Table ([IVX]+)\. (.+)\*\*$")
@@ -28,6 +28,14 @@ def write_utf8_lf(path: Path, content: str) -> None:
     with path.open("w", encoding="utf-8", newline="\n") as handle:
         handle.write(content)
 
+def split_table_files(tables: str) -> dict[str, str]:
+    blocks = re.split(r"(?=^## Table [IVX]+$)", tables, flags=re.MULTILINE)
+    return {
+        re.search(r"^## Table ([IVX]+)$", block, re.MULTILINE).group(1): block.strip() + "\n"
+        for block in blocks
+        if re.search(r"^## Table ([IVX]+)$", block, re.MULTILINE)
+    }
+
 def split_tables(markdown: str) -> tuple[str, str]:
 
     lines = markdown.splitlines()
@@ -35,6 +43,10 @@ def split_tables(markdown: str) -> tuple[str, str]:
     tables: list[str] = ["# Tables", "", "Tables are numbered with Roman numerals and supplied separately in accordance with the IJWIS author guidelines.", ""]
     index = 0
     while index < len(lines):
+        if lines[index] == "## Declarations":
+            while index < len(lines) and lines[index] != "## References":
+                index += 1
+            continue
         match = TABLE_CAPTION.match(lines[index])
         if not match:
             manuscript.append(lines[index])
@@ -73,11 +85,16 @@ def main(skip_docx: bool = False) -> None:
     manuscript, tables = split_tables(SOURCE.read_text(encoding="utf-8"))
     manuscript_path = OUTPUT / "anonymous_manuscript.md"
     tables_path = OUTPUT / "tables.md"
+    table_output = OUTPUT / "tables"
+    table_output.mkdir(exist_ok=True)
     captions_path = OUTPUT / "figure_captions.md"
     title_page_path = OUTPUT / "title_page_template.md"
 
     write_utf8_lf(manuscript_path, manuscript)
     write_utf8_lf(tables_path, tables)
+    roman_to_number = {"I": "1", "II": "2", "III": "3", "IV": "4"}
+    for roman, content in split_table_files(tables).items():
+        write_utf8_lf(table_output / f"Table_{roman_to_number[roman]}.md", content)
     write_utf8_lf(
         captions_path,
         "# Figure captions\n\n"
@@ -118,8 +135,24 @@ def main(skip_docx: bool = False) -> None:
     for index, (filename, _) in enumerate(FIGURES, start=1):
         shutil.copy2(ROOT / "paper/ijwis/figures" / filename, figure_output / f"Figure_{index}.pdf")
 
-    for index, filename in enumerate(("figure_01_neural_retrieval.drawio",), start=1):
-        shutil.copy2(ROOT / "paper/ijwis/figures" / filename, figure_output / f"Figure_{index}.drawio")
+    tex_output = OUTPUT / "tex"
+    tex_output.mkdir(exist_ok=True)
+    shutil.copy2(ROOT / "IJWIS/Main.tex", tex_output / "Main.tex")
+    shutil.copy2(ROOT / "IJWIS/manuscript_body.tex", tex_output / "manuscript_body.tex")
+    shutil.copy2(ROOT / "paper/ijwis/references.bib", tex_output / "references.bib")
+    tex_figures = tex_output / "figures"
+    tex_figures.mkdir(exist_ok=True)
+    for filename, _ in FIGURES:
+        shutil.copy2(ROOT / "paper/ijwis/figures" / filename, tex_figures / filename)
+    body_path = tex_output / "manuscript_body.tex"
+    body = body_path.read_text(encoding="utf-8")
+    body = body.replace("../paper/ijwis/figures/", "figures/")
+    body_path.write_text(body, encoding="utf-8", newline="\n")
+    main_path = tex_output / "Main.tex"
+    main = main_path.read_text(encoding="utf-8")
+    main = main.replace("\\input{manuscript_body}", "\\input{manuscript_body}")
+    main = main.replace("\\bibliography{../paper/ijwis/references}", "\\bibliography{references}")
+    main_path.write_text(main, encoding="utf-8", newline="\n")
 
     if not skip_docx:
         for source, target in (
@@ -129,10 +162,6 @@ def main(skip_docx: bool = False) -> None:
             (title_page_path, OUTPUT / "title_page_template.docx"),
         ):
             run_pandoc(source, target)
-
-    preview = ROOT / "output/pdf/ijwis_manuscript_anonymous.pdf"
-    if preview.exists():
-        shutil.copy2(preview, OUTPUT / "anonymous_manuscript_preview.pdf")
 
     print(OUTPUT)
 

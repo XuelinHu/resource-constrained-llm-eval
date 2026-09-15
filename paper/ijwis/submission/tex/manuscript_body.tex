@@ -81,7 +81,7 @@ The authors jointly constructed and checked the knowledge base and the training 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{../paper/ijwis/figures/figure_01_neural_retrieval.pdf}
+\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
 \caption{Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. The rightmost module shows the QLoRA adapter path alongside the frozen base model.}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
@@ -196,7 +196,7 @@ Table II reports the formal evidence-equivalent retrieval comparison. BM25 is pa
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.82\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_03_top_k_quality_latency.pdf}
+\includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_03_top_k_quality_latency.pdf}
 \caption{Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work.}
 \end{figure}
 
@@ -213,7 +213,7 @@ A limited general-capability check found that Qwen C-Eval/MMLU accuracy changed 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.82\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_04_training_validation_loss.pdf}
+\includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_04_training_validation_loss.pdf}
 \caption{Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the end-of-epoch validation measurement for each model. Source: Authors' own work.}
 \end{figure}
 
@@ -258,7 +258,7 @@ GLM QLoRA is a clear failure case. Its sentence COMET dropped from 0.667 to 0.34
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.82\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_06_quality_latency_pareto.pdf}
+\includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_06_quality_latency_pareto.pdf}
 \caption{Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work.}
 \end{figure}
 
@@ -273,7 +273,7 @@ Figure 4 relates the bilingual mean standalone character-level F1 to generation 
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.82\linewidth,keepaspectratio]{../paper/ijwis/figures/figure_08_system_validation.pdf}
+\includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_08_system_validation.pdf}
 \caption{Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score. An em dash indicates that a measure is not language-specific.}
 \end{figure}
 

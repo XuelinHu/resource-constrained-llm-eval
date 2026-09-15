@@ -35,10 +35,16 @@ def main() -> None:
     if args.display:
         env["DISPLAY"] = args.display
     pdf = SOURCE.with_suffix(".pdf")
+    svg = SOURCE.with_suffix(".svg")
     subprocess.run([
         drawio, str(SOURCE), "--disable-gpu", "--export", "--format", "pdf", "--crop",
         "--border", "8", "--layers", str(layer_index), "--theme", "light",
         "--output", str(pdf),
+    ], env=env, check=True)
+    subprocess.run([
+        drawio, str(SOURCE), "--disable-gpu", "--export", "--format", "svg", "--crop",
+        "--border", "8", "--layers", str(layer_index), "--theme", "light",
+        "--output", str(svg),
     ], env=env, check=True)
 
     # Raster companion at 600 dpi for a 257 mm-wide landscape placement.
@@ -54,7 +60,7 @@ def main() -> None:
         ], check=True)
         with Image.open(prefix.with_suffix(".png")) as image:
             image.convert("RGB").save(SOURCE.with_suffix(".png"), dpi=(600, 600))
-    print(f"Exported {pdf} and its 600-dpi PNG companion")
+    print(f"Exported {pdf}, {svg} and the 600-dpi PNG companion")
 
 
 if __name__ == "__main__":
