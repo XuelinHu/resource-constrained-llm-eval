@@ -147,13 +147,12 @@ The second method targets domain behaviour and is referred to below as \emph{ver
 
 The two methods are then evaluated. Retrieval is scored by evidence-level metrics; adaptation is scored as a before-and-after comparison on held-out railway questions; the combined system is scored across five generators under identical cached evidence; and the resource cost of every condition is measured on the same workstation. This design answers a question that the existing railway-domain literature leaves open: whether improved knowledge access and improved domain behaviour are substitutes or complements, and what each costs inside a fixed hardware budget.
 
-The study makes four contributions:
+The study makes three contributions:
 
 \begin{itemize}
-\item It applies hybrid lexical-dense evidence fusion to bilingual railway vocational question answering and shows that fusing both language fields gives the best cross-language retrieval balance.
+\item It applies hybrid lexical-dense evidence fusion to bilingual railway vocational question answering and shows that fused retrieval gives the best evidence recall in both languages and that a bilingual field composition gives the best cross-language balance.
 \item It applies completion-only QLoRA vertical adaptation to two model families and quantifies the held-out bilingual gain with paired significance testing.
-\item It reports a controlled joint evaluation in which retrieval-augmented generation gains and adaptation gains are measured on the same held-out records, showing that the two mechanisms are complementary.
-\item It documents the complete quality-resource profile of every condition on a single 24 GB workstation, so that the reported gains can be weighed against measured memory and latency.
+\item It reports a controlled joint evaluation on the same held-out records showing that the two mechanisms are complementary but partially overlapping, and that vertical adaptation contributes the larger share of the gain on the same base model.
 \end{itemize}
 
 \section{Related work}
