@@ -15,19 +15,19 @@ BIBLIOGRAPHY = ROOT / "paper/ijwis/references.bib"
 
 FIGURES: dict[str, list[tuple[str, str]]] = {
     "### 3.3 Retrieval and answer generation": [
-        ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. A separate lower branch shows completion-only QLoRA adaptation with a frozen base model."),
+        ("figure_01_neural_retrieval.pdf", "Bilingual railway QA workflow from left to right: governed bilingual input, shared encoding, lexical and dense retrieval, fusion, evidence-conditioned generation and evaluation. The rightmost module shows the QLoRA adapter path alongside the frozen base model."),
     ],
     "### 4.3 QLoRA adaptation and held-out QA": [
         ("figure_03_top_k_quality_latency.pdf", "Hybrid evidence-equivalent retrieval quality and latency across top-k settings. Left: Evidence Recall@k; right: mean retrieval latency. Source: Authors' own work."),
     ],
     "### 4.4 Multi-generator RAG comparisons": [
-        ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the single end-of-epoch validation measurement for each model. Source: Authors' own work."),
+        ("figure_04_training_validation_loss.pdf", "Completion-only QLoRA optimisation for Qwen2.5-7B and GLM-4-9B. Lines show logged training loss; diamonds mark the end-of-epoch validation measurement for each model. Source: Authors' own work."),
     ],
     "### 4.6 Resource use": [
         ("figure_06_quality_latency_pareto.pdf", "Mean bilingual standalone character-level F1 against generation latency and peak reserved GPU memory (GiB) for the four Qwen2.5/GLM original and QLoRA conditions. Left: mean generation latency; right: PyTorch reserved GPU memory. Quality and resources are measured on separate workloads. Source: Authors' own work."),
     ],
     "### 4.7 Index, evidence-support and governance validation": [
-        ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score."),
+        ("figure_08_system_validation.pdf", "Three validation layers. Panel A compares source-only, Chinese-field, English-field and bilingual indexes; Panel B compares semantic support against retrieved and explicitly cited evidence; Panel C audits immutable review events and before-state snapshots. Together the panels show retrieval balance, evidence support and governance traceability without reducing them to one score. An em dash indicates that a measure is not language-specific."),
     ],
 }
 
@@ -111,9 +111,17 @@ def prepare_markdown(source: str) -> str:
 
     lines = source.splitlines()
     output: list[str] = []
+    in_declarations = False
     for index, line in enumerate(lines):
         if line == "## References":
             break
+        if line == "## Declarations":
+            # The IJWIS manuscript is submitted blinded; author metadata and
+            # declarations live in the separate title-page information file.
+            in_declarations = True
+            continue
+        if in_declarations:
+            continue
         if index == 0 and line.startswith("# "):
             continue
         if line == "## Structured abstract":

@@ -1,0 +1,88 @@
+EMERALD SUBMISSION INFORMATION
+================================
+
+Target journal: International Journal of Web Information Systems (IJWIS)
+Article type: Research Paper
+Peer-review mode: Double-anonymous (double-blind)
+Source guidance: https://www.emerald.com/journals/author-guidance/1627/emerald-publishing-author-guidelines
+
+TITLE
+-----
+Knowledge-Enhanced Large Language Models for Bilingual Railway Vocational Education under Resource Constraints
+
+STRUCTURED ABSTRACT
+-------------------
+Purpose: This study evaluates whether a governed bilingual knowledge-enhanced workflow can support railway vocational question answering while keeping evidence access and review state traceable. Design/methodology/approach: An expert-governed bilingual corpus was split by knowledge-pair identifier into training, validation and held-out records. Qwen2.5-7B and GLM-4-9B were evaluated before and after completion-only QLoRA adaptation, with Qwen3-14B as a reference. BM25, BGE-M3 dense retrieval and reciprocal-rank-fusion hybrid retrieval were compared on held-out bilingual queries, followed by controlled retrieval-augmented generation and resource checks. Findings: Hybrid retrieval achieved Evidence Recall@5 of 0.715 in Chinese and 0.708 in English, while the bilingual-field index achieved the highest balanced mean of 0.696. Qwen QLoRA increased held-out character-level F1 from 0.189 to 0.398 in Chinese and from 0.437 to 0.648 in English. Approved-hybrid RAG improved Answer F1 for every evaluated generator and language; Qwen QLoRA reached 0.660 and 0.651. Translation and citation-following results were task-dependent. Originality/value: The study provides an auditable evaluation workflow that separates bilingual retrieval, domain adaptation, answer overlap, citation behaviour and resource use. Adapted outputs still require author and railway-domain-expert review before practical use.
+
+KEYWORDS
+--------
+bilingual railway education; retrieval-augmented generation; QLoRA; knowledge governance; evidence retrieval; Web information systems
+
+AUTHOR INFORMATION FOR THE SEPARATE TITLE PAGE
+------------------------------------------------
+1. Xiaoqin Fu
+   Affiliation: Liuzhou Railway Vocational Technical College, Liuzhou, China
+   ORCID: 0009-0003-5123-8393
+   Email: xiaoqin.fu@qq.com; fuxiaoqin@ltzy.edu.cn
+   Biography: Lecturer; master's degree in English education. Research interests include international vocational education and railway education.
+
+2. Xuelin Hu (corresponding author)
+   Affiliation: Liuzhou Railway Vocational Technical College, Liuzhou, China
+   ORCID: 0000-0002-4475-3034
+   Email: huxl@ltzy.edu.cn
+   Additional email: huxuelinai@gmail.com
+   Biography: Master's degree in software engineering; senior engineer. Research interests include graph neural networks, trustworthy software testing and development, computer vision and multimodal foundation models.
+
+3. Youjing Fu
+   Affiliation: College of Earth and Environmental Sciences, Lanzhou University, Lanzhou, China
+   ORCID: 0009-0004-1369-7879
+   Email: fuyj2025@lzu.edu.cn
+
+4. Shu Cai
+   Affiliation: Liuzhou Railway Vocational Technical College, Liuzhou, China
+   Email: caishuqqcom@qq.com
+
+5. Simeng Li
+   Affiliation: Liuzhou Railway Vocational Technical College, Liuzhou, China
+   Email: li.simeng.ai@qq.com
+
+Corresponding author: Xuelin Hu, huxl@ltzy.edu.cn
+
+DECLARATIONS FOR THE TITLE PAGE OR SUBMISSION FORM
+--------------------------------------------------
+Data availability: Data are available from the corresponding author on reasonable request, subject to rights and access conditions.
+Ethics and consent: No learner personal data were used.
+Conflict of interest: None.
+Funding: None.
+Acknowledgements: None.
+Use of generative AI: AI was used only to polish English grammar. The authors take full responsibility for the manuscript.
+
+AUTHOR CONTRIBUTIONS (CRediT)
+-----------------------------
+Xiaoqin Fu: Conceptualization, Methodology, Data curation, Investigation, Validation, Writing - original draft, Writing - review and editing.
+Youjing Fu: Data curation, Investigation, Formal analysis, Validation, Writing - review and editing.
+Xuelin Hu: Conceptualization, Methodology, Software, Data curation, Formal analysis, Validation, Resources, Supervision, Project administration, Writing - review and editing.
+Shu Cai and Simeng Li: Data curation, Investigation, Validation, Writing - review and editing.
+All five authors jointly constructed the training datasets and performed data checking and quality control.
+
+DOUBLE-ANONYMOUS UPLOAD CHECKLIST
+---------------------------------
+[ ] Upload this metadata as the separate title-page or submission information file; do not merge it into the anonymous manuscript.
+[ ] Upload paper/ijwis/submission/anonymous_manuscript.md or its converted anonymous manuscript file as the blinded manuscript.
+[ ] Do not include author names, affiliations, ORCID identifiers, email addresses, biographies, acknowledgements, author contributions or identifying funding text in the blinded manuscript.
+[ ] Check self-citations: describe unavoidable author self-citations neutrally during review and restore full attribution only after acceptance if required.
+[ ] Upload figures and tables as separate files if the submission system requests them.
+[ ] Keep the abstract as one structured block with the four Emerald headings above and keep the six keywords unchanged.
+
+REFERENCE STYLE CHECK
+---------------------
+The manuscript uses an author-date Harvard-style reference list: references are arranged alphabetically by first author; journal and book titles are italicised in formatted output; journal references include year, volume, issue and page or article number where available; conference and thesis references identify the venue; DOI is retained as `doi: 10....` and stable URLs are included where no DOI is available. In-text citations use author and year, with `et al.` for multi-author citations where appropriate. Verify any final system-generated reference formatting against the journal submission form before upload.
+
+FINAL FILE INVENTORY
+--------------------
+Manuscript figures: 5 files, named figures/Figure_1.pdf through figures/Figure_5.pdf.
+Manuscript tables: 4 files, named tables/Table_1.md through tables/Table_4.md.
+TeX source: tex/Main.tex, tex/manuscript_body.tex, tex/references.bib and the original-named figure files in tex/figures/.
+English anonymous PDF: anonymous_manuscript.pdf.
+Chinese reference PDF: manuscript_zh.pdf.
+The manuscript contains 5 figures and 4 tables. The translation comparison and error-distribution assets remain in the project source directory but are not part of the current five-figure main manuscript because they are not embedded or cited in the authoritative manuscript.

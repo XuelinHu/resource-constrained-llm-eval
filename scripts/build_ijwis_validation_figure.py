@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
-from matplotlib.gridspec import GridSpec
+from PIL import Image, ImageChops
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,16 +31,29 @@ def main() -> None:
             "pdf.fonttype": 42,
         }
     )
-    # Stack all three panels at the same scale for a compact portrait figure.
-    fig = plt.figure(figsize=(8.0, 12.0), constrained_layout=True)
-    grid = GridSpec(3, 1, figure=fig, height_ratios=(1, 1, 1))
-    axes = [
-        fig.add_subplot(grid[0, 0]),
-        fig.add_subplot(grid[1, 0]),
-        fig.add_subplot(grid[2, 0]),
-    ]
+    # Stack the panels with a compact vertical layout.  The source panels are
+    # wide plots; using a shorter canvas avoids the large blank bands that
+    # appeared when three equal-height rows were placed on a full page.
+    fig, axes = plt.subplots(
+        3,
+        1,
+        figsize=(8.0, 9.1),
+        gridspec_kw={"hspace": 0.04},
+    )
     for axis, (filename, label, title) in zip(axes, PANELS, strict=True):
-        axis.imshow(mpimg.imread(FIGURE_DIR / filename))
+        image = Image.open(FIGURE_DIR / filename).convert("RGB")
+        background = Image.new("RGB", image.size, "white")
+        bbox = ImageChops.difference(image, background).getbbox()
+        if bbox:
+            pad = 10
+            bbox = (
+                max(0, bbox[0] - pad),
+                max(0, bbox[1] - pad),
+                min(image.width, bbox[2] + pad),
+                min(image.height, bbox[3] + pad),
+            )
+            image = image.crop(bbox)
+        axis.imshow(image, aspect="auto")
         axis.set_axis_off()
         axis.text(
             0.01,
@@ -55,8 +67,8 @@ def main() -> None:
             bbox={"facecolor": "white", "edgecolor": "none", "pad": 2},
         )
         axis.set_title(title, fontsize=11, pad=4)
-    fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight", facecolor="white")
-    fig.savefig(OUTPUT_PDF, bbox_inches="tight", facecolor="white")
+    fig.savefig(OUTPUT_PNG, dpi=300, bbox_inches="tight", pad_inches=0.04, facecolor="white")
+    fig.savefig(OUTPUT_PDF, bbox_inches="tight", pad_inches=0.04, facecolor="white")
     plt.close(fig)
     print(OUTPUT_PNG)
     print(OUTPUT_PDF)
