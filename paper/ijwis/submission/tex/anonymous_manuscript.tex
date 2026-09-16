@@ -217,14 +217,14 @@ and the reported scores are only comparable because Equation (2) holds for all o
 
 \subsection{Overall framework}
 
+Figure 1 places the two methods on the same system. Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms act at different points in the architecture, their contributions can be distinguished by holding one of them fixed and varying the other.
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
-\caption{Bilingual railway question answering with two methods. (1) Governed bilingual inputs: a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item, and an admissibility filter keeps only approved pairs. (2) Shared neural encoding: one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space. (3) Parallel hybrid retrieval with evidence fusion: a dense retriever scores cosine similarity, BM25 scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set. (4) Evidence-conditioned generation with vertical adaptation: the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16). The evaluation block outside the model carries no gradient; it reports the question-answering scores used as the primary results here, and marks the downstream uses the system supports once deployed, namely citing a generated answer against its evidence, translating an answer between Chinese and English, checking whether its claims are supported by the retrieved passages, and measuring latency and GPU memory. The upper path is evidence fusion and the lower path is vertical adaptation; both meet at the same generator so that their contributions can be distinguished.}
+\caption{Bilingual railway question answering with two methods. (1) Governed bilingual inputs: a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item, and an admissibility filter keeps only approved pairs. (2) Shared neural encoding: one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space. (3) Parallel hybrid retrieval with evidence fusion: a dense retriever scores cosine similarity, BM25 scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set. (4) Evidence-conditioned generation with vertical adaptation: the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16). The upper path is evidence fusion and the lower path is vertical adaptation; both meet at the same generator so that their contributions can be distinguished.}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
-
-Figure 1 places the two methods on the same system. Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms act at different points in the architecture, their contributions can be distinguished by holding one of them fixed and varying the other.
 
 \subsection{Method one: bilingual hybrid retrieval with evidence fusion}
 
@@ -309,6 +309,8 @@ where $\theta_0$ denotes the frozen NF4 base weights and $\theta_A=\{\theta_A^{(
 The adaptation corpus is built only from approved records and is split by knowledge-pair identifier, task type and source document. Chinese and English variants of one knowledge item always receive the same partition assignment, so a bilingual pair cannot straddle the training and held-out boundary, and no knowledge-pair identifier is shared across partitions. Completion-only masking labels every prompt token with $-100$; the loss is computed only on answer tokens.
 
 \subsection{Evaluation protocol}
+
+The evaluation block sits outside the generator and carries no gradient, so every quantity reported in this study is an external measurement rather than a training signal. It covers the railway question-answering scores that serve as the primary results, and it also covers the downstream uses the system is designed to support once deployed: citing a generated answer against its evidence, translating an answer between Chinese and English, checking whether its claims are supported by the retrieved passages, and measuring latency and GPU memory under the resource-constrained inference boundary. The remainder of this subsection defines the metrics behind the primary results.
 
 Retrieval is scored at the evidence level rather than the record level, because a different admissible record may legitimately contain the evidence required to answer the question. Evidence-equivalent Recall@$k$ is one when at least one of the first $k$ candidates satisfies the matching rule:
 
