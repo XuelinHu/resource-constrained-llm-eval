@@ -20,6 +20,15 @@
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
 \setlength{\emergencystretch}{3em}
+
+% 让较大的浮动体与正文共享同一页，而不是被推到纯浮动页上居中、上下都留白。
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.85}
 \renewcommand{\thetable}{\Roman{table}}
 \title{资源约束下面向双语铁路职业教育的知识增强型大语言模型领域适配}
 \author{}
@@ -122,18 +131,17 @@ M \le 24\ \text{GB},
 
 图 1 把两种方法放在同一个系统上。证据融合改变生成器被允许看到的内容，而垂直适配改变生成器作答的方式。由于两种机制作用于架构中的不同位置，可以通过固定其中之一、变动另一个来区分各自的贡献。
 
-\clearpage
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
-\caption{面向双语铁路问答的两种方法。自左向右：（1）受治理的双语输入，其中中文查询 $q_{zh}$ 与英文查询 $q_{en}$ 指向同一条知识，准入过滤器仅保留已批准的配对；（2）共享神经编码，一个冻结的 BGE-M3 编码器通过词元与位置嵌入、多头自注意力和前馈网络，把查询与候选证据映射到同一个 1024 维空间；（3）带证据融合的并行混合检索，稠密检索器计算余弦相似度，BM25 检索器计算词法重叠度，倒数排名融合把两个排序合并为一个 top-$k$ 证据集合；（4）证据条件化生成与垂直适配，序列化上下文 $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ 由重复的因果解码器解码，其冻结权重 $W_0$ 接受低秩更新 $dW=BA$（秩 64，alpha 16），随后进入独立评估模块。该评估模块位于模型之外且不携带梯度：它报告本研究作为主要结果使用的铁路问答分数，同时也标示系统部署后所支持的后续延伸用途，即依据证据对生成的答案进行引用、在中文与英文之间翻译答案、检查其论断是否被检索到的段落所支持，以及在资源受限推理边界下测量时延与显存。上方路径为证据融合方法，下方路径为垂直适配方法；两者汇合于同一个生成器，从而可以区分各自的贡献。}
-\label{fig:neural-retrieval-qlora}
-\end{figure}
-
 \subsection{方法一：带证据融合的双语混合检索}
 
 第一种方法解决知识获取问题。铁路问题混杂着精确标识符与改述后的技术描述，单一检索器无法同时应对两者。因此该方法并行计算两个排序，并在排名层面加以合并。
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
+\caption{面向双语铁路问答的两种方法。（1）受治理的双语输入：中文查询 $q_{zh}$ 与英文查询 $q_{en}$ 指向同一条知识，准入过滤器仅保留已批准的配对。（2）共享神经编码：一个冻结的 BGE-M3 编码器把查询与候选证据映射到同一个 1024 维空间。（3）带证据融合的并行混合检索：稠密检索器计算余弦相似度，BM25 计算词法重叠度，倒数排名融合把两个排序合并为一个 top-$k$ 证据集合。（4）证据条件化生成与垂直适配：序列化上下文 $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ 由重复的因果解码器解码，其冻结权重 $W_0$ 接受低秩更新 $dW=BA$（秩 64，alpha 16）。模型之外的评估模块不携带梯度，它报告本文作为主要结果使用的问答分数，并标示系统部署后所支持的后续延伸用途，即依据证据引用答案、在中文与英文之间翻译答案、检查论断是否被检索到的段落支持，以及测量时延与显存。上方路径为证据融合，下方路径为垂直适配；两者汇合于同一个生成器，从而可以区分各自的贡献。}
+\label{fig:neural-retrieval-qlora}
+\end{figure}
+
 
 词法排序用 BM25 对候选段落 $d$ 与查询 $q$ 计分 \citep{robertson2009bm25}：
 

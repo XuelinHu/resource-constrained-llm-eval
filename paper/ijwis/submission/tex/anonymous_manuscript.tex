@@ -86,6 +86,16 @@
   {\thesubsection}{1em}{}
 \setlength{\emergencystretch}{2em}
 
+% Let a large float share a text page instead of being pushed onto a
+% float-only page, which would centre it and leave whitespace above and below.
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.9}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.85}
+
 % --------------------------------------------------
 % Harvard citation style (BibTeX + natbib)
 % --------------------------------------------------
@@ -103,13 +113,11 @@
 \crefformat{equation}{#2Equation~#1#3}
 \Crefformat{equation}{#2Equation~#1#3}
 
-
 %Front Matter
 
 \author{}
 \title{Knowledge-Enhanced Domain Adaptation of Large Language Models for Bilingual Railway Vocational Education under Resource Constraints}
 \date{}
-
 
 \begin{document}
 \maketitle
@@ -211,18 +219,17 @@ and the reported scores are only comparable because Equation (2) holds for all o
 
 Figure 1 places the two methods on the same system. Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms act at different points in the architecture, their contributions can be distinguished by holding one of them fixed and varying the other.
 
-\clearpage
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
-\caption{Bilingual railway question answering with two methods. Left to right: (1) governed bilingual inputs, where a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item and an admissibility filter keeps only approved pairs; (2) shared neural encoding, where one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space through token and positional embeddings, multi-head self-attention and a feed-forward network; (3) parallel hybrid retrieval with evidence fusion, where a dense retriever scores cosine similarity and a BM25 retriever scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set; and (4) evidence-conditioned generation with vertical adaptation, where the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16), followed by an independent evaluation block that sits outside the model and carries no gradient. That block reports the railway question-answering scores used as the primary results of this study, and it also marks the downstream uses that the system is designed to support once deployed, namely citing a generated answer against its evidence, translating an answer between Chinese and English, checking whether its claims are supported by the retrieved passages, and measuring latency and GPU memory under the resource-constrained inference boundary. The upper path is the evidence-fusion method and the lower path is the vertical-adaptation method; both meet at the same generator so that their contributions can be distinguished.}
-\label{fig:neural-retrieval-qlora}
-\end{figure}
-
 \subsection{Method one: bilingual hybrid retrieval with evidence fusion}
 
 The first method solves the knowledge-access problem. Railway questions mix exact identifiers with paraphrased technical descriptions, and no single retriever handles both. The method therefore computes two rankings in parallel and merges them at rank level.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
+\caption{Bilingual railway question answering with two methods. (1) Governed bilingual inputs: a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item, and an admissibility filter keeps only approved pairs. (2) Shared neural encoding: one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space. (3) Parallel hybrid retrieval with evidence fusion: a dense retriever scores cosine similarity, BM25 scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set. (4) Evidence-conditioned generation with vertical adaptation: the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16). The evaluation block outside the model carries no gradient; it reports the question-answering scores used as the primary results here, and marks the downstream uses the system supports once deployed, namely citing a generated answer against its evidence, translating an answer between Chinese and English, checking whether its claims are supported by the retrieved passages, and measuring latency and GPU memory. The upper path is evidence fusion and the lower path is vertical adaptation; both meet at the same generator so that their contributions can be distinguished.}
+\label{fig:neural-retrieval-qlora}
+\end{figure}
+
 
 The lexical ranking scores a candidate passage $d$ against query $q$ with BM25 \citep{robertson2009bm25}:
 
@@ -788,6 +795,5 @@ Zheng, O., Abdel-Aty, M., Wang, D., Wang, C., and Ding, S. (2023).
 \newblock Available at: \url{https://arxiv.org/abs/2307.15311}.
 
 \end{thebibliography}
-
 
 \end{document}
