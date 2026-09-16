@@ -152,7 +152,7 @@ The study makes three contributions:
 \begin{itemize}
 \item It applies hybrid lexical-dense evidence fusion to bilingual railway vocational question answering and shows that fused retrieval gives the best evidence recall in both languages and that a bilingual field composition gives the best cross-language balance.
 \item It applies completion-only QLoRA vertical adaptation to two model families and quantifies the held-out bilingual gain with paired significance testing.
-\item It reports a controlled joint evaluation on the same held-out records showing that the two mechanisms are complementary but partially overlapping, and that vertical adaptation contributes the larger share of the gain on the same base model.
+\item It constructs a high-quality Chinese-English parallel railway corpus and reports a controlled joint evaluation on the same held-out records showing that the two mechanisms are complementary but partially overlapping, and that vertical adaptation contributes the larger share of the gain on the same base model.
 \end{itemize}
 
 \section{Related work}
@@ -209,16 +209,14 @@ and the reported scores are only comparable because Equation (2) holds for all o
 
 \subsection{Overall framework}
 
-Figure 1 shows how the two methods are implemented and where they meet. The framework reads from left to right in four stages. Stage one prepares the governed bilingual inputs: each knowledge record carries a Chinese and an English field that share one knowledge-pair identifier, and an admissibility filter restricts retrieval to approved records while the held-out test records are excluded from the index. Stage two encodes a query and a candidate passage with the same frozen BGE-M3 encoder, which is what makes a Chinese query comparable with an English passage. Stage three runs the two retrievers in parallel and fuses their rankings, which is the evidence-fusion method. Stage four conditions one shared generator on the serialised context, where the QLoRA adapter is attached to the frozen quantised base model, which is the vertical-adaptation method.
-
-The figure also shows the property that the experiments are designed to test: the two methods act on different parts of the same system. Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms are separate in the architecture, their contributions can be measured separately by holding one of them fixed and varying the other.
+Figure 1 places the two methods on the same system. Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms act at different points in the architecture, their contributions can be distinguished by holding one of them fixed and varying the other.
 
 \clearpage
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
-\caption{Bilingual railway question answering with two methods. Left to right: (1) governed bilingual inputs, where a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item and an admissibility filter keeps only approved pairs; (2) shared neural encoding, where one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space through token and positional embeddings, multi-head self-attention and a feed-forward network; (3) parallel hybrid retrieval with evidence fusion, where a dense retriever scores cosine similarity and a BM25 retriever scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set; and (4) evidence-conditioned generation with vertical adaptation, where the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16), followed by an independent evaluation block that sits outside the model and carries no gradient. That block reports the railway question-answering scores used as the primary results of this study, and it also marks the downstream uses that the system is designed to support once deployed, namely citing a generated answer against its evidence, translating an answer between Chinese and English, checking whether its claims are supported by the retrieved passages, and measuring latency and GPU memory under the resource-constrained inference boundary. The upper path is the evidence-fusion method and the lower path is the vertical-adaptation method; both meet at the same generator so that their contributions can be distinguished. Source: Authors' own work.}
+\caption{Bilingual railway question answering with two methods. Left to right: (1) governed bilingual inputs, where a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item and an admissibility filter keeps only approved pairs; (2) shared neural encoding, where one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space through token and positional embeddings, multi-head self-attention and a feed-forward network; (3) parallel hybrid retrieval with evidence fusion, where a dense retriever scores cosine similarity and a BM25 retriever scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set; and (4) evidence-conditioned generation with vertical adaptation, where the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16), followed by an independent evaluation block that sits outside the model and carries no gradient. That block reports the railway question-answering scores used as the primary results of this study, and it also marks the downstream uses that the system is designed to support once deployed, namely citing a generated answer against its evidence, translating an answer between Chinese and English, checking whether its claims are supported by the retrieved passages, and measuring latency and GPU memory under the resource-constrained inference boundary. The upper path is the evidence-fusion method and the lower path is the vertical-adaptation method; both meet at the same generator so that their contributions can be distinguished.}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
 
@@ -434,7 +432,7 @@ Figure 2 shows how the final evidence cut-off interacts with quality and latency
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_03_top_k_quality_latency.pdf}
-\caption{Effect of the final evidence cut-off on fused retrieval. Recall rises from 0.570 at top-1 to 0.743 in Chinese and 0.723 in English at top-8, whereas mean retrieval latency remains near 218 ms and 209 ms because the upstream candidate pool is fixed at 50 passages per retriever. Increasing the fused cut-off therefore improves evidence coverage without materially changing search time. Source: Authors' own work.}
+\caption{Effect of the final evidence cut-off on fused retrieval. Recall rises from 0.570 at top-1 to 0.743 in Chinese and 0.723 in English at top-8, whereas mean retrieval latency remains near 218 ms and 209 ms because the upstream candidate pool is fixed at 50 passages per retriever. Increasing the fused cut-off therefore improves evidence coverage without materially changing search time.}
 \end{figure}
 
 \subsection{Bilingual index composition}
@@ -475,7 +473,7 @@ Figure 3 shows the optimisation behaviour that produced these gains. Both models
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_04_training_validation_loss.pdf}
-\caption{Completion-only QLoRA optimisation over one epoch. Training loss falls rapidly for both models and then flattens; diamonds mark the end-of-epoch validation measurement, which stays close to the final training range for both. Qwen2.5-7B finishes below GLM-4-9B on both curves, consistent with its stronger held-out result. The curves support successful optimisation inside the resource limit but do not establish behaviour under longer schedules or repeated seeds. Source: Authors' own work.}
+\caption{Completion-only QLoRA optimisation over one epoch. Training loss falls rapidly for both models and then flattens; diamonds mark the end-of-epoch validation measurement, which stays close to the final training range for both. Qwen2.5-7B finishes below GLM-4-9B on both curves, consistent with its stronger held-out result. The curves support successful optimisation inside the resource limit but do not establish behaviour under longer schedules or repeated seeds.}
 \end{figure}
 
 \subsection{Joint evaluation of evidence fusion and vertical adaptation}
@@ -541,7 +539,7 @@ Figure 4 places quality and cost on the same axes. The adapted Qwen2.5-7B occupi
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.82\linewidth,keepaspectratio]{figures/figure_06_quality_latency_pareto.pdf}
-\caption{Quality against resource cost for the original and adapted models. Left panel: mean bilingual held-out F1 against mean generation latency. Right panel: mean bilingual held-out F1 against peak reserved GPU memory. The adapted Qwen2.5-7B holds the highest quality position in both panels while staying inside the 24 GB boundary; the original models use substantially less memory and time. Quality and resource figures are measured on separate workloads, and the Qwen3-14B reference is excluded because its runtime reports a different memory statistic. Source: Authors' own work.}
+\caption{Quality against resource cost for the original and adapted models. Left panel: mean bilingual held-out F1 against mean generation latency. Right panel: mean bilingual held-out F1 against peak reserved GPU memory. The adapted Qwen2.5-7B holds the highest quality position in both panels while staying inside the 24 GB boundary; the original models use substantially less memory and time. Quality and resource figures are measured on separate workloads, and the Qwen3-14B reference is excluded because its runtime reports a different memory statistic.}
 \end{figure}
 
 \section{Discussion}
