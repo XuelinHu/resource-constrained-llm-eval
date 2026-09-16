@@ -217,12 +217,12 @@ and the reported scores are only comparable because Equation (2) holds for all o
 
 \subsection{Overall framework}
 
-Figure 1 places the two methods on the same system. Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms act at different points in the architecture, their contributions can be distinguished by holding one of them fixed and varying the other.
+Figure 1 places the two methods on the same system, which runs in four stages. (1) Governed bilingual inputs: a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item, and an admissibility filter keeps only approved pairs. (2) Shared neural encoding: one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space. (3) Parallel hybrid retrieval with evidence fusion: a dense retriever scores cosine similarity, BM25 scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set. (4) Evidence-conditioned generation with vertical adaptation: the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16). Evidence fusion changes what the generator is allowed to see, whereas vertical adaptation changes how the generator answers. Because the two mechanisms act at different points in the architecture, their contributions can be distinguished by holding one of them fixed and varying the other.
 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.92\linewidth,height=0.78\textheight,keepaspectratio]{figures/figure_01_neural_retrieval.pdf}
-\caption{Bilingual railway question answering with two methods. (1) Governed bilingual inputs: a Chinese query $q_{zh}$ and an English query $q_{en}$ address the same knowledge item, and an admissibility filter keeps only approved pairs. (2) Shared neural encoding: one frozen BGE-M3 encoder maps the query and the candidate evidence into the same 1024-dimensional space. (3) Parallel hybrid retrieval with evidence fusion: a dense retriever scores cosine similarity, BM25 scores lexical overlap, and reciprocal rank fusion merges the two rankings into a top-$k$ evidence set. (4) Evidence-conditioned generation with vertical adaptation: the serialised context $[\text{Instr}]\,|\,[\text{Q}]\,|\,\text{evidence}\,|\,[\text{A}]$ is decoded by a repeated causal decoder whose frozen weights $W_0$ receive a low-rank update $dW=BA$ (rank 64, alpha 16). The upper path is evidence fusion and the lower path is vertical adaptation; both meet at the same generator so that their contributions can be distinguished.}
+\caption{Bilingual railway question answering with two methods. The upper path is evidence fusion and the lower path is vertical adaptation; both meet at the same generator.}
 \label{fig:neural-retrieval-qlora}
 \end{figure}
 
@@ -438,7 +438,7 @@ Third, the improvement is not free. Mean retrieval latency rises from 69.5 ms fo
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=0.72\linewidth,keepaspectratio]{figures/figure_03_top_k_quality_latency.pdf}
-\caption{Effect of the final evidence cut-off on fused retrieval. Recall rises from 0.570 at top-1 to 0.743 in Chinese and 0.723 in English at top-8, whereas mean retrieval latency remains near 218 ms and 209 ms because the upstream candidate pool is fixed at 50 passages per retriever. Increasing the fused cut-off therefore improves evidence coverage without materially changing search time.}
+\caption{Effect of the final evidence cut-off on fused retrieval. Left: Evidence Recall@$k$. Right: mean retrieval latency.}
 \end{figure}
 
 Figure 2 shows how the final evidence cut-off interacts with quality and latency. Recall rises monotonically with $k$, from 0.570 at $k=1$ to 0.743 in Chinese and 0.723 in English at $k=8$; the largest single step is between $k=1$ and $k=3$, after which the curve flattens. Retrieval latency is almost flat across the same range, staying near 218 ms in Chinese and 209 ms in English, because each setting reuses the same 50-candidate pool from each retriever and only the truncation point changes. The evidence supplied to the generator can therefore be increased at essentially no additional retrieval cost, although a longer context still consumes generation time and memory.
@@ -476,12 +476,12 @@ All four paired gains remain significant after Holm correction, with adjusted $p
 
 The relative pattern is informative in a second way. Before adaptation, GLM-4-9B is the stronger English model and the two models are equivalent in Chinese. After adaptation, Qwen2.5-7B is the strongest model in both languages, and Qwen's bilingual gap narrows from 0.248 to 0.250 in absolute terms but from a 131 per cent to a 63 per cent relative advantage for English. Adaptation therefore helps most where the original model was weakest, which is consistent with the method correcting missing domain vocabulary rather than uniformly raising all outputs.
 
-Figure 3 shows the optimisation behaviour that produced these gains. Both models reduce training loss steeply at the start of the single epoch and then flatten, and the end-of-epoch validation measurements sit close to the final training range, which indicates that the one-epoch schedule under the resource limit was sufficient to fit the adaptation set without a visible divergence between the curves. Qwen ends below GLM on both the training and the validation curve, which is consistent with its stronger held-out result.
+Figure 3 shows the optimisation behaviour that produced these gains. Both models reduce training loss steeply at the start of the single epoch and then flatten, and the end-of-epoch validation measurements sit close to the final training range, which indicates that the one-epoch schedule under the resource limit was sufficient to fit the adaptation set without a visible divergence between the curves. Qwen ends below GLM on both the training and the validation curve, which is consistent with its stronger held-out result. The curves therefore support successful optimisation inside the resource limit, but they do not establish behaviour under longer schedules or repeated seeds.
 
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=0.72\linewidth,keepaspectratio]{figures/figure_04_training_validation_loss.pdf}
-\caption{Completion-only QLoRA optimisation over one epoch. Training loss falls rapidly for both models and then flattens; diamonds mark the end-of-epoch validation measurement, which stays close to the final training range for both. Qwen2.5-7B finishes below GLM-4-9B on both curves, consistent with its stronger held-out result. The curves support successful optimisation inside the resource limit but do not establish behaviour under longer schedules or repeated seeds.}
+\caption{Completion-only QLoRA optimisation over one epoch. Lines show the logged training loss; diamonds mark the end-of-epoch validation measurement.}
 \end{figure}
 
 \subsection{Joint evaluation of evidence fusion and vertical adaptation}
@@ -542,12 +542,12 @@ All five conditions completed without execution failure or out-of-memory termina
 
 Two cautions are required when reading the memory and latency columns. Reserved memory includes caching-allocator reservations and should not be read as the memory occupied by live tensors, so the difference between the original and adapted memory figures overstates the intrinsic adapter overhead; the trainable adapters contain only 161.5M and 190.4M parameters (Table II), a small fraction of the several gigabytes that separate the two rows. The Qwen3-14B row is measured through a different runtime and reports GPU-process memory rather than PyTorch reserved memory, so cross-backend comparison of that row is descriptive only. The GLM-4-9B adapted latency of 2.63 s is not an efficiency advantage: it reflects abnormally short or empty outputs, and the low throughput of 11.9 tokens/s is consistent with that reading, so the condition is excluded from any efficiency claim.
 
-Figure 4 places quality and cost on the same axes. The adapted Qwen2.5-7B occupies the highest-quality position in both panels while remaining below the 24 GB boundary, which is the quality-resource trade-off this study reports. The original models are markedly cheaper, at 5.49 and 6.76 GiB, so vertical adaptation buys its quality gain at a measurable memory and latency cost rather than at no cost, and the figure is descriptive rather than a controlled estimate of adapter overhead.
+Figure 4 places quality and cost on the same axes. The adapted Qwen2.5-7B occupies the highest-quality position in both panels while remaining below the 24 GB boundary, which is the quality-resource trade-off this study reports. The original models are markedly cheaper, at 5.49 and 6.76 GiB, so vertical adaptation buys its quality gain at a measurable memory and latency cost rather than at no cost. Quality and resource figures are measured on separate workloads, and the Qwen3-14B reference is excluded because its runtime reports a different memory statistic. The figure is therefore descriptive rather than a controlled estimate of adapter overhead.
 
 \begin{figure}[!htb]
 \centering
 \includegraphics[width=0.72\linewidth,keepaspectratio]{figures/figure_06_quality_latency_pareto.pdf}
-\caption{Quality against resource cost for the original and adapted models. Left panel: mean bilingual held-out F1 against mean generation latency. Right panel: mean bilingual held-out F1 against peak reserved GPU memory. The adapted Qwen2.5-7B holds the highest quality position in both panels while staying inside the 24 GB boundary; the original models use substantially less memory and time. Quality and resource figures are measured on separate workloads, and the Qwen3-14B reference is excluded because its runtime reports a different memory statistic.}
+\caption{Quality against resource cost for the original and adapted models. Left panel: mean bilingual held-out F1 against mean generation latency. Right panel: mean bilingual held-out F1 against peak reserved GPU memory.}
 \end{figure}
 
 \section{Discussion}
