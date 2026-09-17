@@ -288,7 +288,7 @@ async def async_main(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base-url", default="http://127.0.0.1:8000")
+    parser.add_argument("--base-url", default="http://127.0.0.1:8029")
     parser.add_argument("--concurrency", type=int, nargs="+", default=[1, 3, 5])
     parser.add_argument("--requests", type=int, default=6)
     parser.add_argument("--generate", action="store_true")

@@ -46,7 +46,7 @@ def get_settings() -> Settings:
     load_env()
     origins = os.getenv(
         "RAILWAY_CORS_ORIGINS",
-        "http://localhost:4005,http://127.0.0.1:4005,http://localhost:5173,http://127.0.0.1:5173,http://192.168.1.9:4005,http://192.168.1.9:5173,http://47.120.48.245:14005",
+        "http://localhost:4024,http://127.0.0.1:4024,http://localhost:4024,http://127.0.0.1:4024,http://192.168.1.9:4024,http://192.168.1.9:4024,http://47.120.48.245:14024",
     )
     return Settings(
         db_host=os.getenv("RAILWAY_DB_HOST", "localhost"),

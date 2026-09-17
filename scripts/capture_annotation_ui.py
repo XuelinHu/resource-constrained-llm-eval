@@ -68,7 +68,7 @@ def page_target(port: int, timeout: float = 20) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", default="http://127.0.0.1:5173")
+    parser.add_argument("--url", default="http://127.0.0.1:4024")
     parser.add_argument("--session-id", type=int)
     parser.add_argument("--debug-port", type=int, default=9222)
     args = parser.parse_args()

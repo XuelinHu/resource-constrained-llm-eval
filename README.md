@@ -285,8 +285,8 @@ bash scripts/run_baseline_pilot.sh
 - Annotation RAG helper uses local Ollama by default at `http://127.0.0.1:11434`.
 
 ### Default Ports
-- Annotation backend FastAPI service: `8000`.
-- Annotation frontend local Vite port: `5173`; project frontend mode also uses `4005` for local/FRP exposure.
+- Annotation backend FastAPI service: `8029`.
+- Annotation frontend local Vite port: `4024`; project frontend mode also uses `4024` for local/FRP exposure.
 - PostgreSQL: `5432`.
 - Ollama: `11434`.
 
